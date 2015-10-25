@@ -1,0 +1,17 @@
+#matches {
+    border: 1px solid #bbb;
+    padding: 10px 5px;
+    height: 100%;
+    & > div {
+    }
+
+    mContainer {
+        overflow-y: scroll;
+    }
+    a {
+        display: block;
+        max-height: 3em;
+        overflow: hidden;
+        margin-bottom: 0.5em;
+    }
+}

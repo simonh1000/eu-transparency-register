@@ -1,0 +1,17 @@
+html, body, body > div:first-child, .container {
+    height: 100%;
+}
+
+body {
+    background-color: rgb(236, 236, 236);
+    font-family: sans-serif;
+}
+
+nav {
+    display: block;
+    background-color: black;
+    height: 80px;
+}
+h1 {
+    color: rgb(13, 69, 79)
+}

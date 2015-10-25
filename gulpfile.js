@@ -11,8 +11,8 @@ var	gulp           = require('gulp'),
 var runSequence    = require('run-sequence');
 
 var paths = {
-	compileDestination: "server/public",
-	server  : ['server/**/*'],
+	compileDestination: "dist",
+	server  : './server',
 	home    : ['src/index.jade'],
 	scss    : ['src/**/*.scss'],
 	elm     : "src/**/*.elm",
@@ -90,7 +90,7 @@ gulp.task('compilation', ['home', 'sass']);
 	gulp.watch(paths.home, ['home']);
 	gulp.watch(paths.scss, ['sass']);
 	gulp.watch(paths.elm, ['elm-compile']);
-	gulp.watch([paths.compileDestination+"/*.{js,html}"]).on('change', browserSync.reload);
+	gulp.watch(paths.compileDestination+"/*.{js,html}").on('change', browserSync.reload);
  });
 
 /*
