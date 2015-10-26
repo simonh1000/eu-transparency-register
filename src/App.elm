@@ -2,8 +2,6 @@ module App (init, update, view) where
 
 import Html exposing (..)
 import Html.Attributes exposing (class)
-import Http exposing (get)
-import Json.Decode as Json exposing ( (:=) )
 
 import Effects exposing (Effects)
 import Task exposing (..)
@@ -40,9 +38,9 @@ type Action =
 update : Action -> Model -> (Model, Effects Action)
 update action model =
     case action of
-        FilterAction (GetMatch str) ->
-            ( { model | message <- "Search for: " ++ str }
-            , Effects.map MatchAction <| snd <| Matches.update (GetMatchFor str) model.matches
+        FilterAction (GetMatch searchModel) ->
+            ( model
+            , Effects.map MatchAction <| snd <| Matches.update (GetMatchFor searchModel) model.matches
             )
         FilterAction filterAction ->
             let
@@ -67,13 +65,12 @@ update action model =
                 , Effects.map EntryAction <| snd <| entries'
                 )
 
-
 -- VIEW
 
 view : Signal.Address Action -> Model -> Html
 view address model =
     div [ class "container" ]
-        [ nav [] []
+        [ nav [] [ h1 [] [ text "European Lobby Register" ] ]
         , Filters.view (Signal.forwardTo address FilterAction) model.filters
         , div [ class "row" ]
             [ div [ class "col-sm-4" ]
@@ -83,11 +80,3 @@ view address model =
             ]
         , p [ ] [ text model.message ]
         ]
-
--- TASKS
--- loadData : Effects Action
--- loadData =
---     Http.get ("data" := Json.string) "http://localhost:3000/api/default"
---         |> Task.toMaybe
---         |> Task.map Data
---         |> Effects.task

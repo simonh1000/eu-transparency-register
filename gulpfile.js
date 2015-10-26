@@ -76,7 +76,7 @@ gulp.task('compilation', ['home', 'sass']);
          .pipe(elm())
          .on('error', onErrorHandler)
          .pipe(gulp.dest(paths.compileDestination));
- })
+ });
 
 /*
  * D E V E L O P M E N T

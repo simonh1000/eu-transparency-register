@@ -9,9 +9,11 @@ body {
 
 nav {
     display: block;
+    // height: 80px;
     background-color: black;
-    height: 80px;
-}
-h1 {
-    color: rgb(13, 69, 79)
+    padding: 15px;
+    h1 {
+        margin: 0;
+        color: rgb(193, 209, 240)
+    }
 }

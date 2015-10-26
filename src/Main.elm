@@ -1,3 +1,5 @@
+module Register (main) where
+
 import StartApp
 
 import Effects exposing (Never)

@@ -5,13 +5,18 @@
     & > div {
     }
 
-    mContainer {
+    .mContainer {
         overflow-y: scroll;
-    }
-    a {
-        display: block;
-        max-height: 3em;
-        overflow: hidden;
-        margin-bottom: 0.5em;
+        height: 500px;
+        p {
+            cursor: pointer;
+            color: blue;
+            max-height: 3em;
+            overflow: hidden;
+            margin-bottom: 0.5em;
+            &:hover {
+                text-decoration: underline;
+            }
+        }
     }
 }

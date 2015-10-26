@@ -1,3 +1,47 @@
-#filters {
-    margin-bottom: 20px;
+#entries {
+    border: 1px solid #bbb;
+    padding: 10px 5px;
+    padding: 10px;
+    position: relative;
+    & > button {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+    //   float:right;
+    }
+
+    .entry {
+        position: relative;
+
+        box-shadow: 0 12px 15px 0 rgba(0, 0, 0, 0.24);
+        background-color: #fff;
+        padding: 10px;
+        margin-bottom: 10px;
+
+        h4 {
+            font-size: 18px;
+            font-weight: 500;
+            padding-right: 20px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        button.btn-xs {
+            position: absolute;
+            top: 20px;
+            right: 10px;
+        }
+
+        .row {
+            h4 {
+                font-weight: bold;
+                font-size: 85%
+            }
+            p {
+                font-size: 80%;
+            }
+        }
+
+    }
 }

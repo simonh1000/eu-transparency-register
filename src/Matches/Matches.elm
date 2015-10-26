@@ -9,6 +9,7 @@ import Http exposing (get)
 import Effects exposing (Effects)
 import Task exposing (..)
 
+import Filters.Filters as Filters
 import Matches.MatchesDecoder as MatchesDecoder exposing (Id, matchesDecoder)
 
 -- MODEL
@@ -17,24 +18,24 @@ type alias Match = MatchesDecoder.Model
 
 type alias Model =
     { matches : List Match
+    , searching : Bool
     , message : String
     }
 
 init : Model
 init =
-    { matches = [], message = "" }
+    { matches = [], searching = False, message = "" }
 
 type Action =
-      GetMatchFor String       -- equivalent to Filters
-    -- | MatchesReceived (Maybe Model)
+      GetMatchFor Filters.Model
     | MatchesReceived (Result Http.Error (List Match))
     | GetEntry Id
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
     case action of
-        GetMatchFor s ->
-            ( model, loadMatches s)
+        GetMatchFor searchModel ->
+            ( model, loadMatches searchModel)
         MatchesReceived (Result.Ok ms) ->
             ( { model  | matches <- ms }, Effects.none )
         MatchesReceived (Result.Err msg) ->
@@ -43,10 +44,8 @@ update action model =
 view : Signal.Address Action -> Model -> Html
 view address model =
     div [ id "matches" ]
-        [ div []
-            [ h2 [] [ text "Matches" ]
-            , div [ class "mContainer" ] <| List.map (viewMatch address) model.matches
-            ]
+        [ h2 [] [ text "Matches" ]
+        , div [ class "mContainer" ] <| List.map (viewMatch address) model.matches
         , p [] [ text model.message ]
         ]
 
@@ -55,9 +54,18 @@ viewMatch address match =
     p [ onClick address (GetEntry match.id) ] [ text match.orgName ]
 
 -- TASKS
-loadMatches : String -> Effects Action
-loadMatches s =
-    Http.get matchesDecoder ("http://localhost:3000/api/register/search/" ++ s)
+loadMatches : Filters.Model -> Effects Action
+loadMatches model =
+    let
+        searchTerms =
+            if model.section == "All"
+            then [("search", model.search)]
+            else [("search", model.search), ("section", model.section)]
+        query =
+            Http.url "http://localhost:3000/api/register/searchmore/" searchTerms
+    in
+    Http.get matchesDecoder query
+    -- Http.get matchesDecoder ("http://localhost:3000/api/register/search/" ++ s)
         |> Task.toResult
         |> Task.map MatchesReceived
         |> Effects.task

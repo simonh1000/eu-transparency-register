@@ -26,21 +26,23 @@ mongoClient.connect(mongoUrl, function(err, db) {
 	});
 
 
-	// router.get('/search', (req, res) => {
-	// 	let query = req.query;
-	// 	console.log(query);
-	//
-	// 	coll.find(
-	// 		{'orgName': {'$regex': orgname, $options: 'i'}},
-	// 		{'orgName': 1}
-	// 	)
-	// 	.toArray( (err, data) => {
-	// 		if (err) throw err;
-	// 		// console.log(data);
-	// 		res.send(data);
-	// 		// db.close();
-	// 	});
-	// });
+	router.get('/searchmore', (req, res) => {
+		let query = req.query;
+		console.log("Query:", query);
+
+		coll.find(
+			{ 'orgName': {'$regex': query.search, $options: 'i'}
+			, 'subsection' : query.section
+			},
+			{'orgName': 1}
+		)
+		.toArray( (err, data) => {
+			if (err) throw err;
+			// console.log(data);
+			res.send(data);
+			// db.close();
+		});
+	});
 
 	router.get('/search/:orgname', (req, res) => {
 		let orgname = req.params.orgname;
@@ -52,7 +54,7 @@ mongoClient.connect(mongoUrl, function(err, db) {
 		)
 		.toArray( (err, data) => {
 			if (err) throw err;
-			console.log(data);
+			// console.log(data);
 			res.send(data);
 		});
 	});
@@ -64,7 +66,7 @@ mongoClient.connect(mongoUrl, function(err, db) {
 			{'_id': id},
 			{}
 		).then(data => {
-			console.log(data);
+			// console.log(data);
 			res.send(data);
 		})
 		// coll.find(

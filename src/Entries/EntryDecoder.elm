@@ -1,24 +1,30 @@
-module Entries.EntryDecoder (Id, Model, entryDecoder) where
+module Entries.EntryDecoder (entryDecoder) where
 
-import Json.Decode exposing ( Decoder, (:=), object2, list, string )
-
-type alias Id = String
-
-type alias Model = String
-    -- { id: Id
-    -- , orgName: String
-    -- }
-
-init : String -> Model
-init i = i
-    -- { id = i
-    -- , orgName = o
-    -- }
+import Json.Decode exposing (..)
+import Entries.EntryModel exposing (init, Model)
 
 entryDecoder : Decoder Model
 entryDecoder =
-    "orgName" := string
-    -- object2
-    --     init
-    --     ( "_id" := string )
-    --     ( "orgName" := string )
+    object7
+        init
+        ( "_id" := string )
+        ( "orgName" := string )
+        ( "hqCountry" := string )
+        ( "euPerson" := string )
+        costs
+        ( "noFTEs" := float )
+        maybeMemberships
+
+maybeMemberships : Decoder String
+maybeMemberships =
+    oneOf
+        [ "memberships" := string
+        , succeed "None"
+        ]
+
+costs : Decoder String
+costs =
+    oneOf
+        [ "costEst" := string
+        , map toString ("costsAbsolute" := int)
+        ]
