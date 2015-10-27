@@ -1,7 +1,29 @@
-module Entries.EntryDecoder (entryDecoder) where
+module Entries.EntryDecoder (Id, Model, init, entryDecoder) where
 
 import Json.Decode exposing (..)
-import Entries.EntryModel exposing (init, Model)
+
+type alias Id = String
+
+type alias Model =
+    { id: Id
+    , orgName: String
+    , hqCountry: String
+    , euPerson: String
+    , costEst: String
+    , noFTEs: Float
+    , memberships: String
+    }
+
+init : String -> String -> String -> String -> String -> Float -> String -> Model
+init i o h e c n m =
+    { id = i
+    , orgName = o
+    , hqCountry = h
+    , euPerson = e
+    , costEst = c
+    , noFTEs = n
+    , memberships = m
+    }
 
 entryDecoder : Decoder Model
 entryDecoder =

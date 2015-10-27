@@ -21,7 +21,6 @@ entryheight = 130
 type alias Model =
     { data : EntryDecoder.Model
     , expand : Bool
-    , entry : Bool
     , animationState: AnimationState
     }
 
@@ -29,7 +28,6 @@ init : EntryDecoder.Model -> Model
 init data =
     { data = data
     , expand = False
-    , entry = True
     -- , animationState = Nothing
     , animationState = Just { prevClockTime = 0, elapsedTime = 0 }
     }
@@ -45,10 +43,23 @@ type Action =
 update : Action -> Model -> (Model, Effects Action)
 update action model =
     case action of
-        Tick _ ->
-            ( { model | entry <- False }
-            , Effects.none                    -- stop Ticks
-            )
+        Tick clockTime ->
+            let
+                (Just { elapsedTime, prevClockTime }) = model.animationState
+                newElapsedTime =
+                    case prevClockTime of
+                        0 -> 0          -- first Tick
+                        otherwise ->
+                            elapsedTime + (clockTime - prevClockTime)
+            in
+                if newElapsedTime > duration then     -- end of animation
+                    ( { model | animationState <- Nothing }
+                    , Effects.none                    -- stop Ticks
+                    )
+                else
+                    ( { model | animationState <- Just { prevClockTime = clockTime, elapsedTime = newElapsedTime } }
+                    , Effects.tick Tick
+                    )
         Expand -> ( { model  | expand <- not model.expand }, Effects.none )
 
 
@@ -56,8 +67,7 @@ update action model =
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-    -- div [ class "entry", animationStyles model.animationState ]
-    div [ animationStyles model.entry ]
+    div [ class "entry", animationStyles model.animationState ]
         [ h3 [] [ text model.data.orgName ]
         , button
             [ class "btn btn-default btn-xs closeEntry"
@@ -116,17 +126,12 @@ animationValue tgtHeight state =
                 |> toString
                 |> \s -> s ++ "px"
 
-animationStyles : Bool -> Attribute
-animationStyles entry =
-    if entry then
-        class "entry"
-    else class "entry expand"
--- animationStyles : AnimationState -> Attribute
--- animationStyles state =
---     style
---         [ ( "height", animationValue entryheight state )
---         , ( "marginBottom", animationValue 10 state )
---         ]
+animationStyles : AnimationState -> Attribute
+animationStyles state =
+    style
+        [ ( "height", animationValue entryheight state )
+        , ( "marginBottom", animationValue 10 state )
+        ]
 
 
 collapse : Bool -> Attribute

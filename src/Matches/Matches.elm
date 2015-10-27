@@ -58,9 +58,12 @@ loadMatches : Filters.Model -> Effects Action
 loadMatches model =
     let
         searchTerms =
-            if model.section == "All"
-            then [("search", model.search)]
-            else [("search", model.search), ("section", model.section)]
+            [ ("search", model.search)
+            , ("fte", model.fte)
+            ] ++ 
+                if model.section == "All"
+                then []
+                else [("section", model.section)]
         query =
             Http.url "http://localhost:3000/api/register/searchmore/" searchTerms
     in

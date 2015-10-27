@@ -72,7 +72,7 @@ view address model =
     div [ class "container" ]
         [ nav [] [ h1 [] [ text "European Lobby Register" ] ]
         , Filters.view (Signal.forwardTo address FilterAction) model.filters
-        , div [ class "row" ]
+        , div [ class "row main" ]
             [ div [ class "col-sm-4" ]
                 [ Matches.view (Signal.forwardTo address MatchAction) model.matches ]
             , div [ class "col-sm-8" ]

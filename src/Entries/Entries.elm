@@ -1,24 +1,21 @@
 module Entries.Entries (Model, Action(..), init, update, view) where
 
 import Html exposing (..)
-import Html.Attributes exposing (class, id, type', href)
+import Html.Attributes exposing (class, id, type', href, style)
 import Html.Events exposing (onClick, on, targetValue)
-import Http
 import List exposing (take, drop)
--- import Array exposing (Array, append)
 import Dict exposing (Dict, insert, get)
 
+import Http
 import Effects exposing (Effects)
 import Task exposing (..)
 
-import Entries.EntryDecoder as EntryDecoder exposing (entryDecoder)
+import Entries.EntryDecoder as EntryDecoder exposing (Id, Model, entryDecoder)
 import Entries.Entry as Entry exposing (Action(..))
-import Entries.EntryModel as EntryModel exposing (Id)
 
 -- MODEL
 
-type alias Entry = EntryModel.Model
-type alias Cache = Dict Id Entry
+type alias Cache = Dict Id (Entry.Model)
 
 type alias Model =
     { displayed : List Id
@@ -28,13 +25,16 @@ type alias Model =
 
 init : Model
 init =
-    { displayed = [], cache = Dict.empty, message = "" }
+    { displayed = []
+    , cache = Dict.empty
+    , message = ""
+    }
 
 -- UPDATE
 
 type Action =
       GetEntryFor Id
-    | EntryReceived (Result Http.Error Entry)
+    | EntryReceived (Result Http.Error EntryDecoder.Model)  -- Decoder brings in raw data
     | CloseAll
     | EntryAction Id Entry.Action
 
@@ -42,13 +42,20 @@ update : Action -> Model -> (Model, Effects Action)
 update action model =
     case action of
         GetEntryFor id ->
+            -- if Dict.member id model.cache
+            -- then
+            -- TEST WHETHER ALREADY CACHED
             (model, loadEntry id )
         EntryReceived (Result.Ok entry) ->
+          if List.member entry.id model.displayed
+          then
+            ( model, Effects.none )
+          else
             ( { model |
                   displayed <- entry.id :: model.displayed
-                , cache <- insert entry.id entry model.cache
+                , cache <- insert entry.id (Entry.init entry) model.cache
               }
-            , Effects.none
+            , Effects.map (EntryAction entry.id) (Effects.tick Entry.Tick)       -- starts animation
             )
         EntryReceived (Result.Err msg) ->
             ( { model | message <- errorHandler msg }
@@ -58,20 +65,16 @@ update action model =
             ( { model | displayed <- [] }, Effects.none )
         EntryAction id Close ->
             ( { model | displayed <- List.filter (\d -> d /= id) model.displayed }
-            -- ( { model | displayed <- take (idx) model.displayed ++ drop (idx+1) model.displayed }
             , Effects.none
             )
         EntryAction id entryAction ->    -- i.e. Expand
             -- update : comparable -> (Maybe Entry -> Maybe Entry) -> Dict comparable Entry -> Dict comparable Entry
             let
-                getSetCache : Maybe Entry -> Maybe Entry
-                getSetCache mentry =
-                    case mentry of
-                        Just entry -> Just (Entry.update entryAction entry)
-                        Nothing -> Nothing
+                (Just entry) = get id model.cache
+                (newEntry, newEffect) = Entry.update entryAction entry
             in
-            ( { model | cache <- Dict.update id getSetCache model.cache }
-            , Effects.none
+            ( { model | cache <- Dict.update id (\_ -> Just newEntry) model.cache }
+            , Effects.map (EntryAction id) newEffect
             )
 
 errorHandler : Http.Error -> String
@@ -90,25 +93,21 @@ view address model =
         viewMapper id =
             let (Just entry) = get id model.cache
             in Entry.view (Signal.forwardTo address (EntryAction id)) entry
-        -- viewMapper : Int -> Id -> Html
-        -- viewMapper ix id =
-        --     let (Just entry) = get id model.cache
-        --     in Entry.view (Signal.forwardTo address (EntryAction ix)) entry
     in
     div [ id "entries" ]
-        [ h2 [] [ text "Entries" ]
-        , button
-            [ onClick address CloseAll
-            , class "btn btn-default" ]
-            [ text "Close All" ]
+        [ header []
+            [ h2 [] [ text "Entries" ]
+            , button
+                [ onClick address CloseAll
+                , class "btn btn-default btn-xs closeAll" ]
+                [ text "Close All" ]
+            ]
         , div [ class "eContainer" ]
             -- <| List.indexedMap viewMapper model.displayed
             <| List.map viewMapper model.displayed
             -- <| List.map (\e -> Entry.view (Signal.forwardTo address (EntryAction e.id)) e) model.displayed
-        , p [] [ text model.message ]
+        -- , p [] [ text <| offsetValue model.animationState ]
         ]
-
-
 -- TASKS
 
 loadEntry : Id -> Effects Action
@@ -117,16 +116,3 @@ loadEntry id =
         |> Task.toResult
         |> Task.map EntryReceived
         |> Effects.task
-
-
--- getSet : Int -> (a -> a) -> Array a -> Array a
--- getSet i f arr =
---     let (Just e) = get i arr
---     in set i (f e)
-
-
-
--- getSetCache : Id -> (Entry -> Entry) -> Cache -> Cache
--- getSetCache id f cache =
---     let (Just entry) = get id cache
---     in set id (f entry)
