@@ -19,7 +19,9 @@
     "jade": "~1.11.0",
     "mongodb": "^2.0.46",
     "morgan": "~1.6.1",
-    "serve-favicon": "~2.3.0"
+    "request": "^2.65.0",
+    "serve-favicon": "~2.3.0",
+    "xlsx": "^0.8.0"
   },
   "devDependencies": {
     "browser-sync": "^2.9.3",

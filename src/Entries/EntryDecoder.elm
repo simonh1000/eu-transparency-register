@@ -12,10 +12,11 @@ type alias Model =
     , costEst: String
     , noFTEs: Float
     , memberships: String
+    , goals: String
     }
 
-init : String -> String -> String -> String -> String -> Float -> String -> Model
-init i o h e c n m =
+init : String -> String -> String -> String -> String -> Float -> String -> String -> Model
+init i o h e c n m g =
     { id = i
     , orgName = o
     , hqCountry = h
@@ -23,11 +24,12 @@ init i o h e c n m =
     , costEst = c
     , noFTEs = n
     , memberships = m
+    , goals = g
     }
 
 entryDecoder : Decoder Model
 entryDecoder =
-    object7
+    object8
         init
         ( "_id" := string )
         ( "orgName" := string )
@@ -36,6 +38,7 @@ entryDecoder =
         costs
         ( "noFTEs" := float )
         maybeMemberships
+        ( "goals" := string )
 
 maybeMemberships : Decoder String
 maybeMemberships =

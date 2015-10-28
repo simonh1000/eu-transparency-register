@@ -9,6 +9,7 @@ import Dict exposing (Dict, insert, get)
 import Http
 import Effects exposing (Effects)
 import Task exposing (..)
+import History
 
 import Entries.EntryDecoder as EntryDecoder exposing (Id, Model, entryDecoder)
 import Entries.Entry as Entry exposing (Action(..))
@@ -37,36 +38,57 @@ type Action =
     | EntryReceived (Result Http.Error EntryDecoder.Model)  -- Decoder brings in raw data
     | CloseAll
     | EntryAction Id Entry.Action
+    | NoOp (Maybe ())
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
+    let
+        insertEntry : String -> (Model, Effects Action)
+        insertEntry id =
+            let newDisplayed = id :: model.displayed
+            in
+            ( { model | displayed <- newDisplayed }
+            , Effects.batch
+                [ Effects.map (EntryAction id) (Effects.tick Entry.Tick)    -- Entry animation
+                , updateUrl newDisplayed
+                ]
+            )
+    in
     case action of
         GetEntryFor id ->
-            -- if Dict.member id model.cache
-            -- then
-            -- TEST WHETHER ALREADY CACHED
-            (model, loadEntry id )
+          if | List.member id model.displayed ->        -- already showing, ignore click
+                ( model, Effects.none )
+             | Dict.member id model.cache ->            -- cached
+                insertEntry id
+             | otherwise ->
+                (model, loadEntry id )
         EntryReceived (Result.Ok entry) ->
-          if List.member entry.id model.displayed
-          then
-            ( model, Effects.none )
-          else
-            ( { model |
-                  displayed <- entry.id :: model.displayed
-                , cache <- insert entry.id (Entry.init entry) model.cache
-              }
-            , Effects.map (EntryAction entry.id) (Effects.tick Entry.Tick)       -- starts animation
+            let (newModel, newEffects) = insertEntry entry.id
+            in
+            ( { newModel | cache <- insert entry.id (Entry.init entry) newModel.cache }
+            , newEffects
             )
         EntryReceived (Result.Err msg) ->
             ( { model | message <- errorHandler msg }
             , Effects.none
             )
+
+        -- C L O S E
         CloseAll ->
-            ( { model | displayed <- [] }, Effects.none )
+            ( { model | displayed <- [] }, updateUrl [] )
         EntryAction id Close ->
-            ( { model | displayed <- List.filter (\d -> d /= id) model.displayed }
-            , Effects.none
+            let
+                newDisplayed = List.filter (\d -> d /= id) model.displayed
+            in
+            ( { model |
+                displayed <- newDisplayed
+            --   , cache <- Dict.update id (\(Just entry) -> Just <| Entry.init entry.data) model.cache
+              , cache <- Dict.update id (Maybe.map (Entry.init << .data)) model.cache
+              }
+            , updateUrl newDisplayed
             )
+
+        -- E X P A N D
         EntryAction id entryAction ->    -- i.e. Expand
             -- update : comparable -> (Maybe Entry -> Maybe Entry) -> Dict comparable Entry -> Dict comparable Entry
             let
@@ -77,12 +99,14 @@ update action model =
             , Effects.map (EntryAction id) newEffect
             )
 
+        -- URL  U P D A T E S
+        NoOp _ -> ( model, Effects.none )
+
 errorHandler : Http.Error -> String
 errorHandler err =
     case err of
         Http.UnexpectedPayload s -> s
         otherwise -> "http error"
-
 
 -- VIEW
 
@@ -103,11 +127,10 @@ view address model =
                 [ text "Close All" ]
             ]
         , div [ class "eContainer" ]
-            -- <| List.indexedMap viewMapper model.displayed
             <| List.map viewMapper model.displayed
-            -- <| List.map (\e -> Entry.view (Signal.forwardTo address (EntryAction e.id)) e) model.displayed
-        -- , p [] [ text <| offsetValue model.animationState ]
+        -- , p [] [ text <| toString model.displayed ]
         ]
+
 -- TASKS
 
 loadEntry : Id -> Effects Action
@@ -116,3 +139,16 @@ loadEntry id =
         |> Task.toResult
         |> Task.map EntryReceived
         |> Effects.task
+
+updateUrl : List String -> Effects Action
+updateUrl displayed =
+    combineIds displayed
+        |> History.replacePath
+        |> Task.toMaybe
+        |> Task.map NoOp
+        |> Effects.task
+
+-- [x,y,z] -->
+combineIds : List String -> String
+combineIds lst =
+    List.foldl (\l acc -> acc ++ l) "/" (List.intersperse "/" lst)

@@ -1,7 +1,8 @@
-module App (init, update, view) where
+module App (Action(UrlParam), init, update, view) where
 
 import Html exposing (..)
 import Html.Attributes exposing (class)
+import String exposing (split)
 
 import Effects exposing (Effects)
 import Task exposing (..)
@@ -24,7 +25,7 @@ init =
     ( { filters = Filters.init
       , matches = Matches.init
       , entries = Entries.init
-      , message = "Loading"
+      , message = "Initialising"
       }
     , Effects.none )
 
@@ -34,10 +35,22 @@ type Action =
       FilterAction Filters.Action
     | MatchAction Matches.Action
     | EntryAction Entries.Action
+    | UrlParam String
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
+    let
+        getEffect id_ =
+            Effects.map EntryAction <| snd <| Entries.update (GetEntryFor id_) model.entries
+    in
     case action of
+        UrlParam str ->
+            ( { model | message <- str }
+            -- , Effects.none
+            -- , Effects.map EntryAction <| snd <| Entries.update (GetEntryFor str) model.entries
+            , List.map getEffect (split "/" str)
+                |> Effects.batch
+            )
         FilterAction (GetMatch searchModel) ->
             ( model
             , Effects.map MatchAction <| snd <| Matches.update (GetMatchFor searchModel) model.matches
@@ -49,7 +62,7 @@ update action model =
 
         MatchAction (GetEntry id) ->
             ( { model | message <- "get entry for " ++ id }
-            , Effects.map EntryAction <| snd <| Entries.update (GetEntryFor id) model.entries
+            , getEffect id
             )
         MatchAction matchAction ->
             let

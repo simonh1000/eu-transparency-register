@@ -13,16 +13,10 @@ import Entries.EntryDecoder as EntryDecoder
 
 -- M O D E L
 
-type alias AnimationState =
-    Maybe { prevClockTime : Time, elapsedTime: Time }
-duration = 0.7 * second
-entryheight = 130
-
 type alias Model =
     { data : EntryDecoder.Model
     , expand : Bool
     , entry : Bool
-    , animationState: AnimationState
     }
 
 init : EntryDecoder.Model -> Model
@@ -30,8 +24,6 @@ init data =
     { data = data
     , expand = False
     , entry = True
-    -- , animationState = Nothing
-    , animationState = Just { prevClockTime = 0, elapsedTime = 0 }
     }
 
 -- U P D A T E
@@ -58,16 +50,18 @@ view : Signal.Address Action -> Model -> Html
 view address model =
     -- div [ class "entry", animationStyles model.animationState ]
     div [ animationStyles model.entry ]
-        [ h3 [] [ text model.data.orgName ]
-        , button
-            [ class "btn btn-default btn-xs closeEntry"
-            , onClick address Close
-            ] [ text "X" ]
-        , viewMeta address model.data
-        , button
-            [ class "btn btn-default btn-xs expandEntry", onClick address Expand ]
-            [ text "v"]
-        , viewMore model
+        [ div [ ]
+            [ h3 [] [ text model.data.orgName ]
+            , button
+                [ class "btn btn-default btn-xs closeEntry"
+                , onClick address Close
+                ] [ text "X" ]
+            , viewMeta address model.data
+            , button
+                [ class "btn btn-default btn-xs expandEntry", onClick address Expand ]
+                [ text "v"]
+            , viewMore model
+            ]
         ]
 
 viewMeta : Signal.Address Action -> EntryDecoder.Model -> Html
@@ -95,32 +89,28 @@ viewMore : Model -> Html
 viewMore model =
     div [ collapse model.expand ]
         [ div [ class "col-sm-6" ]
+            [ h4 [] [ text "Goal" ]
+            , p [] [ text model.data.goals ]
+            ]
+        , div [ class "col-sm-6" ]
             [ h4 [] [ text "Memberships" ]
             , p [] [ text model.data.memberships ]
             ]
-        , div [ class "col-sm-6" ]
-            [ h4 [] [ text "..." ]
-            , p [] [ text model.data.hqCountry ]
-            ]
         ]
 
-
-animationValue : Int -> AnimationState -> String
-animationValue tgtHeight state =
-    case state of
-        Nothing -> (toString tgtHeight) ++ "px"
-        -- Nothing -> "auto"
-        Just { elapsedTime } ->
-            (toFloat tgtHeight) * elapsedTime / duration
-                |> round
-                |> toString
-                |> \s -> s ++ "px"
 
 animationStyles : Bool -> Attribute
 animationStyles entry =
     if entry then
         class "entry"
     else class "entry expand"
+
+collapse : Bool -> Attribute
+collapse expand =
+    if expand
+    then class "row collapse in"
+    else class "row collapse"
+
 -- animationStyles : AnimationState -> Attribute
 -- animationStyles state =
 --     style
@@ -128,9 +118,14 @@ animationStyles entry =
 --         , ( "marginBottom", animationValue 10 state )
 --         ]
 
-
-collapse : Bool -> Attribute
-collapse expand =
-    if expand
-    then class "row collapse in"
-    else class "row collapse"
+-- animationValue : Int -> AnimationState -> String
+-- animationValue tgtHeight state =
+--     case state of
+--         Nothing -> (toString tgtHeight) ++ "px"
+--         -- Nothing -> "auto"
+--         Just { elapsedTime } ->
+--             (toFloat tgtHeight) * elapsedTime / duration
+--                 |> round
+--                 |> toString
+--                 |> \s -> s ++ "px"
+--

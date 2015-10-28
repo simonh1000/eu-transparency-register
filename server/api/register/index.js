@@ -7,21 +7,16 @@ var mongoClient = require('mongodb');
 
 let mongoUrl = 'mongodb://localhost:27017/lobby';
 
+var delaySend = function(data, res) {
+	setTimeout(() => res.send(data), 1000);
+}
+
 mongoClient.connect(mongoUrl, function(err, db) {
 	if (err) throw err;
 
 	let coll = db.collection('lobby');
 
 	console.log("Creating DB routes");
-
-	// test route
-	router.get('/', (req, res) => {
-		coll.find({'orgName': {'$regex': 'goog', $options: 'i'}})
-		.toArray( (err, data) => {
-			if (err) throw err;
-			res.send(data);
-		});
-	});
 
 	router.get('/searchmore', (req, res) => {
 		let query = req.query;
@@ -41,9 +36,9 @@ mongoClient.connect(mongoUrl, function(err, db) {
 		.sort({'orgName' : 1 })
 		.toArray( (err, data) => {
 			if (err) throw err;
-			// console.log(data);
-			res.send(data);
-			// db.close();
+
+			delaySend(data, res);
+			// res.send(data);
 		});
 	});
 
@@ -53,8 +48,20 @@ mongoClient.connect(mongoUrl, function(err, db) {
 		let myDoc =
 			coll.findOne({'_id': id})
 			.then(data => {
-				res.send(data);
+				delaySend(data, res);
+				// res.send(data);
 			});
+	});
+
+	// test route
+	router.get('/', (req, res) => {
+		coll.find({'orgName': {'$regex': 'goog', $options: 'i'}})
+		.toArray( (err, data) => {
+			if (err) throw err;
+
+			delaySend(data, res);
+			// res.send(data);
+		});
 	});
 
 });
