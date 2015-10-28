@@ -82,21 +82,19 @@ update action model =
             in
             ( { model |
                 displayed <- newDisplayed
-            --   , cache <- Dict.update id (\(Just entry) -> Just <| Entry.init entry.data) model.cache
-              , cache <- Dict.update id (Maybe.map (Entry.init << .data)) model.cache
+              , cache <- Dict.update id (Maybe.map (Entry.init << .data)) model.cache -- reset cache entry
               }
             , updateUrl newDisplayed
             )
 
         -- E X P A N D
         EntryAction id entryAction ->    -- i.e. Expand
-            -- update : comparable -> (Maybe Entry -> Maybe Entry) -> Dict comparable Entry -> Dict comparable Entry
             let
                 (Just entry) = get id model.cache
-                (newEntry, newEffect) = Entry.update entryAction entry
+                newEntry = Entry.update entryAction entry
             in
             ( { model | cache <- Dict.update id (\_ -> Just newEntry) model.cache }
-            , Effects.map (EntryAction id) newEffect
+            , Effects.none
             )
 
         -- URL  U P D A T E S
@@ -120,7 +118,7 @@ view address model =
     in
     div [ id "entries" ]
         [ header []
-            [ h2 [] [ text "Entries" ]
+            [ h2 [] [ text "Summary of Transparency Register entries" ]
             , button
                 [ onClick address CloseAll
                 , class "btn btn-default btn-xs closeAll" ]
@@ -148,7 +146,7 @@ updateUrl displayed =
         |> Task.map NoOp
         |> Effects.task
 
--- [x,y,z] -->
+-- [x,y,z] --> /x/y/z
 combineIds : List String -> String
 combineIds lst =
     List.foldl (\l acc -> acc ++ l) "/" (List.intersperse "/" lst)

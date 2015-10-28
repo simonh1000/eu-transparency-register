@@ -35,7 +35,7 @@ update : Action -> Model -> (Model, Effects Action)
 update action model =
     case action of
         GetMatchFor searchModel ->
-            ( model, loadMatches searchModel)
+            ( model, getMatches searchModel)
         MatchesReceived (Result.Ok ms) ->
             ( { model  | matches <- ms }, Effects.none )
         MatchesReceived (Result.Err msg) ->
@@ -44,7 +44,7 @@ update action model =
 view : Signal.Address Action -> Model -> Html
 view address model =
     div [ id "matches" ]
-        [ h2 [] [ text "Matches" ]
+        [ h2 [] [ text "Search results" ]
         , div [ class "mContainer" ] <| List.map (viewMatch address) model.matches
         , p [] [ text model.message ]
         ]
@@ -54,13 +54,14 @@ viewMatch address match =
     p [ onClick address (GetEntry match.id) ] [ text match.orgName ]
 
 -- TASKS
-loadMatches : Filters.Model -> Effects Action
-loadMatches model =
+getMatches : Filters.Model -> Effects Action
+getMatches model =
     let
         searchTerms =
             [ ("search", model.search)
             , ("fte", model.fte)
-            ] ++ 
+            , ("budget", model.budget)
+            ] ++
                 if model.section == "All"
                 then []
                 else [("section", model.section)]

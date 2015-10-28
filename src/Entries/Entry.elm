@@ -29,20 +29,15 @@ init data =
 -- U P D A T E
 
 type Action =
-      Enter    -- unused
-    | Tick Time
+      Tick Time
     | Expand
     | Close       -- caught by Entries
 
-update : Action -> Model -> (Model, Effects Action)
+update : Action -> Model -> Model
 update action model =
     case action of
-        Tick _ ->
-            ( { model | entry <- False }
-            , Effects.none                    -- stop Ticks
-            )
-        Expand -> ( { model  | expand <- not model.expand }, Effects.none )
-
+        Tick _ -> { model | entry <- False }
+        Expand -> { model | expand <- not model.expand }
 
 -- V I E W
 
@@ -58,6 +53,7 @@ view address model =
                 ] [ text "X" ]
             , viewMeta address model.data
             , button
+            -- Need to add data-toggle="collapse"
                 [ class "btn btn-default btn-xs expandEntry", onClick address Expand ]
                 [ text "v"]
             , viewMore model
@@ -67,19 +63,19 @@ view address model =
 viewMeta : Signal.Address Action -> EntryDecoder.Model -> Html
 viewMeta address entry =
     div [ class "row" ]
-        [ div [ class "col-sm-3" ]
+        [ div [ class "col-xs-6 col-sm-3" ]
             [ h4 [] [ text "Country" ]
             , p [] [ text entry.hqCountry ]
             ]
-        , div [ class "col-sm-3" ]
+        , div [ class "col-xs-6 col-sm-3" ]
             [ h4 [] [ text "Representative" ]
             , p [] [ text entry.euPerson ]
             ]
-        , div [ class "col-sm-3" ]
+        , div [ class "col-xs-6 col-sm-3" ]
             [ h4 [] [ text "Budget" ]
             , p [] [ text entry.costEst ]
             ]
-        , div [ class "col-sm-3" ]
+        , div [ class "col-xs-6 col-sm-3" ]
             [ h4 [] [ text "FTEs" ]
             , p [] [ text <| toString entry.noFTEs ]
             ]

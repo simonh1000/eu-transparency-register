@@ -8,7 +8,7 @@ var mongoClient = require('mongodb');
 let mongoUrl = 'mongodb://localhost:27017/lobby';
 
 var delaySend = function(data, res) {
-	setTimeout(() => res.send(data), 1000);
+	setTimeout(() => res.send(data), 0);
 }
 
 mongoClient.connect(mongoUrl, function(err, db) {
@@ -28,6 +28,8 @@ mongoClient.connect(mongoUrl, function(err, db) {
 			queryObj.subsection = query.section;
 		if (query.fte)
 			queryObj.noFTEs = { $gt : parseInt(query.fte) };
+		if (query.budget)
+			queryObj.budget = { $gt : parseInt(query.budget) };
 
 		console.log("Query:", query);
 		console.log("QueryObj:", queryObj);
@@ -48,6 +50,7 @@ mongoClient.connect(mongoUrl, function(err, db) {
 		let myDoc =
 			coll.findOne({'_id': id})
 			.then(data => {
+				// console.log(data);
 				delaySend(data, res);
 				// res.send(data);
 			});

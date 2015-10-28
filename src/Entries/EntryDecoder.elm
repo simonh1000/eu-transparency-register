@@ -50,6 +50,6 @@ maybeMemberships =
 costs : Decoder String
 costs =
     oneOf
-        [ "costEst" := string
-        , map toString ("costsAbsolute" := int)
+        [ map toString ("costsAbsolute" := int)
+        , "costEst" := string
         ]

@@ -18,11 +18,15 @@ type alias Model =
     { search : String
     , section : String
     , fte: String
+    , budget: String
     }
 
 init : Model
 init =
-    { search = "", section = "All", fte = "0" }
+    { search = ""
+    , section = "All"
+    , fte = "0"
+    , budget = "0"}
 
 -- UPDATE
 
@@ -30,6 +34,7 @@ type Action =
       Search String
     | Section String
     | FTE String
+    | Budget String
     | GetMatch Model
 
 update : Action -> Model -> (Model, Effects Action)
@@ -38,7 +43,8 @@ update action model =
         Search s -> ( { model | search <- s }, Effects.none )
         Section s -> ( { model | section <- s }, Effects.none )
         FTE s -> ( { model | fte <- s }, Effects.none )
-        GetMatch s -> ( model, Effects.none )
+        Budget s -> ( { model | budget <- s }, Effects.none )
+        -- GetMatch s -> ( model, Effects.none )
 
 -- VIEW
 
@@ -46,18 +52,6 @@ view : Signal.Address Action -> Model -> Html
 view address model =
     div [ id "filters" ]
         [ div [ class "row" ]
-            [ div [ class "col-xs-6" ]
-                [ h2 [ ] [ text "Criteria selection" ] ]
-            , div [ class "col-sm-3 col-sm-offset-3 searchInit" ]
-                [ button
-                    [ type' "button"
-                    , class "btn btn-primary"
-                    , onClick address (GetMatch model)
-                    ]
-                    [ text "Search!" ]
-                ]
-            ]
-        , div [ class "row" ]
             [ div [ class "col-sm-3" ]
                 [ searchView address model ]
             , div [ class "col-sm-3" ]
@@ -65,18 +59,24 @@ view address model =
             , div [ class "col-sm-3" ]
                 [ fteView address model.fte ]
             , div [ class "col-sm-3" ]
-                [ p [] [ ] ]
+                [ budgetView address model.budget ]
             ]
-        -- , submitRow address model
+        , div [ class "row" ]
+            -- [ div [ class "col-xs-6" ]
+            --     [ h2 [ ] [ text "Criteria selection" ] ]
+            [ div [ class "col-sm-3 col-sm-offset-9 searchInit" ]
+                [ button
+                    [ class "btn btn-primary"
+                    , onClick address (GetMatch model)
+                    ] [ text "Search!" ]
+                ]
+            ]
         ]
 
--- on : String -> Json.Decode.Decoder Action -> (Action -> Message) -> Attribute
--- Signal.message : Address Action -> (Action -> Message)
--- onClick : Signal.Address Action -> Action -> Attribute
 searchView : Signal.Address Action -> Model -> Html
 searchView address model =
     div [  ]
-        [ h4 [] [ text "Search" ]
+        [ h4 [] [ text "Search by name" ]
         , input
             [ type' "text"
             , class "form-control"
@@ -99,15 +99,35 @@ sectionView address =
 fteView : Signal.Address Action -> String -> Html
 fteView address val =
     div []
-        [ h4 [] [ text <| "FTE (at least " ++ val ++ ")" ]
+        [ h4 []
+            [ text "Staff"
+            , span [] [ text <| " (at least " ++ val ++ " FTEs)" ]
+            ]
         , input
             [ type' "range"
             , Attr.min "0"
-            , Attr.max "20"
+            , Attr.max "40"
             , Attr.step "2"
             , Attr.value val
             , on "change" (Json.map FTE targetValue) (Signal.message address)
-            ] [ text "6"]
+            ] []
+        ]
+
+budgetView : Signal.Address Action -> String -> Html
+budgetView address val =
+    div []
+        [ h4 []
+            [ text "Budget"
+            , span [] [ text <| " (at least €" ++ val ++ ")" ]
+            ]
+        , input
+            [ type' "range"
+            , Attr.min "0"
+            , Attr.max "10000000"
+            , Attr.step "500000"
+            , Attr.value val
+            , on "change" (Json.map Budget targetValue) (Signal.message address)
+            ] []
         ]
 
 submitRow : Signal.Address Action -> Model -> Html

@@ -1,14 +1,15 @@
 var	gulp           = require('gulp'),
 	nodemon        = require('gulp-nodemon'),
 	concat         = require('gulp-concat'),
+	uglify		= require('gulp-minify-css'),
 	jade           = require('gulp-jade'),
 	browserSync    = require('browser-sync').create(),
 	sourcemaps     = require('gulp-sourcemaps'),
 	sass           = require('gulp-sass'),
-	clean          = require('gulp-clean'),
+	// clean          = require('gulp-clean'),
 	elm            = require('gulp-elm'),
-	inject         = require('gulp-inject');
-var runSequence    = require('run-sequence');
+	// inject         = require('gulp-inject'),
+	runSequence    = require('run-sequence');
 
 var paths = {
 	compileDestination: "dist",
@@ -52,9 +53,10 @@ gulp.task('home', function() {
 });
 
 gulp.task('sass', function() {
-	return gulp.src(paths.scss)
+	return gulp.src('src/styles.scss')
 	.pipe(sass().on('error', sass.logError))
 	.pipe(concat('styles.css'))
+	.pipe(uglify())
 	.pipe(gulp.dest(paths.compileDestination))
 	.pipe(browserSync.stream()); 			// injects new styles without page reload!
 });

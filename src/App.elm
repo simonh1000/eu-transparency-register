@@ -2,6 +2,7 @@ module App (Action(UrlParam), init, update, view) where
 
 import Html exposing (..)
 import Html.Attributes exposing (class)
+import Html.Events exposing (onClick)
 import String exposing (split)
 
 import Effects exposing (Effects)
@@ -10,6 +11,7 @@ import Task exposing (..)
 import Filters.Filters as Filters exposing (Action(..))
 import Matches.Matches as Matches exposing (Action(..))
 import Entries.Entries as Entries exposing (Action(..))
+import Help
 
 -- MODEL
 
@@ -18,6 +20,7 @@ type alias Model =
     , matches : Matches.Model
     , entries : Entries.Model
     , message : String
+    , help    : Bool
     }
 
 init : (Model, Effects Action)
@@ -26,6 +29,7 @@ init =
       , matches = Matches.init
       , entries = Entries.init
       , message = "Initialising"
+      , help = False
       }
     , Effects.none )
 
@@ -36,6 +40,7 @@ type Action =
     | MatchAction Matches.Action
     | EntryAction Entries.Action
     | UrlParam String
+    | Help
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
@@ -77,13 +82,27 @@ update action model =
             in  ( { model | entries <- fst entries' }
                 , Effects.map EntryAction <| snd <| entries'
                 )
+        Help ->
+            ( { model | help <- not model.help }
+            , Effects.none
+            )
 
 -- VIEW
 
 view : Signal.Address Action -> Model -> Html
 view address model =
+    let
+        help =
+            button
+                [ class "btn btn-default btn-xs"
+                , onClick address Help
+                ] [ text "Notes, privacy & source code" ]
+    in
     div [ class "container" ]
         [ nav [] [ h1 [] [ text "European Lobby Register" ] ]
+        , if model.help
+            then Help.content (Signal.forwardTo address (\_ -> Help))
+            else div [] []
         , Filters.view (Signal.forwardTo address FilterAction) model.filters
         , div [ class "row main" ]
             [ div [ class "col-sm-4" ]
@@ -91,5 +110,5 @@ view address model =
             , div [ class "col-sm-8" ]
                 [ Entries.view (Signal.forwardTo address EntryAction) model.entries ]
             ]
-        , p [ ] [ text model.message ]
+        , help
         ]

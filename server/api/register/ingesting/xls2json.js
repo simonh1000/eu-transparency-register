@@ -90,12 +90,8 @@ function writeJson(fname, cb) {
 
 	var worksheet = wbook.Sheets[SHEET_NAME];
 
-	// worksheet = rewriteHeaders(worksheet);
-	// let json = XLSX.utils.sheet_to_json(worksheet);
-
 	let json = XLSX.utils.sheet_to_json(worksheet, {header:headers, range:1});
 
-	// console.log(json[1]);
 	return cb(json);
 }
 
@@ -108,6 +104,10 @@ function getJson(fname, cb) {
 
 exports.updateAll = getJson;
 exports.test = writeJson;
+
+
+
+
 // function rewriteHeaders(sheet) {
 //
 // 	headers.forEach( (newHeader, col) => {
