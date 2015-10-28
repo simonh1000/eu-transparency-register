@@ -28,7 +28,8 @@ gulp.task('serve', function(cb){
 	return nodemon({
 		"script": 'server/bin/www',     // port 5000 by default
 	    "watch": paths.server,
-		"ext": "js"
+		"ext": "js",
+		"env": require("./ignore/settings")
 	})
 	.on('start', function () {
 		if (!called) {

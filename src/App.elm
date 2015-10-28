@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import String exposing (split)
+import List exposing (filter)
 
 import Effects exposing (Effects)
 import Task exposing (..)
@@ -45,7 +46,7 @@ type Action =
 update : Action -> Model -> (Model, Effects Action)
 update action model =
     let
-        getEffect id_ =
+        getEntryEffect id_ =
             Effects.map EntryAction <| snd <| Entries.update (GetEntryFor id_) model.entries
     in
     case action of
@@ -53,7 +54,9 @@ update action model =
             ( { model | message <- str }
             -- , Effects.none
             -- , Effects.map EntryAction <| snd <| Entries.update (GetEntryFor str) model.entries
-            , List.map getEffect (split "/" str)
+            , split "/" str
+                |> filter (\x -> x /= "")
+                |> List.map getEntryEffect
                 |> Effects.batch
             )
         FilterAction (GetMatch searchModel) ->
@@ -67,7 +70,7 @@ update action model =
 
         MatchAction (GetEntry id) ->
             ( { model | message <- "get entry for " ++ id }
-            , getEffect id
+            , getEntryEffect id
             )
         MatchAction matchAction ->
             let
@@ -96,7 +99,7 @@ view address model =
             button
                 [ class "btn btn-default btn-xs"
                 , onClick address Help
-                ] [ text "Notes, privacy & source code" ]
+                ] [ text "Notes, privacy, source code or report a problem" ]
     in
     div [ class "container" ]
         [ nav [] [ h1 [] [ text "European Lobby Register" ] ]

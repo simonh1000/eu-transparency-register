@@ -35,11 +35,16 @@ update : Action -> Model -> (Model, Effects Action)
 update action model =
     case action of
         GetMatchFor searchModel ->
-            ( model, getMatches searchModel)
+            ( { model | matches <- [], message <- "Searching...." }
+            , getMatches searchModel)
         MatchesReceived (Result.Ok ms) ->
-            ( { model  | matches <- ms }, Effects.none )
+            ( { model |
+                matches <- ms,
+                message <- if List.length ms == 0 then "No results found" else "" }
+            , Effects.none )
         MatchesReceived (Result.Err msg) ->
-            ( model, Effects.none )
+            ( { model | message <- "An error has occurred. Try again or report to author" }
+            , Effects.none )
 
 view : Signal.Address Action -> Model -> Html
 view address model =

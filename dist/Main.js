@@ -40,7 +40,7 @@ Elm.App.make = function (_elm) {
    var update = F2(function (action,
    model) {
       return function () {
-         var getEffect = function (id_) {
+         var getEntryEffect = function (id_) {
             return $Effects.map(EntryAction)($Basics.snd(A2($Entries$Entries.update,
             $Entries$Entries.GetEntryFor(id_),
             model.entries)));
@@ -91,7 +91,7 @@ Elm.App.make = function (_elm) {
                                             "get entry for ",
                                             action._0._0)]],
                            model)
-                           ,_1: getEffect(action._0._0)};}
+                           ,_1: getEntryEffect(action._0._0)};}
                  return function () {
                     var matches$ = A2($Matches$Matches.update,
                     action._0,
@@ -107,13 +107,13 @@ Elm.App.make = function (_elm) {
                       ,_0: _U.replace([["message"
                                        ,action._0]],
                       model)
-                      ,_1: $Effects.batch(A2($List.map,
-                      getEffect,
-                      A2($String.split,
+                      ,_1: $Effects.batch($List.map(getEntryEffect)($List.filter(function (x) {
+                         return !_U.eq(x,"");
+                      })(A2($String.split,
                       "/",
-                      action._0)))};}
+                      action._0))))};}
             _U.badCase($moduleName,
-            "between lines 51 and 88");
+            "between lines 52 and 91");
          }();
       }();
    });
@@ -129,7 +129,7 @@ Elm.App.make = function (_elm) {
                       ,A2($Html$Events.onClick,
                       address,
                       Help)]),
-         _L.fromArray([$Html.text("Notes, privacy & source code")]));
+         _L.fromArray([$Html.text("Notes, privacy, source code or report a problem")]));
          return A2($Html.div,
          _L.fromArray([$Html$Attributes.$class("container")]),
          _L.fromArray([A2($Html.nav,
@@ -3846,7 +3846,7 @@ Elm.Help.make = function (_elm) {
    var content = function (address) {
       return A2($Html.div,
       _L.fromArray([$Html$Attributes.$class("help-modal")]),
-      _L.fromArray([$Markdown.toHtml("\n\n# Notes\n\nThis project uses information from the [European Union Transparency Register](http://ec.europa.eu/transparencyregister/public/homePage.do), which is made freely available to third parties under the EU\'s open data policy. The data on this site is updated frequently with the latest information made avaialble by the Commission.\n\nI have sought to focus on key pieces of information in the Register and to provide a better ability to compare registrees.\n\nIn order to provide the budget comparisons, I use the costs data provided by registrees or, if that is not provided, the mid-point of the budget range that was selected.\n\nPlease provide feedback via the blog entry announcing this service.\n\n## Privacy\n\nThis site uses the Google Analytics cookie.\n\n## Open source\n\nThe code for this site is freely available on [Github](...).\n\n")
+      _L.fromArray([$Markdown.toHtml("\n\n# Notes\n\nThis project uses information from the [European Union Transparency Register](http://ec.europa.eu/transparencyregister/public/homePage.do), which is made freely available to third parties under the EU\'s open data policy. The data on this site is updated frequently with the latest information made avaialble by the Commission.\n\nI have sought to focus on key pieces of information in the Register and to provide a better ability to compare registrees.\n\nIn order to provide the budget comparisons, I use the costs data provided by registrees or, if that is not provided, the mid-point of the budget range that was selected.\n\nPlease provide feedback via the [blog]() announcing this service.\n\n## Privacy\n\nThis site uses the Google Analytics cookie.\n\n## Open source\n\nThe code for this site is freely available on [Github](...).\n\n")
                    ,A2($Html.button,
                    _L.fromArray([$Html$Attributes.$class("btn btn-default")
                                 ,A2($Html$Events.onClick,
@@ -5790,23 +5790,31 @@ Elm.Matches.Matches.make = function (_elm) {
          switch (action.ctor)
          {case "GetMatchFor":
             return {ctor: "_Tuple2"
-                   ,_0: model
+                   ,_0: _U.replace([["matches"
+                                    ,_L.fromArray([])]
+                                   ,["message","Searching...."]],
+                   model)
                    ,_1: getMatches(action._0)};
             case "MatchesReceived":
             switch (action._0.ctor)
               {case "Err":
                  return {ctor: "_Tuple2"
-                        ,_0: model
+                        ,_0: _U.replace([["message"
+                                         ,"An error has occurred. Try again or report to author"]],
+                        model)
                         ,_1: $Effects.none};
                  case "Ok":
                  return {ctor: "_Tuple2"
                         ,_0: _U.replace([["matches"
-                                         ,action._0._0]],
+                                         ,action._0._0]
+                                        ,["message"
+                                         ,_U.eq($List.length(action._0._0),
+                                         0) ? "No results found" : ""]],
                         model)
                         ,_1: $Effects.none};}
               break;}
          _U.badCase($moduleName,
-         "between lines 36 and 42");
+         "between lines 36 and 47");
       }();
    });
    var GetMatchFor = function (a) {

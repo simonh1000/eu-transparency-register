@@ -21,7 +21,7 @@ I have sought to focus on key pieces of information in the Register and to provi
 
 In order to provide the budget comparisons, I use the costs data provided by registrees or, if that is not provided, the mid-point of the budget range that was selected.
 
-Please provide feedback via the blog entry announcing this service.
+Please provide feedback via the [blog]() announcing this service.
 
 ## Privacy
 

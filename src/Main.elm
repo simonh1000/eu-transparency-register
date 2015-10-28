@@ -4,7 +4,6 @@ import StartApp
 
 import Effects exposing (Never)
 import Task
-import History
 import Time
 
 import App exposing (init, update, view, Action)
