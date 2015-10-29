@@ -79,19 +79,31 @@ Elm.App.make = function (_elm) {
                case "Help":
                return {ctor: "_Tuple2"
                       ,_0: _U.replace([["help"
-                                       ,$Basics.not(model.help)]],
+                                       ,$Basics.not(model.help)]
+                                      ,["message",""]],
                       model)
                       ,_1: $Effects.none};
                case "MatchAction":
                switch (action._0.ctor)
                  {case "GetEntry":
-                    return {ctor: "_Tuple2"
-                           ,_0: _U.replace([["message"
-                                            ,A2($Basics._op["++"],
-                                            "get entry for ",
-                                            action._0._0)]],
-                           model)
-                           ,_1: getEntryEffect(action._0._0)};}
+                    return function () {
+                         var $ = A2($Entries$Entries.update,
+                         $Entries$Entries.GetEntryFor(action._0._0),
+                         model.entries),
+                         newModel = $._0,
+                         newEffects = $._1;
+                         return {ctor: "_Tuple2"
+                                ,_0: _U.replace([["entries"
+                                                 ,newModel]
+                                                ,["message"
+                                                 ,A2($Basics._op["++"],
+                                                 "get entry for ",
+                                                 action._0._0)]],
+                                model)
+                                ,_1: A2($Effects.map,
+                                EntryAction,
+                                newEffects)};
+                      }();}
                  return function () {
                     var matches$ = A2($Matches$Matches.update,
                     action._0,
@@ -113,7 +125,7 @@ Elm.App.make = function (_elm) {
                       "/",
                       action._0))))};}
             _U.badCase($moduleName,
-            "between lines 52 and 91");
+            "between lines 52 and 94");
          }();
       }();
    });
@@ -2198,7 +2210,7 @@ Elm.Entries.Entries.make = function (_elm) {
                id,
                model.cache),
                $ = _raw.ctor === "Just" ? _raw : _U.badCase($moduleName,
-               "on line 116, column 32 to 50"),
+               "on line 119, column 32 to 50"),
                entry = $._0;
                return A2($Entries$Entry.view,
                A2($Signal.forwardTo,
@@ -2291,7 +2303,7 @@ Elm.Entries.Entries.make = function (_elm) {
                     action._0,
                     model.cache),
                     $ = _raw.ctor === "Just" ? _raw : _U.badCase($moduleName,
-                    "on line 93, column 32 to 50"),
+                    "on line 96, column 32 to 50"),
                     entry = $._0;
                     var newEntry = A2($Entries$Entry.update,
                     action._1,
@@ -2346,7 +2358,7 @@ Elm.Entries.Entries.make = function (_elm) {
                       ,_0: model
                       ,_1: $Effects.none};}
             _U.badCase($moduleName,
-            "between lines 57 and 101");
+            "between lines 60 and 104");
          }();
       }();
    });
@@ -5777,7 +5789,7 @@ Elm.Matches.Matches.make = function (_elm) {
                                                    ,_0: "section"
                                                    ,_1: model.section}]));
          var query = A2($Http.url,
-         "http://localhost:3000/api/register/searchmore/",
+         "/api/register/searchmore/",
          searchTerms);
          return $Effects.task($Task.map(MatchesReceived)($Task.toResult(A2($Http.get,
          $Matches$MatchesDecoder.matchesDecoder,

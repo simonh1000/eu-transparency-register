@@ -43,6 +43,9 @@ type Action =
 update : Action -> Model -> (Model, Effects Action)
 update action model =
     let
+        -- addMessage : String -> Model -> Model
+        -- addMessage str model = { model | message <- str ++ model.message }
+
         insertEntry : String -> (Model, Effects Action)
         insertEntry id =
             let newDisplayed = id :: model.displayed
@@ -55,13 +58,13 @@ update action model =
             )
     in
     case action of
-        GetEntryFor id ->
+        GetEntryFor id -> --( { model | message <- "GetEntryFor " ++ model.message }, Effects.none )
           if | List.member id model.displayed ->        -- already showing, ignore click
                 ( model, Effects.none )
              | Dict.member id model.cache ->            -- cached
                 insertEntry id
              | otherwise ->
-                (model, loadEntry id )
+                ( model, loadEntry id )
         EntryReceived (Result.Ok entry) ->
             let (newModel, newEffects) = insertEntry entry.id
             in
@@ -124,9 +127,10 @@ view address model =
                 , class "btn btn-default btn-xs closeAll" ]
                 [ text "Close All" ]
             ]
+        -- , p [] [ text <| toString model.message ]
+        -- , p [] [ text <| toString model.displayed ]
         , div [ class "eContainer" ]
             <| List.map viewMapper model.displayed
-        -- , p [] [ text <| toString model.displayed ]
         ]
 
 -- TASKS

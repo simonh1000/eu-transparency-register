@@ -68,9 +68,12 @@ update action model =
                 filters' = Filters.update filterAction model.filters
             in ( { model | filters <- fst filters'}, Effects.none )
 
-        MatchAction (GetEntry id) ->
-            ( { model | message <- "get entry for " ++ id }
-            , getEntryEffect id
+        MatchAction (GetEntry id) ->                        -- redirect click on a match
+            let (newModel, newEffects) = Entries.update (GetEntryFor id) model.entries
+            in
+            ( { model | entries <- newModel, message <- "get entry for " ++ id }
+            , Effects.map EntryAction newEffects
+            -- , getEntryEffect id
             )
         MatchAction matchAction ->
             let
@@ -86,7 +89,7 @@ update action model =
                 , Effects.map EntryAction <| snd <| entries'
                 )
         Help ->
-            ( { model | help <- not model.help }
+            ( { model | help <- not model.help, message <- "" }
             , Effects.none
             )
 
@@ -113,5 +116,6 @@ view address model =
             , div [ class "col-sm-8" ]
                 [ Entries.view (Signal.forwardTo address EntryAction) model.entries ]
             ]
+        -- , p [] [ text model.message ]
         , help
         ]

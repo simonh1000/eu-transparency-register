@@ -71,7 +71,7 @@ getMatches model =
                 then []
                 else [("section", model.section)]
         query =
-            Http.url "http://localhost:3000/api/register/searchmore/" searchTerms
+            Http.url "/api/register/searchmore/" searchTerms
     in
     Http.get matchesDecoder query
     -- Http.get matchesDecoder ("http://localhost:3000/api/register/search/" ++ s)

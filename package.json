@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Elm Express starter",
   "scripts": {
-    "start": "gulp"
+    "start": "node server/bin/www"
   },
   "engines": {
     "node": "4.x"
