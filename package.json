@@ -1,7 +1,7 @@
 {
-  "name": "elm-express-starter",
+  "name": "eu-transparency-register",
   "version": "1.0.0",
-  "description": "Elm Express starter",
+  "description": "EU Transparency register",
   "scripts": {
     "start": "node server/bin/www"
   },

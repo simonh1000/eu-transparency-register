@@ -21,7 +21,7 @@ I have sought to focus on key pieces of information in the Register and to provi
 
 In order to provide the budget comparisons, I use the costs data provided by registrees or, if that is not provided, the mid-point of the budget range that was selected.
 
-Please provide feedback via the [blog]() announcing this service.
+Please provide feedback via the [blog](https://digitalusers.wordpress.com/2015/10/29/making-the-eu-transparency-register-more-functional/) announcing this service.
 
 ## Privacy
 

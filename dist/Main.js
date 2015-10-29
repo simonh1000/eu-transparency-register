@@ -3865,7 +3865,7 @@ Elm.Help.make = function (_elm) {
    var content = function (address) {
       return A2($Html.div,
       _L.fromArray([$Html$Attributes.$class("help-modal")]),
-      _L.fromArray([$Markdown.toHtml("\n\n# Notes\n\nThis project uses information from the [European Union Transparency Register](http://ec.europa.eu/transparencyregister/public/homePage.do), which is made freely available to third parties under the EU\'s open data policy. The data on this site is updated frequently with the latest information made avaialble by the Commission.\n\nI have sought to focus on key pieces of information in the Register and to provide a better ability to compare registrees.\n\nIn order to provide the budget comparisons, I use the costs data provided by registrees or, if that is not provided, the mid-point of the budget range that was selected.\n\nPlease provide feedback via the [blog]() announcing this service.\n\n## Privacy\n\nThis site uses the Google Analytics cookie.\n\n## Open source\n\nThe code for this site is freely available on [Github](...).\n\n")
+      _L.fromArray([$Markdown.toHtml("\n\n# Notes\n\nThis project uses information from the [European Union Transparency Register](http://ec.europa.eu/transparencyregister/public/homePage.do), which is made freely available to third parties under the EU\'s open data policy. The data on this site is updated frequently with the latest information made avaialble by the Commission.\n\nI have sought to focus on key pieces of information in the Register and to provide a better ability to compare registrees.\n\nIn order to provide the budget comparisons, I use the costs data provided by registrees or, if that is not provided, the mid-point of the budget range that was selected.\n\nPlease provide feedback via the [blog](https://digitalusers.wordpress.com/2015/10/29/making-the-eu-transparency-register-more-functional/) announcing this service.\n\n## Privacy\n\nThis site uses the Google Analytics cookie.\n\n## Open source\n\nThe code for this site is freely available on [Github](...).\n\n")
                    ,A2($Html.button,
                    _L.fromArray([$Html$Attributes.$class("btn btn-default")
                                 ,A2($Html$Events.onClick,
@@ -5796,7 +5796,7 @@ Elm.Matches.Matches.make = function (_elm) {
                                                    ,_0: "section"
                                                    ,_1: model.section}]));
          var query = A2($Http.url,
-         "/api/register/searchmore/",
+         "/api/register/search/",
          searchTerms);
          return $Effects.task($Task.map(MatchesReceived)($Task.toResult(A2($Http.get,
          $Matches$MatchesDecoder.matchesDecoder,

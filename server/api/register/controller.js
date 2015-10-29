@@ -1,17 +1,10 @@
 /* globals require, console, setTimeout, exports */
 
 "use strict";
-// var express = require('express');
-// var router = express.Router();
 
 var mongoClient = require('mongodb');
+var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:27017/lobby";
 var coll;
-
-var mongoUrl = process.env.MONGO_URI || "mongodb://localhost/lobby";
-
-var delaySend = function(data, res) {
-	setTimeout(() => res.send(data), 1000);
-};
 
 mongoClient.connect(mongoUrl, function(err, db) {
 	if (err) throw err;
@@ -19,6 +12,10 @@ mongoClient.connect(mongoUrl, function(err, db) {
 	console.log("Connected to database", mongoUrl);
 	coll = db.collection('lobby');
 });
+
+// var delaySend = function(data, res) {
+// 	setTimeout(() => res.send(data), 1000);
+// };
 
 exports.search = (req, res) => {
 	let query = req.query;
@@ -41,8 +38,8 @@ exports.search = (req, res) => {
 	.toArray( (err, data) => {
 		if (err) throw err;
 
-		delaySend(data, res);
-		// res.send(data);
+		// delaySend(data, res);
+		res.send(data);
 	});
 };
 
@@ -70,25 +67,7 @@ exports.test = (req, res) => {
 	});
 };
 
-
-// exports.exports = router;
-
 /*
-{
-router.get('/search/:orgname', (req, res) => {
-	let orgname = req.params.orgname;
-	console.log(orgname);
-
-	coll.find(
-		{'orgName': {'$regex': orgname, $options: 'i'}},
-		{'orgName': 1}
-	)
-	.toArray( (err, data) => {
-		if (err) throw err;
-		// console.log(data);
-		res.send(data);
-	});
-});
 
 	"_id" : "917164011274-14",
 	"regDate" : "06/06/2013",

@@ -9,10 +9,4 @@ elm-package install
 
 gulp
 ```
-See also this [blog post]()
-
-GAFA http://localhost:3000/03181945560-59/588327811384-96/28666427835-74/366117914426-10
-GAFAM http://localhost:3000/0801162959-21/366117914426-10/28666427835-74/03181945560-59/588327811384-96
-social partners http://localhost:3000/06698681039-26/3978240953-79
-consultants http://localhost:3000/9155503593-86/56047191389-84/7223777790-86/81995781088-41
-NGOs http://localhost:3000/11063928073-34/9832909575-41/1414929419-24/16311905144-06/71149477682-53
+See also this [blog post](https://digitalusers.wordpress.com/2015/10/29/making-the-eu-transparency-register-more-functional/)
