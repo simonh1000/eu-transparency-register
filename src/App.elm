@@ -52,28 +52,27 @@ update action model =
     case action of
         UrlParam str ->
             ( { model | message <- str }
-            -- , Effects.none
-            -- , Effects.map EntryAction <| snd <| Entries.update (GetEntryFor str) model.entries
             , split "/" str
                 |> filter (\x -> x /= "")
-                |> List.map getEntryEffect
+                |> List.map getEntryEffect      -- *** RISK OF LOSING MODEL DATA ****
                 |> Effects.batch
             )
-        FilterAction (GetMatch searchModel) ->
-            ( model
-            , Effects.map MatchAction <| snd <| Matches.update (GetMatchFor searchModel) model.matches
+        FilterAction (GetMatch searchModel) ->              -- redirect on search
+            let (newMatchModel, newMatchEffects) = Matches.update (GetMatchFor searchModel) model.matches
+            in
+            ( { model | matches <- newMatchModel }
+            , Effects.map MatchAction <| newMatchEffects
             )
         FilterAction filterAction ->
-            let
-                filters' = Filters.update filterAction model.filters
-            in ( { model | filters <- fst filters'}, Effects.none )
+            let filters' = Filters.update filterAction model.filters
+            in
+            ( { model | filters <- fst filters'}, Effects.none )
 
         MatchAction (GetEntry id) ->                        -- redirect click on a match
             let (newModel, newEffects) = Entries.update (GetEntryFor id) model.entries
             in
             ( { model | entries <- newModel, message <- "get entry for " ++ id }
             , Effects.map EntryAction newEffects
-            -- , getEntryEffect id
             )
         MatchAction matchAction ->
             let

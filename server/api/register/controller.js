@@ -10,7 +10,7 @@ var coll;
 var mongoUrl = process.env.MONGO_URI || "mongodb://localhost/lobby";
 
 var delaySend = function(data, res) {
-	setTimeout(() => res.send(data), 0);
+	setTimeout(() => res.send(data), 1000);
 };
 
 mongoClient.connect(mongoUrl, function(err, db) {
@@ -20,7 +20,7 @@ mongoClient.connect(mongoUrl, function(err, db) {
 	coll = db.collection('lobby');
 });
 
-exports.searchmore = (req, res) => {
+exports.search = (req, res) => {
 	let query = req.query;
 
 	let queryObj = {};
@@ -41,8 +41,8 @@ exports.searchmore = (req, res) => {
 	.toArray( (err, data) => {
 		if (err) throw err;
 
-		// delaySend(data, res);
-		res.send(data);
+		delaySend(data, res);
+		// res.send(data);
 	});
 };
 

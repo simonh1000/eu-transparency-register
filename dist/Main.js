@@ -61,11 +61,18 @@ Elm.App.make = function (_elm) {
                case "FilterAction":
                switch (action._0.ctor)
                  {case "GetMatch":
-                    return {ctor: "_Tuple2"
-                           ,_0: model
-                           ,_1: $Effects.map(MatchAction)($Basics.snd(A2($Matches$Matches.update,
-                           $Matches$Matches.GetMatchFor(action._0._0),
-                           model.matches)))};}
+                    return function () {
+                         var $ = A2($Matches$Matches.update,
+                         $Matches$Matches.GetMatchFor(action._0._0),
+                         model.matches),
+                         newMatchModel = $._0,
+                         newMatchEffects = $._1;
+                         return {ctor: "_Tuple2"
+                                ,_0: _U.replace([["matches"
+                                                 ,newMatchModel]],
+                                model)
+                                ,_1: $Effects.map(MatchAction)(newMatchEffects)};
+                      }();}
                  return function () {
                     var filters$ = A2($Filters$Filters.update,
                     action._0,
@@ -125,7 +132,7 @@ Elm.App.make = function (_elm) {
                       "/",
                       action._0))))};}
             _U.badCase($moduleName,
-            "between lines 52 and 94");
+            "between lines 52 and 93");
          }();
       }();
    });
@@ -2245,7 +2252,7 @@ Elm.Entries.Entries.make = function (_elm) {
       return $Effects.task($Task.map(EntryReceived)($Task.toResult(A2($Http.get,
       $Entries$EntryDecoder.entryDecoder,
       A2($Basics._op["++"],
-      "http://localhost:3000/api/register/id/",
+      "/api/register/id/",
       id)))));
    };
    var update = F2(function (action,
@@ -5761,12 +5768,12 @@ Elm.Matches.Matches.make = function (_elm) {
       _L.fromArray([A2($Html.h2,
                    _L.fromArray([]),
                    _L.fromArray([$Html.text("Search results")]))
-                   ,$Html.div(_L.fromArray([$Html$Attributes.$class("mContainer")]))(A2($List.map,
-                   viewMatch(address),
-                   model.matches))
                    ,A2($Html.p,
                    _L.fromArray([]),
-                   _L.fromArray([$Html.text(model.message)]))]));
+                   _L.fromArray([$Html.text(model.message)]))
+                   ,$Html.div(_L.fromArray([$Html$Attributes.$class("mContainer")]))(A2($List.map,
+                   viewMatch(address),
+                   model.matches))]));
    });
    var MatchesReceived = function (a) {
       return {ctor: "MatchesReceived"

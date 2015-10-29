@@ -137,7 +137,7 @@ view address model =
 
 loadEntry : Id -> Effects Action
 loadEntry id =
-    Http.get entryDecoder ("http://localhost:3000/api/register/id/" ++ id)
+    Http.get entryDecoder ("/api/register/id/" ++ id)
         |> Task.toResult
         |> Task.map EntryReceived
         |> Effects.task

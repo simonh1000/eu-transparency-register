@@ -50,8 +50,8 @@ view : Signal.Address Action -> Model -> Html
 view address model =
     div [ id "matches" ]
         [ h2 [] [ text "Search results" ]
-        , div [ class "mContainer" ] <| List.map (viewMatch address) model.matches
         , p [] [ text model.message ]
+        , div [ class "mContainer" ] <| List.map (viewMatch address) model.matches
         ]
 
 viewMatch : Signal.Address Action -> Match -> Html
