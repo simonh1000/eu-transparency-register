@@ -2,16 +2,12 @@ module Help (content) where
 
 import Markdown
 import Html exposing (..)
-import Html.Attributes exposing (class)
-import Html.Events exposing (onClick)
+-- import Html.Attributes exposing (class)
+-- import Html.Events exposing (onClick)
 
-type Action = A
-
-content : Signal.Address Action -> Html
-content address =
-    div
-        [ class "help-modal" ]
-        [ Markdown.toHtml """
+content : Html
+content =
+    Markdown.toHtml """
 
 # Notes
 
@@ -32,8 +28,3 @@ This site uses the Google Analytics cookie.
 The code for this site is freely available on [Github](https://github.com/simonh1000/eu-transparency-register).
 
 """
-        , button
-            [ class "btn btn-default"
-            ,  onClick address A
-            ] [ text "Close" ]
-        ]

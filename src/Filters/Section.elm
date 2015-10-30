@@ -1,19 +1,16 @@
-module Filters.Section (sections, subsections) where
+module Filters.Section (..) where
 
-import Html exposing (..)
-import Html.Attributes exposing (class, id, type')
-import Html.Events exposing (onClick, on, targetValue)
+-- sections : List String
+-- sections =
+--     [ "I - Professional consultancies/law firms/self-employed consultants"
+--     , "II - In-house lobbyists and trade/business/professional associations"
+--     , "V - Organisations representing churches and religious communities"
+--     , "IV - Think tanks, research and academic institutions"
+--     , "III - Non-governmental organisations"
+--     , "VI - Organisations representing local, regional and municipal authorities, other public or mixed entities, etc."
+--     ]
 
-sections : List String
-sections =
-    [ "I - Professional consultancies/law firms/self-employed consultants"
-    , "II - In-house lobbyists and trade/business/professional associations"
-    , "V - Organisations representing churches and religious communities"
-    , "IV - Think tanks, research and academic institutions"
-    , "III - Non-governmental organisations"
-    , "VI - Organisations representing local, regional and municipal authorities, other public or mixed entities, etc."
-    ]
-
+subsections : List String
 subsections =
     [ "All"
     , "Professional consultancies"

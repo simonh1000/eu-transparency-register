@@ -92,11 +92,7 @@ update action model =
 
         -- E X P A N D
         EntryAction id entryAction ->    -- i.e. Expand
-            let
-                (Just entry) = get id model.cache
-                newEntry = Entry.update entryAction entry
-            in
-            ( { model | cache <- Dict.update id (\_ -> Just newEntry) model.cache }
+            ( { model | cache <- Dict.update id (Entry.update entryAction |> Maybe.map) model.cache }
             , Effects.none
             )
 

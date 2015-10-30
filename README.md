@@ -1,12 +1,11 @@
-# Elm - Express starter
+# EU Transparency Register in Elm
 
-Starter package with Elm and Express.
+See this [blog post](https://digitalusers.wordpress.com/2015/10/29/making-the-eu-transparency-register-more-functional/)
 
-Run
+To use, run
 ```
 npm install
 elm-package install
 
 gulp
 ```
-See also this [blog post](https://digitalusers.wordpress.com/2015/10/29/making-the-eu-transparency-register-more-functional/)

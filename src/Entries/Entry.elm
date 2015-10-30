@@ -63,19 +63,19 @@ view address model =
 viewMeta : Signal.Address Action -> EntryDecoder.Model -> Html
 viewMeta address entry =
     div [ class "row" ]
-        [ div [ class "col-xs-6 col-sm-3" ]
+        [ div []
             [ h4 [] [ text "Country" ]
             , p [] [ text entry.hqCountry ]
             ]
-        , div [ class "col-xs-6 col-sm-3" ]
+        , div []
             [ h4 [] [ text "Representative" ]
             , p [] [ text entry.euPerson ]
             ]
-        , div [ class "col-xs-6 col-sm-3" ]
+        , div []
             [ h4 [] [ text "Budget" ]
             , p [] [ text entry.costEst ]
             ]
-        , div [ class "col-xs-6 col-sm-3" ]
+        , div []
             [ h4 [] [ text "FTEs" ]
             , p [] [ text <| toString entry.noFTEs ]
             ]
@@ -84,11 +84,11 @@ viewMeta address entry =
 viewMore : Model -> Html
 viewMore model =
     div [ collapse model.expand ]
-        [ div [ class "col-sm-6" ]
+        [ div []
             [ h4 [] [ text "Goal" ]
             , p [] [ text model.data.goals ]
             ]
-        , div [ class "col-sm-6" ]
+        , div []
             [ h4 [] [ text "Memberships" ]
             , p [] [ text model.data.memberships ]
             ]
@@ -104,8 +104,8 @@ animationStyles entry =
 collapse : Bool -> Attribute
 collapse expand =
     if expand
-    then class "row collapse in"
-    else class "row collapse"
+    then class "collapse in"
+    else class "collapse"
 
 -- animationStyles : AnimationState -> Attribute
 -- animationStyles state =

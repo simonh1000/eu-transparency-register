@@ -1,12 +1,14 @@
 #entries {
+    flex: 2;
+    // overflow-y: scroll;
+    // min-height: 200px;
+    // max-height: 500px;
+
     border: 1px solid #bbb;
     padding: 10px 5px;
     padding: 10px;
     position: relative;
     z-index: 10;
-    overflow-y: scroll;
-    min-height: 200px;
-    max-height: 500px;
 
     header {
         position: relative;
@@ -56,27 +58,34 @@
             right: 10px;
         }
 
-        .row {
-            h4 {
-                font-weight: bold;
-                font-size: 85%
-            }
-            p {
-                font-size: 80%;
-            }
+        h4 {
+            font-weight: bold;
+            font-size: 85%
         }
+        p {
+            font-size: 80%;
+        }
+
         button.expandEntry {
             position: absolute;
             top: 75px;
             right: 10px;
+        }
+        .collapse.in {
+            display: flex;
+            & > div {
+                flex: 1;
+                padding: 0 15px;
+            }
+
         }
     }
 }
 
 @media (min-width: $screen-sm) {
     #entries {
-        height: 100%;
-        max-height: none;
+        // height: 100%;
+        // max-height: none;
         header {
             button.closeAll {
                 top: 0;

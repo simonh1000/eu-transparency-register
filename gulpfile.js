@@ -17,7 +17,8 @@ var paths = {
 	home    : ['src/index.jade'],
 	scss    : ['src/**/*.scss'],
 	elm     : "src/**/*.elm",
-	elmMain     : "src/Main.elm"
+	elmMain     : "src/Main.elm",
+	copy    : "src/Summary/d3.js"
 };
 
 /*
@@ -62,7 +63,12 @@ gulp.task('sass', function() {
 	.pipe(browserSync.stream()); 			// injects new styles without page reload!
 });
 
-gulp.task('compilation', ['home', 'sass']);
+gulp.task('copyjs', function() {
+	gulp.src(paths.copy)
+	.pipe(gulp.dest(paths.compileDestination));
+})
+
+gulp.task('compilation', ['home', 'sass', 'copyjs']);
 
 /*
  * E L M
@@ -92,6 +98,7 @@ gulp.task('compilation', ['home', 'sass']);
 
 	gulp.watch(paths.home, ['home']);
 	gulp.watch(paths.scss, ['sass']);
+	gulp.watch(paths.copy, ['copyjs']);
 	gulp.watch(paths.elm, ['elm-compile']);
 	gulp.watch(paths.compileDestination+"/*.{js,html}").on('change', browserSync.reload);
  });

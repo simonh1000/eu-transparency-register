@@ -4,91 +4,86 @@ import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import String exposing (split)
-import List exposing (filter)
+import List exposing (head, tail, filter)
 
 import Effects exposing (Effects)
-import Task exposing (..)
 
-import Filters.Filters as Filters exposing (Action(..))
-import Matches.Matches as Matches exposing (Action(..))
-import Entries.Entries as Entries exposing (Action(..))
+import Register exposing (Action(..))
+import Nav exposing (Page(..))
+import Summary.Summary as Summary exposing (Action(..))
 import Help
 
 -- MODEL
 
 type alias Model =
-    { filters : Filters.Model
-    , matches : Matches.Model
-    , entries : Entries.Model
-    , message : String
+    { page : Page
+    , register : Register.Model
+    , summary : Summary.Model
     , help    : Bool
     }
 
 init : (Model, Effects Action)
 init =
-    ( { filters = Filters.init
-      , matches = Matches.init
-      , entries = Entries.init
-      , message = "Initialising"
+    ( { page = Summary
+      , register = fst Register.init
+      , summary = fst Summary.init
       , help = False
       }
-    , Effects.none )
+    , Effects.map SummaryAction (snd Summary.init)
+    )
 
 -- UPDATE
 
 type Action =
-      FilterAction Filters.Action
-    | MatchAction Matches.Action
-    | EntryAction Entries.Action
-    | UrlParam String
+    UrlParam String
+    | RegisterAction Register.Action
+    | NavAction Nav.Action
+    | SummaryAction Summary.Action
     | Help
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
-    let
-        getEntryEffect id_ =
-            Effects.map EntryAction <| snd <| Entries.update (GetEntryFor id_) model.entries
-    in
     case action of
-        UrlParam str ->
-            ( { model | message <- str }
-            , split "/" str
-                |> filter (\x -> x /= "")
-                |> List.map getEntryEffect      -- *** RISK OF LOSING MODEL DATA ****
-                |> Effects.batch
-            )
-        FilterAction (GetMatch searchModel) ->              -- redirect on search
-            let (newMatchModel, newMatchEffects) = Matches.update (GetMatchFor searchModel) model.matches
-            in
-            ( { model | matches <- newMatchModel }
-            , Effects.map MatchAction <| newMatchEffects
-            )
-        FilterAction filterAction ->
-            let filters' = Filters.update filterAction model.filters
-            in
-            ( { model | filters <- fst filters'}, Effects.none )
-
-        MatchAction (GetEntry id) ->                        -- redirect click on a match
-            let (newModel, newEffects) = Entries.update (GetEntryFor id) model.entries
-            in
-            ( { model | entries <- newModel, message <- "get entry for " ++ id }
-            , Effects.map EntryAction newEffects
-            )
-        MatchAction matchAction ->
+        UrlParam str -> -- (model, Effects.none)
             let
-                matches' = Matches.update matchAction model.matches
-            in  ( { model | matches <- fst matches'}
-                , Effects.map MatchAction <| snd <| matches'
+                urlElems = filter ((/=) "") (split "/" str)
+            in
+            case head urlElems of
+                Just "summary" ->
+                    ( { model | page <- Summary }
+                    , Effects.map SummaryAction (snd Summary.init)
+                    )
+                Just _ ->
+                    let (newModel, newEffects) =
+                        Register.update (Register.UrlParam urlElems) model.register
+                    in  ( { model |
+                              register <- newModel
+                            , page <- Register }
+                        , Effects.map RegisterAction newEffects
+                        )
+                Nothing ->
+                    ( { model | page <- Register }
+                    , Effects.none
+                    )
+
+        NavAction navAction ->
+            ( { model | page <- Nav.update navAction }
+            , Effects.none   -- *************************
+            )
+
+        RegisterAction regAction ->
+            let (newModel, newEffects) = Register.update regAction model.register
+            in  ( { model | register <- newModel }
+                , Effects.map RegisterAction newEffects
                 )
 
-        EntryAction entryAction ->
-            let
-                entries' = Entries.update entryAction model.entries
-            in  ( { model | entries <- fst entries' }
-                , Effects.map EntryAction <| snd <| entries'
-                )
+        SummaryAction summaryAction ->
+            ( { model | summary <- fst <| Summary.update summaryAction model.summary }
+            , Effects.none
+            )
+
         Help ->
-            ( { model | help <- not model.help, message <- "" }
+            ( { model | help <- not model.help }
             , Effects.none
             )
 
@@ -96,25 +91,32 @@ update action model =
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-    let
-        help =
-            button
-                [ class "btn btn-default btn-xs"
-                , onClick address Help
-                ] [ text "Notes, privacy, source code or report a problem" ]
-    in
     div [ class "container" ]
-        [ nav [] [ h1 [] [ text "European Lobby Register" ] ]
-        , if model.help
-            then Help.content (Signal.forwardTo address (\_ -> Help))
-            else div [] []
-        , Filters.view (Signal.forwardTo address FilterAction) model.filters
-        , div [ class "row main" ]
-            [ div [ class "col-sm-4" ]
-                [ Matches.view (Signal.forwardTo address MatchAction) model.matches ]
-            , div [ class "col-sm-8" ]
-                [ Entries.view (Signal.forwardTo address EntryAction) model.entries ]
-            ]
-        -- , p [] [ text model.message ]
-        , help
+        [ Nav.navbar (Signal.forwardTo address NavAction)
+        , helpModal address model
+        , if model.page == Summary
+            then Summary.view (Signal.forwardTo address SummaryAction) model.summary
+            else Register.view (Signal.forwardTo address RegisterAction) model.register
+        , helpButton address
         ]
+
+helpButton : Signal.Address Action -> Html
+helpButton address =
+    footer []
+        [ button
+            [ class "btn btn-default btn-xs"
+            , onClick address Help
+            ] [ text "Notes, privacy, source code or report a problem" ]
+        ]
+
+helpModal : Signal.Address Action -> Model -> Html
+helpModal address model =
+    if model.help
+        then div [ class "help-modal" ]
+            [ Help.content
+            , button
+                [ class "btn btn-default"
+                ,  onClick address Help
+                ] [ text "Close" ]
+            ]
+        else div [] []
