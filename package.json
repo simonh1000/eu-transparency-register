@@ -1,6 +1,6 @@
 {
   "name": "eu-transparency-register",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "EU Transparency register",
   "scripts": {
     "start": "node server/bin/www"
