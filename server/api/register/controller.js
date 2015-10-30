@@ -4,13 +4,15 @@
 
 var mongoClient = require('mongodb');
 var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:27017/lobby";
-var coll;
+var register,
+	interests;
 
 mongoClient.connect(mongoUrl, function(err, db) {
 	if (err) throw err;
 
 	console.log("Connected to database", mongoUrl);
-	coll = db.collection('lobby');
+	register = db.collection('lobby');
+	interests = db.collection('interests');
 });
 
 // var delaySend = function(data, res) {
@@ -33,7 +35,7 @@ exports.search = (req, res) => {
 	console.log("Query:", query);
 	console.log("QueryObj:", queryObj);
 
-	coll.find(queryObj, {'orgName': 1})
+	register.find(queryObj, {'orgName': 1})
 	.sort({'orgName' : 1 })
 	.toArray( (err, data) => {
 		if (err) throw err;
@@ -47,7 +49,7 @@ exports.id = (req, res) => {
 	let id = req.params.id;
 
 	let myDoc =
-		coll.findOne({'_id': id})
+		register.findOne({'_id': id})
 		.then(data => {
 			// console.log(data);
 			// delaySend(data, res);
@@ -55,20 +57,27 @@ exports.id = (req, res) => {
 		});
 };
 
+exports.interests = (req, res) => {
+	interests.find({}, {_id:0})
+	.toArray( (err, data) => {
+		if (err) return res.status(500).end();
+		res.send(data);
+	} );
+};
+
 // test route
 // router.get('/', (req, res) => {
 exports.test = (req, res) => {
-	coll.find({'orgName': {'$regex': 'goog', $options: 'i'}})
+	register.find({'orgName': {'$regex': 'goog', $options: 'i'}})
 	.toArray( (err, data) => {
 		if (err) throw err;
-
 		// delaySend(data, res);
 		res.send(data);
 	});
 };
 
-/*
 
+/*
 	"_id" : "917164011274-14",
 	"regDate" : "06/06/2013",
 	"section" : "I - Professional consultancies/law firms/self-employed consultants",

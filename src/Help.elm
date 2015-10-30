@@ -29,7 +29,7 @@ This site uses the Google Analytics cookie.
 
 ## Open source
 
-The code for this site is freely available on [Github](...).
+The code for this site is freely available on [Github](https://github.com/simonh1000/eu-transparency-register).
 
 """
         , button

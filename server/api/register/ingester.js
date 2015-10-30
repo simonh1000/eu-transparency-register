@@ -18,58 +18,10 @@ var reqoptions = {
 
 const SHEET_NAME = 'LIST_REGISTRED_ORGANISATION';
 
-var headers = [ "_id"
-	, "regDate"
-	, "section"
-	, "subsection"
-	, "orgName"
-	, "legalStatus"
-	, "website"
-	, "hqCountry"
-	, "hqAddress"
-	, "hqCity"
-	, "hqPostCode"
-	, "hqBox"
-	, "hqPhone"
-	, "belAddress"
-	, "belCity"
-	, "belPostCode"
-	, "belBox"
-	, "belPhone"
-	, "legalPerson"
-	, "position"
-	, "euPerson"
-	, "euPersonPosition"
-	, "goals"
-	, "level"
-	, "initiatives"
-	, "Relevant communication"
-	, "High level groups"
-	, "Consultative committees"
-	, "Expert groups"
-	, "Intergroups"
-	, "forums"
-	, "noPersons"
-	, "noFTEs"
-	, "noEP"
-	, "epAccrdited"
-	, "interests"
-	, "memberships"
-	, "organisations"
-	, "Financial Start"
-	, "Financial End"
-	, "costsAbsolute"
-	, "costEst"
-	, "turnover"
-	, "turnoverRange"
-	, "clients"
-	, "procurement"
-	, "source"
-	, "grants"
-	, "grantsSource"];
+var headers = require('./field_headers').headers;
 
 // Downloads file to drive
-function download(fname, cb) {
+function getXls(fname, cb) {
 	return request(reqoptions)
 		.on('response', function(response) {
 			console.log("Downloading...")
@@ -85,7 +37,7 @@ function download(fname, cb) {
 		.pipe(fs.createWriteStream(fname + '.xls'));
 }
 
-function writeJson(fname, cb) {
+function xls2Json(fname, cb) {
 	console.log("Reading data");
 	var wbook = XLSX.readFile(fname+'.xls');
 	console.log("Converting to json...");
@@ -98,7 +50,7 @@ function writeJson(fname, cb) {
 }
 
 // Convert number fields to float, int
-function mapper(entry) {
+function jsonMapper(entry) {
 	function avg(str) {
 		if (str == ">10000000") return 10000000;
 
@@ -106,12 +58,10 @@ function mapper(entry) {
 		return Math.round((rs[0] + rs[1]) / 2);
 	}
 
-	let numbers = [
-		"noPersons",
-		"turnover"
-	];
-	numbers.forEach( num => entry[num] = parseInt(entry[num]) );
-
+	// interest areas
+	entry.interests = entry.interests.split(', ');
+	// numerical values
+	["noPersons", "turnover"].forEach( num => entry[num] = parseInt(entry[num]) );
 	entry.noFTEs = parseFloat(entry.noFTEs);
 
 	if (entry.costsAbsolute) {
@@ -144,21 +94,22 @@ function replaceDB(json, cb) {
 	});
 }
 
-function getJson(fname, cb) {
-	download(fname, () => writeJson(fname, cb) );
+function getNewData(fname, cb) {
+	getXls(fname, () => xls2Json(fname, cb) );
 };
 
-// Reads local file and puts in database
-// writeJson('./tmp', json => {
-// 	let json_conv = json.map(mapper);
-// 	replaceDB(json_conv);
-// });
+// function updateLocal(fname, cb) {
+// 	// Reads local file and puts in database
+// 	xls2Json(fname, json => {
+// 		let json_conv = json.map(jsonMapper);
+// 		replaceDB(json_conv, cb);
+// 	});
+// }
+// updateLocal('./tmp', () => console.log("done"))
 
 exports.index = function(req, res) {
-    getJson('./tmp', json => {
-    	let json_conv = json.map(mapper);
+    getNewData('./tmp', json => {
+    	let json_conv = json.map(jsonMapper);
     	replaceDB(json_conv, () => res.status(200).end());
     });
 };
-
-// exports.index();
