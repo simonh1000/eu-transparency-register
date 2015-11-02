@@ -78,9 +78,10 @@ update action model =
                 )
 
         SummaryAction summaryAction ->
-            ( { model | summary <- fst <| Summary.update summaryAction model.summary }
-            , Effects.none
-            )
+            let (newModel, newEffects) = Summary.update summaryAction model.summary
+            in  ( { model | summary <- newModel }
+                , Effects.map SummaryAction newEffects
+                )
 
         Help ->
             ( { model | help <- not model.help }

@@ -9,8 +9,9 @@ import Json.Decode exposing (Decoder, list, (:=), string, int, object2)
 import Http
 import Effects exposing (Effects)
 import Task
+import History
 
-import Chart.Chart exposing (..)
+import Chart.Chart exposing (hBar)
 
 -- MODEL
 
@@ -32,6 +33,7 @@ init = ( [], loadData )
 type Action =
       Activate
     | SummaryData (Result Http.Error Model)
+    | NoOp (Maybe ())
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
@@ -39,7 +41,9 @@ update action model =
         Activate ->
             (model, loadData)
         SummaryData (Result.Ok model) ->
-            ( model, Effects.none)
+            ( model, updateUrl )
+        -- URL  U P D A T E S
+        NoOp _ -> ( model, Effects.none )
 
 -- VIEW
 
@@ -47,7 +51,7 @@ view : Signal.Address Action -> Model -> Html
 view address model =
     let sorted = List.sortBy ( (\x -> -x) << .count) model
     in
-    chart
+    hBar
         (List.map (toFloat << .count) sorted)
         (List.map .interest sorted)
         "Number of registrants expressing interest in subject"
@@ -68,3 +72,11 @@ summaryDecoder =
         ("issue" := string)
         ("count" := int)
     |> list
+
+
+updateUrl : Effects Action
+updateUrl =
+    History.replacePath "/summary"
+        |> Task.toMaybe
+        |> Task.map NoOp
+        |> Effects.task
