@@ -24,16 +24,21 @@ Elm.App.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $String = Elm.String.make(_elm),
    $Summary$Summary = Elm.Summary.Summary.make(_elm);
+   var NoOp = function (a) {
+      return {ctor: "NoOp",_0: a};
+   };
    var Help = {ctor: "Help"};
    var helpButton = function (address) {
       return A2($Html.footer,
-      _L.fromArray([]),
+      _L.fromArray([$Html$Attributes.$class("row")]),
+      _L.fromArray([A2($Html.div,
+      _L.fromArray([$Html$Attributes.$class("col-xs-12")]),
       _L.fromArray([A2($Html.button,
       _L.fromArray([$Html$Attributes.$class("btn btn-default btn-xs")
                    ,A2($Html$Events.onClick,
                    address,
                    Help)]),
-      _L.fromArray([$Html.text("Notes, privacy, source code or report a problem")]))]));
+      _L.fromArray([$Html.text("Notes, privacy, source code or report a problem")]))]))]));
    };
    var helpModal = F2(function (address,
    model) {
@@ -72,10 +77,47 @@ Elm.App.make = function (_elm) {
                    model)
                    ,_1: $Effects.none};
             case "NavAction":
+            return function () {
+                 var newPage = $Nav.update(action._0);
+                 return _U.eq(newPage,
+                 model.page) ? {ctor: "_Tuple2"
+                               ,_0: model
+                               ,_1: $Effects.none} : _U.eq(newPage,
+                 $Nav.Summary) ? function () {
+                    var $ = A2($Summary$Summary.update,
+                    $Summary$Summary.Activate,
+                    model.summary),
+                    newModel = $._0,
+                    newEffects = $._1;
+                    return {ctor: "_Tuple2"
+                           ,_0: _U.replace([["page"
+                                            ,newPage]
+                                           ,["summary",newModel]],
+                           model)
+                           ,_1: A2($Effects.map,
+                           SummaryAction,
+                           newEffects)};
+                 }() : _U.eq(newPage,
+                 $Nav.Register) ? function () {
+                    var $ = A2($Register.update,
+                    $Register.UrlParam(_L.fromArray([])),
+                    model.register),
+                    newModel = $._0,
+                    newEffects = $._1;
+                    return {ctor: "_Tuple2"
+                           ,_0: _U.replace([["register"
+                                            ,newModel]
+                                           ,["page",$Nav.Register]],
+                           model)
+                           ,_1: A2($Effects.map,
+                           RegisterAction,
+                           newEffects)};
+                 }() : _U.badIf($moduleName,
+                 "between lines 78 and 93");
+              }();
+            case "NoOp":
             return {ctor: "_Tuple2"
-                   ,_0: _U.replace([["page"
-                                    ,$Nav.update(action._0)]],
-                   model)
+                   ,_0: model
                    ,_1: $Effects.none};
             case "RegisterAction":
             return function () {
@@ -117,9 +159,9 @@ Elm.App.make = function (_elm) {
                  "/",
                  action._0));
                  return function () {
-                    var _v5 = $List.head(urlElems);
-                    switch (_v5.ctor)
-                    {case "Just": switch (_v5._0)
+                    var _v6 = $List.head(urlElems);
+                    switch (_v6.ctor)
+                    {case "Just": switch (_v6._0)
                          {case "summary":
                             return {ctor: "_Tuple2"
                                    ,_0: _U.replace([["page"
@@ -150,17 +192,19 @@ Elm.App.make = function (_elm) {
                               model)
                               ,_1: $Effects.none};}
                     _U.badCase($moduleName,
-                    "between lines 51 and 69");
+                    "between lines 55 and 75");
                  }();
               }();}
          _U.badCase($moduleName,
-         "between lines 46 and 89");
+         "between lines 50 and 113");
       }();
    });
    var view = F2(function (address,
    model) {
       return A2($Html.div,
-      _L.fromArray([$Html$Attributes.$class("container")]),
+      _L.fromArray([$Html$Attributes.$class(A2($Basics._op["++"],
+      "container ",
+      $Basics.toString(model.page)))]),
       _L.fromArray([$Nav.navbar(A2($Signal.forwardTo,
                    address,
                    NavAction))
@@ -187,9 +231,7 @@ Elm.App.make = function (_elm) {
                    ,page: $Nav.Summary
                    ,register: $Basics.fst($Register.init)
                    ,summary: $Basics.fst($Summary$Summary.init)}
-              ,_1: A2($Effects.map,
-              SummaryAction,
-              $Basics.snd($Summary$Summary.init))};
+              ,_1: $Effects.none};
    var Model = F4(function (a,
    b,
    c,
@@ -2831,7 +2873,8 @@ Elm.Entries.Entries.make = function (_elm) {
             }();
          };
          return A2($Html.div,
-         _L.fromArray([$Html$Attributes.id("entries")]),
+         _L.fromArray([$Html$Attributes.id("entries")
+                      ,$Html$Attributes.$class("col-xs-12 col-sm-8")]),
          _L.fromArray([A2($Html.header,
                       _L.fromArray([]),
                       _L.fromArray([A2($Html.h2,
@@ -2978,6 +3021,7 @@ Elm.Entries.Entries.make = function (_elm) {
                                  ,init: init
                                  ,update: update
                                  ,view: view
+                                 ,updateUrl: updateUrl
                                  ,Model: Model
                                  ,GetEntryFor: GetEntryFor
                                  ,EntryReceived: EntryReceived
@@ -3010,7 +3054,7 @@ Elm.Entries.Entry.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $Time = Elm.Time.make(_elm);
    var collapse = function (expand) {
-      return expand ? $Html$Attributes.$class("collapse in") : $Html$Attributes.$class("collapse");
+      return expand ? $Html$Attributes.$class("row collapse in") : $Html$Attributes.$class("row collapse");
    };
    var animationStyles = function (entry) {
       return entry ? $Html$Attributes.$class("entry") : $Html$Attributes.$class("entry expand");
@@ -3019,7 +3063,7 @@ Elm.Entries.Entry.make = function (_elm) {
       return A2($Html.div,
       _L.fromArray([collapse(model.expand)]),
       _L.fromArray([A2($Html.div,
-                   _L.fromArray([]),
+                   _L.fromArray([$Html$Attributes.$class("col-xs-12 col-sm-6")]),
                    _L.fromArray([A2($Html.h4,
                                 _L.fromArray([]),
                                 _L.fromArray([$Html.text("Goal")]))
@@ -3027,7 +3071,7 @@ Elm.Entries.Entry.make = function (_elm) {
                                 _L.fromArray([]),
                                 _L.fromArray([$Html.text(model.data.goals)]))]))
                    ,A2($Html.div,
-                   _L.fromArray([]),
+                   _L.fromArray([$Html$Attributes.$class("col-xs-12 col-sm-6")]),
                    _L.fromArray([A2($Html.h4,
                                 _L.fromArray([]),
                                 _L.fromArray([$Html.text("Memberships")]))
@@ -3040,7 +3084,7 @@ Elm.Entries.Entry.make = function (_elm) {
       return A2($Html.div,
       _L.fromArray([$Html$Attributes.$class("row")]),
       _L.fromArray([A2($Html.div,
-                   _L.fromArray([]),
+                   _L.fromArray([$Html$Attributes.$class("col-xs-6 col-sm-3")]),
                    _L.fromArray([A2($Html.h4,
                                 _L.fromArray([]),
                                 _L.fromArray([$Html.text("Country")]))
@@ -3048,7 +3092,7 @@ Elm.Entries.Entry.make = function (_elm) {
                                 _L.fromArray([]),
                                 _L.fromArray([$Html.text(entry.hqCountry)]))]))
                    ,A2($Html.div,
-                   _L.fromArray([]),
+                   _L.fromArray([$Html$Attributes.$class("col-xs-6 col-sm-3")]),
                    _L.fromArray([A2($Html.h4,
                                 _L.fromArray([]),
                                 _L.fromArray([$Html.text("Representative")]))
@@ -3056,7 +3100,7 @@ Elm.Entries.Entry.make = function (_elm) {
                                 _L.fromArray([]),
                                 _L.fromArray([$Html.text(entry.euPerson)]))]))
                    ,A2($Html.div,
-                   _L.fromArray([]),
+                   _L.fromArray([$Html$Attributes.$class("col-xs-6 col-sm-3")]),
                    _L.fromArray([A2($Html.h4,
                                 _L.fromArray([]),
                                 _L.fromArray([$Html.text("Budget")]))
@@ -3064,7 +3108,7 @@ Elm.Entries.Entry.make = function (_elm) {
                                 _L.fromArray([]),
                                 _L.fromArray([$Html.text(entry.costEst)]))]))
                    ,A2($Html.div,
-                   _L.fromArray([]),
+                   _L.fromArray([$Html$Attributes.$class("col-xs-6 col-sm-3")]),
                    _L.fromArray([A2($Html.h4,
                                 _L.fromArray([]),
                                 _L.fromArray([$Html.text("FTEs")]))
@@ -3411,7 +3455,7 @@ Elm.Filters.Filters.make = function (_elm) {
    var searchView = F2(function (address,
    model) {
       return A2($Html.div,
-      _L.fromArray([]),
+      _L.fromArray([$Html$Attributes.$class("box")]),
       _L.fromArray([A2($Html.h4,
                    _L.fromArray([]),
                    _L.fromArray([$Html.text("Search by name")]))
@@ -3429,35 +3473,38 @@ Elm.Filters.Filters.make = function (_elm) {
    var view = F2(function (address,
    model) {
       return A2($Html.div,
-      _L.fromArray([$Html$Attributes.id("filters")]),
+      _L.fromArray([$Html$Attributes.id("filters")
+                   ,$Html$Attributes.$class("col-xs-12")]),
       _L.fromArray([A2($Html.div,
                    _L.fromArray([$Html$Attributes.$class("row")]),
                    _L.fromArray([A2($Html.div,
-                                _L.fromArray([]),
+                                _L.fromArray([$Html$Attributes.$class("col-xs-6 col-sm-3")]),
                                 _L.fromArray([A2(searchView,
                                 address,
                                 model)]))
                                 ,A2($Html.div,
-                                _L.fromArray([]),
+                                _L.fromArray([$Html$Attributes.$class("col-xs-6 col-sm-3")]),
                                 _L.fromArray([sectionView(address)]))
                                 ,A2($Html.div,
-                                _L.fromArray([]),
+                                _L.fromArray([$Html$Attributes.$class("col-xs-6 col-sm-3")]),
                                 _L.fromArray([A2(fteView,
                                 address,
                                 model.fte)]))
                                 ,A2($Html.div,
-                                _L.fromArray([]),
+                                _L.fromArray([$Html$Attributes.$class("col-xs-6 col-sm-3")]),
                                 _L.fromArray([A2(budgetView,
                                 address,
                                 model.budget)]))]))
                    ,A2($Html.div,
                    _L.fromArray([$Html$Attributes.$class("row searchInit")]),
+                   _L.fromArray([A2($Html.div,
+                   _L.fromArray([$Html$Attributes.$class("col-xs-3 col-xs-offset-9")]),
                    _L.fromArray([A2($Html.button,
                    _L.fromArray([$Html$Attributes.$class("btn btn-primary")
                                 ,A2($Html$Events.onClick,
                                 address,
                                 GetMatch(model))]),
-                   _L.fromArray([$Html.text("Search!")]))]))]));
+                   _L.fromArray([$Html.text("Search!")]))]))]))]));
    });
    var init = {_: {}
               ,budget: "0"
@@ -6325,7 +6372,8 @@ Elm.Matches.Matches.make = function (_elm) {
    var view = F2(function (address,
    model) {
       return A2($Html.div,
-      _L.fromArray([$Html$Attributes.id("matches")]),
+      _L.fromArray([$Html$Attributes.id("matches")
+                   ,$Html$Attributes.$class("col-xs-12 col-sm-4")]),
       _L.fromArray([A2($Html.h2,
                    _L.fromArray([]),
                    _L.fromArray([$Html.text("Search results")]))
@@ -14905,6 +14953,9 @@ Elm.Nav.make = function (_elm) {
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
+   var NoOp = function (a) {
+      return {ctor: "NoOp",_0: a};
+   };
    var GoSummary = {ctor: "GoSummary"};
    var GoRegister = {ctor: "GoRegister"};
    var Summary = {ctor: "Summary"};
@@ -14917,17 +14968,17 @@ Elm.Nav.make = function (_elm) {
             case "GoSummary":
             return Summary;}
          _U.badCase($moduleName,
-         "between lines 12 and 14");
+         "between lines 17 and 20");
       }();
    };
    var navbar = function (address) {
       return A2($Html.nav,
-      _L.fromArray([]),
+      _L.fromArray([$Html$Attributes.$class("row")]),
       _L.fromArray([A2($Html.h1,
-                   _L.fromArray([]),
+                   _L.fromArray([$Html$Attributes.$class("col-xs-6")]),
                    _L.fromArray([$Html.text("European Lobby Register")]))
                    ,A2($Html.ul,
-                   _L.fromArray([$Html$Attributes.$class("menu")]),
+                   _L.fromArray([$Html$Attributes.$class("col-xs-6 menu")]),
                    _L.fromArray([A2($Html.li,
                                 _L.fromArray([A2($Html$Events.onClick,
                                 address,
@@ -14944,6 +14995,7 @@ Elm.Nav.make = function (_elm) {
                      ,navbar: navbar
                      ,GoRegister: GoRegister
                      ,GoSummary: GoSummary
+                     ,NoOp: NoOp
                      ,Register: Register
                      ,Summary: Summary};
    return _elm.Nav.values;
@@ -15076,14 +15128,14 @@ Elm.Register.make = function (_elm) {
                                       _v7._1)};
                             }();}
                        _U.badCase($moduleName,
-                       "between lines 91 and 92");
+                       "between lines 92 and 93");
                     }();
                  });
                  var $ = A3($List.foldl,
                  go,
                  {ctor: "_Tuple2"
                  ,_0: model.entries
-                 ,_1: _L.fromArray([])},
+                 ,_1: _L.fromArray([$Entries$Entries.updateUrl(_L.fromArray([""]))])},
                  action._0),
                  newEntriesModel = $._0,
                  effects = $._1;
@@ -15096,7 +15148,7 @@ Elm.Register.make = function (_elm) {
                         effects))};
               }();}
          _U.badCase($moduleName,
-         "between lines 44 and 97");
+         "between lines 45 and 98");
       }();
    });
    var FilterAction = function (a) {
@@ -15107,13 +15159,15 @@ Elm.Register.make = function (_elm) {
    model) {
       return A2($Html.div,
       _L.fromArray([$Html$Attributes.id("register")]),
-      _L.fromArray([A2($Filters$Filters.view,
+      _L.fromArray([A2($Html.div,
+                   _L.fromArray([$Html$Attributes.$class("row")]),
+                   _L.fromArray([A2($Filters$Filters.view,
                    A2($Signal.forwardTo,
                    address,
                    FilterAction),
-                   model.filters)
+                   model.filters)]))
                    ,A2($Html.div,
-                   _L.fromArray([$Html$Attributes.$class("main")]),
+                   _L.fromArray([$Html$Attributes.$class("main row")]),
                    _L.fromArray([A2($Matches$Matches.view,
                                 A2($Signal.forwardTo,
                                 address,
@@ -15125,6 +15179,7 @@ Elm.Register.make = function (_elm) {
                                 EntryAction),
                                 model.entries)]))]));
    });
+   var Activate = {ctor: "Activate"};
    var init = {ctor: "_Tuple2"
               ,_0: {_: {}
                    ,entries: $Entries$Entries.init
@@ -15766,6 +15821,7 @@ Elm.Summary.Summary.make = function (_elm) {
    $Effects = Elm.Effects.make(_elm),
    $History = Elm.History.make(_elm),
    $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $Http = Elm.Http.make(_elm),
    $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
@@ -15785,7 +15841,12 @@ Elm.Summary.Summary.make = function (_elm) {
             }($));
          },
          model);
-         return A3($Chart$Chart.hBar,
+         return A2($Html.div,
+         _L.fromArray([$Html$Attributes.id("summary")
+                      ,$Html$Attributes.$class("row")]),
+         _L.fromArray([A2($Html.div,
+         _L.fromArray([$Html$Attributes.$class("col-xs-12")]),
+         _L.fromArray([A3($Chart$Chart.hBar,
          A2($List.map,
          function ($) {
             return $Basics.toFloat(function (_) {
@@ -15798,7 +15859,7 @@ Elm.Summary.Summary.make = function (_elm) {
             return _.interest;
          },
          sorted),
-         "Number of registrants expressing interest in subject");
+         "Number of registrants expressing interest in subject")]))]));
       }();
    });
    var NoOp = function (a) {

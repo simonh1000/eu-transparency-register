@@ -1,12 +1,12 @@
 #entries {
-    flex: 2;
+    // flex: 2;
     // overflow-y: scroll;
     // min-height: 200px;
     // max-height: 500px;
 
-    border: 1px solid #bbb;
-    padding: 10px 5px;
-    padding: 10px;
+    // border: 1px solid #bbb;
+    // padding: 10px 5px;
+    padding-bottom: 10px;
     position: relative;
     z-index: 10;
 
@@ -72,9 +72,9 @@
             right: 10px;
         }
         .collapse.in {
-            display: flex;
+            // display: flex;
             & > div {
-                flex: 1;
+                // flex: 1;
                 padding: 0 15px;
             }
 

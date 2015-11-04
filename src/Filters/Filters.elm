@@ -46,28 +46,30 @@ update action model =
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-    div [ id "filters" ]
-        [ div [ class "row" ]
-            [ div []
+    div [ id "filters", class "col-xs-12" ]
+        [ div [class "row" ]
+            [ div [ class "col-xs-6 col-sm-3" ]
                 [ searchView address model ]
-            , div []
+            , div [ class "col-xs-6 col-sm-3" ]
                 [ sectionView address ]
-            , div []
+            , div [ class "col-xs-6 col-sm-3" ]
                 [ fteView address model.fte ]
-            , div []
+            , div [ class "col-xs-6 col-sm-3" ]
                 [ budgetView address model.budget ]
             ]
-        , div [ class "row searchInit" ]
-            [ button
-                [ class "btn btn-primary"
-                , onClick address (GetMatch model)
-                ] [ text "Search!" ]
+        , div [class "row searchInit" ]
+            [ div [ class "col-xs-3 col-xs-offset-9" ]
+                [ button
+                    [ class "btn btn-primary"
+                    , onClick address (GetMatch model)
+                    ] [ text "Search!" ]
+                ]
             ]
         ]
 
 searchView : Signal.Address Action -> Model -> Html
 searchView address model =
-    div [  ]
+    div [ class "box" ]
         [ h4 [] [ text "Search by name" ]
         , input
             [ type' "text"

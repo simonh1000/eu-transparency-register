@@ -64,6 +64,7 @@ function jsonMapper(entry) {
 	["noPersons", "turnover"].forEach( num => entry[num] = parseInt(entry[num]) );
 	entry.noFTEs = parseFloat(entry.noFTEs);
 
+	// Budget / costs ...
 	if (entry.costsAbsolute) {
 		entry.budget = entry.costsAbsolute = parseInt(entry.costsAbsolute);
 	} else {
@@ -75,7 +76,7 @@ function jsonMapper(entry) {
 }
 
 function replaceDB(json, cb) {
-	console.log(`Opening DB: ${mongoUrl}`);
+	console.log(`replaceDB: ${mongoUrl}`);
 	mongoClient.connect(mongoUrl, function(err, db) {
 		if (err) throw err;
 
@@ -98,13 +99,13 @@ function getNewData(fname, cb) {
 	getXls(fname, () => xls2Json(fname, cb) );
 };
 
-// function updateLocal(fname, cb) {
-// 	// Reads local file and puts in database
-// 	xls2Json(fname, json => {
-// 		let json_conv = json.map(jsonMapper);
-// 		replaceDB(json_conv, cb);
-// 	});
-// }
+function updateLocal(fname, cb) {
+	// Reads local file and puts in database
+	xls2Json(fname, json => {
+		let json_conv = json.map(jsonMapper);
+		replaceDB(json_conv, cb);
+	});
+}
 // updateLocal('./tmp', () => console.log("done"))
 
 exports.index = function(req, res) {

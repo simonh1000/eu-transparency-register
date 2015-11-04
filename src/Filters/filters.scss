@@ -1,6 +1,6 @@
 #filters {
-    display: flex;
-    flex-direction: column;
+    // display: flex;
+    // flex-direction: column;
 
     background-color: #aaa;
     // padding: 15px;
@@ -16,12 +16,14 @@
 }
 
 @media (min-width: $screen-sm) {
-    .row {
-        display: flex;
-        flex: 1;
-    }
-    .row > div {
-        flex: 1;
-        padding: 0 15px;
+    #filters {
+        .row {
+            // display: flex;
+            // flex: 1;
+        }
+        .row > div {
+            // flex: 1;
+            // padding: 0 15px;
+        }
     }
 }

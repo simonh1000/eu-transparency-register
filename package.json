@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node server/bin/www"
   },
+  "repository" : "https://github.com/simonh1000/eu-transparency-register.git",
   "engines": {
     "node": "4.x"
   },

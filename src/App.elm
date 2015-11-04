@@ -3,13 +3,15 @@ module App (Action(UrlParam), init, update, view) where
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import String exposing (split)
+import String exposing (split, toLower)
 import List exposing (head, tail, filter)
 
+import History
+import Task exposing (..)
 import Effects exposing (Effects)
 
 import Register exposing (Action(..))
-import Nav exposing (Page(..))
+import Nav exposing (Page(..), Action(..))
 import Summary.Summary as Summary exposing (Action(..))
 import Help
 
@@ -29,7 +31,8 @@ init =
       , summary = fst Summary.init
       , help = False
       }
-    , Effects.map SummaryAction (snd Summary.init)
+    -- , Effects.map SummaryAction (snd Summary.init)
+    , Effects.none
     )
 
 -- UPDATE
@@ -40,6 +43,7 @@ type Action =
     | NavAction Nav.Action
     | SummaryAction Summary.Action
     | Help
+    | NoOp (Maybe ())
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
@@ -66,10 +70,28 @@ update action model =
                     , Effects.none
                     )
 
+        -- NavAction (Nav.NoOp _) -> (model, Effects.none)
+
         NavAction navAction ->
-            ( { model | page <- Nav.update navAction }
-            , Effects.none   -- *************************
-            )
+            let
+                newPage = Nav.update navAction
+            in if | newPage == model.page ->
+                        (model, Effects.none)
+                  | newPage == Summary ->
+                        let (newModel, newEffects) = Summary.update Summary.Activate model.summary
+                        in
+                        ( { model | page <- newPage, summary <- newModel }
+                        , Effects.map SummaryAction newEffects
+                        )
+                  | newPage == Register ->
+                      let (newModel, newEffects) =
+                          Register.update (Register.UrlParam []) model.register
+                      in  ( { model |
+                                register <- newModel
+                              , page <- Register }
+                          , Effects.map RegisterAction newEffects
+                          )
+
 
         RegisterAction regAction ->
             let (newModel, newEffects) = Register.update regAction model.register
@@ -88,11 +110,13 @@ update action model =
             , Effects.none
             )
 
+        NoOp _ -> ( model, Effects.none )
+
 -- VIEW
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-    div [ class "container" ]
+    div [ class <| "container " ++ toString model.page ]
         [ Nav.navbar (Signal.forwardTo address NavAction)
         , helpModal address model
         , if model.page == Summary
@@ -103,11 +127,13 @@ view address model =
 
 helpButton : Signal.Address Action -> Html
 helpButton address =
-    footer []
-        [ button
-            [ class "btn btn-default btn-xs"
-            , onClick address Help
-            ] [ text "Notes, privacy, source code or report a problem" ]
+    footer [ class "row" ]
+        [ div [ class "col-xs-12" ]
+            [ button
+                [ class "btn btn-default btn-xs"
+                , onClick address Help
+                ] [ text "Notes, privacy, source code or report a problem" ]
+            ]
         ]
 
 helpModal : Signal.Address Action -> Model -> Html

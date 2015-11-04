@@ -34,7 +34,8 @@ init =
 -- UPDATE
 
 type Action =
-      FilterAction Filters.Action
+      Activate
+    | FilterAction Filters.Action
     | MatchAction Matches.Action
     | EntryAction Entries.Action
     | UrlParam (List String)
@@ -91,7 +92,7 @@ update action model =
                     let (newM, newE) = Entries.update (GetEntryFor id_) model
                     in  (newM, newE :: effects)
 
-                (newEntriesModel, effects) = foldl go (model.entries, []) ids
+                (newEntriesModel, effects) = foldl go (model.entries, [ Entries.updateUrl [""] ]) ids
             in  ( { model | entries <- newEntriesModel }
                 , Effects.batch <| map (Effects.map EntryAction) effects
                 )
@@ -101,8 +102,9 @@ update action model =
 view : Signal.Address Action -> Model -> Html
 view address model =
     div [ id "register" ]
-        [ Filters.view (Signal.forwardTo address FilterAction) model.filters
-        , div [ class "main" ]
+        [ div [ class "row" ]
+            [ Filters.view (Signal.forwardTo address FilterAction) model.filters ]
+        , div [ class "main row" ]
             [ Matches.view (Signal.forwardTo address MatchAction) model.matches
             , Entries.view (Signal.forwardTo address EntryAction) model.entries
             ]

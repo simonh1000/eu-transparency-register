@@ -58,7 +58,7 @@ errorMapper err =
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-    div [ id "matches" ]
+    div [ id "matches", class "col-xs-12 col-sm-4" ]
         [ h2 [] [ text "Search results" ]
         , p [] [ text model.message ]
         , div [ class "mContainer" ] <| List.map (viewMatch address) model.matches

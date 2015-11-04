@@ -4,21 +4,27 @@ import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 
+import Debug
+
 type Page = Register | Summary
-type Action = GoRegister | GoSummary
+type Action =
+      GoRegister
+    | GoSummary
+    | NoOp (Maybe ())
 
 update : Action -> Page
 update action =
     case action of
+        GoSummary ->  Summary
         GoRegister -> Register
-        GoSummary -> Summary
+        -- NoOp -> (Register, updateUrl Register)
 
 navbar : Signal.Address Action -> Html
 navbar address =
-    nav []
-        [ h1 [] [ text "European Lobby Register" ]
-        , ul [ class "menu" ]
+    nav [ class "row" ]
+        [ h1 [ class "col-xs-6" ] [ text "European Lobby Register" ]
+        , ul [ class "col-xs-6 menu" ]
             [ li [ onClick address GoRegister ] [ text (toString Register) ]
-            , li [ onClick address GoSummary ] [ text (toString Summary) ]
+            , li [ onClick address GoSummary ]  [ text (toString Summary) ]
             ]
         ]

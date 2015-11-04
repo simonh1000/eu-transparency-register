@@ -51,10 +51,14 @@ view : Signal.Address Action -> Model -> Html
 view address model =
     let sorted = List.sortBy ( (\x -> -x) << .count) model
     in
-    hBar
-        (List.map (toFloat << .count) sorted)
-        (List.map .interest sorted)
-        "Number of registrants expressing interest in subject"
+    div [ id "summary", class "row" ]
+        [ div [ class "col-xs-12" ]
+            [ hBar
+                (List.map (toFloat << .count) sorted)
+                (List.map .interest sorted)
+                "Number of registrants expressing interest in subject"
+            ]
+        ]
 
 -- TASKS
 

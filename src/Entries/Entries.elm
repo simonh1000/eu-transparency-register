@@ -1,4 +1,4 @@
-module Entries.Entries (Model, Action(..), init, update, view) where
+module Entries.Entries (Model, Action(..), init, update, view, updateUrl) where
 
 import Html exposing (..)
 import Html.Attributes exposing (class, id, type', href, style)
@@ -115,7 +115,7 @@ view address model =
             let (Just entry) = get id model.cache
             in Entry.view (Signal.forwardTo address (EntryAction id)) entry
     in
-    div [ id "entries" ]
+    div [ id "entries", class "col-xs-12 col-sm-8" ]
         [ header []
             [ h2 [] [ text "Summary of Transparency Register entries" ]
             , button
