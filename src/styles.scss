@@ -31,7 +31,12 @@ nav {
         }
     }
 }
-
+#summary {
+    background-color: #eee;
+    & > div {
+        padding: 0;
+    }
+}
 .help-modal {
     position: absolute;
     top: 10px;
@@ -94,7 +99,9 @@ footer {
         }
     }
     #summary {
-        background-color: #eee;
+        & > div {
+            padding: 0 15px;
+        }
         padding: 10px;
     }
     .help-modal {

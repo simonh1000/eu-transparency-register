@@ -585,18 +585,16 @@ Elm.Char.make = function (_elm) {
    return _elm.Char.values;
 };
 Elm.Chart = Elm.Chart || {};
-Elm.Chart.Chart = Elm.Chart.Chart || {};
-Elm.Chart.Chart.make = function (_elm) {
+Elm.Chart.make = function (_elm) {
    "use strict";
    _elm.Chart = _elm.Chart || {};
-   _elm.Chart.Chart = _elm.Chart.Chart || {};
-   if (_elm.Chart.Chart.values)
-   return _elm.Chart.Chart.values;
+   if (_elm.Chart.values)
+   return _elm.Chart.values;
    var _op = {},
    _N = Elm.Native,
    _U = _N.Utils.make(_elm),
    _L = _N.List.make(_elm),
-   $moduleName = "Chart.Chart",
+   $moduleName = "Chart",
    $Basics = Elm.Basics.make(_elm),
    $Dict = Elm.Dict.make(_elm),
    $Html = Elm.Html.make(_elm),
@@ -614,63 +612,9 @@ Elm.Chart.Chart.make = function (_elm) {
             _L.fromArray([]),
             A2($Dict.get,sel,model.styles));
          };
-         var elem = F3(function (off,
-         ang,
-         col) {
-            return A2($Svg.circle,
-            _L.fromArray([$Svg$Attributes.r("16")
-                         ,$Svg$Attributes.cx("16")
-                         ,$Svg$Attributes.cy("16")
-                         ,$Svg$Attributes.stroke(col)
-                         ,$Svg$Attributes.strokeDashoffset($Basics.toString(off))
-                         ,$Svg$Attributes.strokeDasharray(A2($Basics._op["++"],
-                         $Basics.toString(ang),
-                         " 100"))
-                         ,$Html$Attributes.style(get$("chart-elements"))]),
-            _L.fromArray([]));
-         });
-         var colours = _L.fromArray(["#BF69B1"
-                                    ,"#96A65B"
-                                    ,"#D9A679"
-                                    ,"#593F27"
-                                    ,"#A63D33"]);
-         var go = F2(function (_v0,_v1) {
-            return function () {
-               switch (_v1.ctor)
-               {case "_Tuple3":
-                  switch (_v1._1.ctor)
-                    {case "::": return function () {
-                            return {ctor: "_Tuple3"
-                                   ,_0: _v1._0 - $Basics.round(_v0.normValue)
-                                   ,_1: $List.isEmpty(_v1._1._1) ? colours : _v1._1._1
-                                   ,_2: A2($List._op["::"],
-                                   A3(elem,
-                                   _v1._0,
-                                   $Basics.round(_v0.normValue),
-                                   _v1._1._0),
-                                   _v1._2)};
-                         }();}
-                    break;}
-               _U.badCase($moduleName,
-               "between lines 331 and 333");
-            }();
-         });
-         var _ = A3($List.foldl,
-         go,
-         {ctor: "_Tuple3"
-         ,_0: 0
-         ,_1: colours
-         ,_2: _L.fromArray([])},
-         model.items);
-         var elems = function () {
-            switch (_.ctor)
-            {case "_Tuple3": return _._2;}
-            _U.badCase($moduleName,
-            "on line 336, column 25 to 62");
-         }();
          var legend = function (items) {
             return A3($List.map2,
-            F2(function (_v13,col) {
+            F2(function (_v0,col) {
                return function () {
                   return A2($Html.div,
                   _L.fromArray([$Html$Attributes.style(get$("legend-labels"))]),
@@ -691,12 +635,61 @@ Elm.Chart.Chart.make = function (_elm) {
                                                                                   ,_0: "margin-right"
                                                                                   ,_1: "5px"}]))]),
                                _L.fromArray([$Html.text(" ")]))
-                               ,$Html.text(_v13.label)]));
+                               ,$Html.text(_v0.label)]));
                }();
             }),
             items,
-            colours);
+            model.colours);
          };
+         var elem = F3(function (off,
+         ang,
+         col) {
+            return A2($Svg.circle,
+            _L.fromArray([$Svg$Attributes.r("16")
+                         ,$Svg$Attributes.cx("16")
+                         ,$Svg$Attributes.cy("16")
+                         ,$Svg$Attributes.stroke(col)
+                         ,$Svg$Attributes.strokeDashoffset($Basics.toString(off))
+                         ,$Svg$Attributes.strokeDasharray(A2($Basics._op["++"],
+                         $Basics.toString(ang),
+                         " 100"))
+                         ,$Html$Attributes.style(get$("chart-elements"))]),
+            _L.fromArray([]));
+         });
+         var go = F2(function (_v2,_v3) {
+            return function () {
+               switch (_v3.ctor)
+               {case "_Tuple3":
+                  switch (_v3._1.ctor)
+                    {case "::": return function () {
+                            return {ctor: "_Tuple3"
+                                   ,_0: _v3._0 - _v2.normValue
+                                   ,_1: $List.isEmpty(_v3._1._1) ? model.colours : _v3._1._1
+                                   ,_2: A2($List._op["::"],
+                                   A3(elem,
+                                   _v3._0,
+                                   _v2.normValue,
+                                   _v3._1._0),
+                                   _v3._2)};
+                         }();}
+                    break;}
+               _U.badCase($moduleName,
+               "between lines 387 and 389");
+            }();
+         });
+         var _ = A3($List.foldl,
+         go,
+         {ctor: "_Tuple3"
+         ,_0: 0
+         ,_1: model.colours
+         ,_2: _L.fromArray([])},
+         model.items);
+         var elems = function () {
+            switch (_.ctor)
+            {case "_Tuple3": return _._2;}
+            _U.badCase($moduleName,
+            "on line 392, column 25 to 68");
+         }();
          return _L.fromArray([A2($Svg.svg,
                              _L.fromArray([$Html$Attributes.style(get$("chart"))
                                           ,$Svg$Attributes.viewBox("0 0 32 32")
@@ -724,7 +717,7 @@ Elm.Chart.Chart.make = function (_elm) {
                      case true:
                      return ((lenData / 2 | 0) - idx - 1) * labelWidth + 20;}
                   _U.badCase($moduleName,
-                  "between lines 297 and 300");
+                  "between lines 354 and 357");
                }();
                return {ctor: "_Tuple2"
                       ,_0: "transform"
@@ -778,6 +771,9 @@ Elm.Chart.Chart.make = function (_elm) {
    };
    var viewBarHorizontal = function (model) {
       return function () {
+         var colour = A2($Maybe.withDefault,
+         "steelblue",
+         $List.head(model.colours));
          var get$ = function (sel) {
             return A2($Maybe.withDefault,
             _L.fromArray([]),
@@ -787,18 +783,23 @@ Elm.Chart.Chart.make = function (_elm) {
          function (_v18) {
             return function () {
                return A2($Html.div,
-               _L.fromArray([$Html$Attributes.style(A2($List._op["::"],
-               {ctor: "_Tuple2"
-               ,_0: "width"
-               ,_1: A2($Basics._op["++"],
-               $Basics.toString(_v18.normValue),
-               "%")},
+               _L.fromArray([$Html$Attributes.style(A2($Basics._op["++"],
+               _L.fromArray([{ctor: "_Tuple2"
+                             ,_0: "width"
+                             ,_1: A2($Basics._op["++"],
+                             $Basics.toString(_v18.normValue),
+                             "%")}
+                            ,{ctor: "_Tuple2"
+                             ,_0: "background-color"
+                             ,_1: colour}]),
                get$("chart-elements")))]),
-               _L.fromArray([$Html.text(_v18.label)]));
+               _L.fromArray([A2($Html.span,
+               _L.fromArray([$Html$Attributes.style(get$("legend-labels"))]),
+               _L.fromArray([$Html.text(_v18.label)]))]));
             }();
          },
          model.items);
-         return _L.fromArray([$Html.div(_L.fromArray([$Html$Attributes.style(get$("chart-container"))]))(elements)]);
+         return elements;
       }();
    };
    var toHtml = function (model) {
@@ -823,7 +824,7 @@ Elm.Chart.Chart.make = function (_elm) {
                             case "Pie":
                             return viewPie(model);}
                          _U.badCase($moduleName,
-                         "between lines 262 and 266");
+                         "between lines 311 and 315");
                       }())]));
       }();
    };
@@ -843,25 +844,13 @@ Elm.Chart.Chart.make = function (_elm) {
                     {case "_Tuple2":
                        return !_U.eq(_v25._0,_v21._0);}
                     _U.badCase($moduleName,
-                    "on line 230, column 39 to 48");
+                    "on line 292, column 39 to 48");
                  }();
               },
               styles));}
          _U.badCase($moduleName,
-         "on line 230, column 6 to 56");
+         "on line 292, column 6 to 56");
       }();
-   });
-   var updateStyles = F3(function (selector,
-   lst,
-   model) {
-      return _U.replace([["styles"
-                         ,A3($Dict.update,
-                         selector,
-                         $Maybe.map(A2($Basics.flip,
-                         $List.foldl(changeStyles),
-                         lst)),
-                         model.styles)]],
-      model);
    });
    var toPercent = function (model) {
       return function () {
@@ -901,9 +890,21 @@ Elm.Chart.Chart.make = function (_elm) {
               model);
             case "Nothing": return model;}
          _U.badCase($moduleName,
-         "between lines 210 and 215");
+         "between lines 274 and 279");
       }();
    };
+   var updateStyles = F3(function (selector,
+   lst,
+   model) {
+      return _U.replace([["styles"
+                         ,A3($Dict.update,
+                         selector,
+                         $Maybe.map(A2($Basics.flip,
+                         $List.foldl(changeStyles),
+                         lst)),
+                         model.styles)]],
+      model);
+   });
    var addValueToLabel = function (model) {
       return _U.replace([["items"
                          ,A2($List.map,
@@ -921,10 +922,30 @@ Elm.Chart.Chart.make = function (_elm) {
    };
    var colours = F2(function (newColours,
    model) {
-      return _U.replace([["colours"
-                         ,newColours]],
-      model);
+      return function () {
+         switch (newColours.ctor)
+         {case "::": return function () {
+                 var _v34 = model.chartType;
+                 switch (_v34.ctor)
+                 {case "Pie":
+                    return _U.replace([["colours"
+                                       ,A2($List._op["::"],
+                                       newColours._0,
+                                       newColours._1)]],
+                      model);}
+                 return A3(updateStyles,
+                 "chart",
+                 _L.fromArray([{ctor: "_Tuple2"
+                               ,_0: "background-color"
+                               ,_1: newColours._0}]),
+                 model);
+              }();
+            case "[]": return model;}
+         _U.badCase($moduleName,
+         "between lines 224 and 230");
+      }();
    });
+   var colors = colours;
    var title = F2(function (newTitle,
    model) {
       return _U.replace([["title"
@@ -956,7 +977,11 @@ Elm.Chart.Chart.make = function (_elm) {
    typ) {
       return {_: {}
              ,chartType: typ
-             ,colours: _L.fromArray([])
+             ,colours: _L.fromArray(["#BF69B1"
+                                    ,"#96A65B"
+                                    ,"#D9A679"
+                                    ,"#593F27"
+                                    ,"#A63D33"])
              ,items: A2(initItems,vs,ls)
              ,styles: $Dict.fromList(_L.fromArray([{ctor: "_Tuple2"
                                                    ,_0: "title"
@@ -990,7 +1015,7 @@ Elm.Chart.Chart.make = function (_elm) {
                                                                       ,_1: "#fff"}
                                                                      ,{ctor: "_Tuple2"
                                                                       ,_0: "padding"
-                                                                      ,_1: "20px 10px"}])}
+                                                                      ,_1: "15px"}])}
                                                   ,{ctor: "_Tuple2"
                                                    ,_0: "chart"
                                                    ,_1: _L.fromArray([{ctor: "_Tuple2"
@@ -998,15 +1023,7 @@ Elm.Chart.Chart.make = function (_elm) {
                                                                       ,_1: "flex"}])}
                                                   ,{ctor: "_Tuple2"
                                                    ,_0: "chart-elements"
-                                                   ,_1: _L.fromArray([{ctor: "_Tuple2"
-                                                                      ,_0: "background-color"
-                                                                      ,_1: "steelblue"}
-                                                                     ,{ctor: "_Tuple2"
-                                                                      ,_0: "padding"
-                                                                      ,_1: "3px"}
-                                                                     ,{ctor: "_Tuple2"
-                                                                      ,_0: "margin"
-                                                                      ,_1: "1px"}])}
+                                                   ,_1: _L.fromArray([])}
                                                   ,{ctor: "_Tuple2"
                                                    ,_0: "legend"
                                                    ,_1: _L.fromArray([{ctor: "_Tuple2"
@@ -1014,7 +1031,15 @@ Elm.Chart.Chart.make = function (_elm) {
                                                                       ,_1: "flex"}])}
                                                   ,{ctor: "_Tuple2"
                                                    ,_0: "legend-labels"
-                                                   ,_1: _L.fromArray([])}]))
+                                                   ,_1: _L.fromArray([{ctor: "_Tuple2"
+                                                                      ,_0: "white-space"
+                                                                      ,_1: "nowrap"}
+                                                                     ,{ctor: "_Tuple2"
+                                                                      ,_0: "overflow"
+                                                                      ,_1: "hidden"}
+                                                                     ,{ctor: "_Tuple2"
+                                                                      ,_0: "text-overflow"
+                                                                      ,_1: "ellipsis"}])}]))
              ,title: ""};
    });
    var Item = F3(function (a,b,c) {
@@ -1024,14 +1049,18 @@ Elm.Chart.Chart.make = function (_elm) {
              ,value: a};
    });
    var Pie = {ctor: "Pie"};
-   var pie = F3(function (ds,
-   ls,
-   cTitle) {
-      return toHtml(A2(updateStyles,
+   var pie = F2(function (ds,ls) {
+      return A2(updateStyles,
       "legend-labels",
       _L.fromArray([{ctor: "_Tuple2"
                     ,_0: "white-space"
-                    ,_1: "nowrap"}]))(A2(updateStyles,
+                    ,_1: "nowrap"}
+                   ,{ctor: "_Tuple2"
+                    ,_0: "overflow"
+                    ,_1: "hidden"}
+                   ,{ctor: "_Tuple2"
+                    ,_0: "text-overflow"
+                    ,_1: "ellipsis"}]))(A2(updateStyles,
       "legend",
       _L.fromArray([{ctor: "_Tuple2"
                     ,_0: "flex-direction"
@@ -1041,7 +1070,13 @@ Elm.Chart.Chart.make = function (_elm) {
                     ,_1: "center"}
                    ,{ctor: "_Tuple2"
                     ,_0: "padding-left"
-                    ,_1: "10px"}]))(A2(updateStyles,
+                    ,_1: "15px"}
+                   ,{ctor: "_Tuple2"
+                    ,_0: "flex-basis"
+                    ,_1: "67%"}
+                   ,{ctor: "_Tuple2"
+                    ,_0: "flex-grow"
+                    ,_1: "2"}]))(A2(updateStyles,
       "chart-elements",
       _L.fromArray([{ctor: "_Tuple2"
                     ,_0: "fill-opacity"
@@ -1065,16 +1100,17 @@ Elm.Chart.Chart.make = function (_elm) {
       "chart-container",
       _L.fromArray([{ctor: "_Tuple2"
                     ,_0: "justify-content"
-                    ,_1: "center"}]))(toPercent(title(cTitle)(A3(chartInit,
+                    ,_1: "center"}
+                   ,{ctor: "_Tuple2"
+                    ,_0: "align-items"
+                    ,_1: "center"}]))(toPercent(A3(chartInit,
       ds,
       ls,
-      Pie)))))))));
+      Pie)))))));
    });
    var BarVertical = {ctor: "BarVertical"};
-   var vBar = F3(function (ds,
-   ls,
-   cTitle) {
-      return toHtml(A2(updateStyles,
+   var vBar = F2(function (ds,ls) {
+      return A2(updateStyles,
       "legend-labels",
       _L.fromArray([{ctor: "_Tuple2"
                     ,_0: "width"
@@ -1100,6 +1136,15 @@ Elm.Chart.Chart.make = function (_elm) {
                     ,_1: "70px"}]))(A2(updateStyles,
       "chart-elements",
       _L.fromArray([{ctor: "_Tuple2"
+                    ,_0: "background-color"
+                    ,_1: "steelblue"}
+                   ,{ctor: "_Tuple2"
+                    ,_0: "padding"
+                    ,_1: "3px"}
+                   ,{ctor: "_Tuple2"
+                    ,_0: "margin"
+                    ,_1: "1px"}
+                   ,{ctor: "_Tuple2"
                     ,_0: "width"
                     ,_1: "30px"}]))(A2(updateStyles,
       "chart",
@@ -1118,44 +1163,56 @@ Elm.Chart.Chart.make = function (_elm) {
       "chart-container",
       _L.fromArray([{ctor: "_Tuple2"
                     ,_0: "flex-direction"
-                    ,_1: "column"}]))(normalise(title(cTitle)(A3(chartInit,
+                    ,_1: "column"}]))(normalise(A3(chartInit,
       ds,
       ls,
-      BarVertical)))))))));
+      BarVertical)))))));
    });
    var BarHorizontal = {ctor: "BarHorizontal"};
-   var hBar = F3(function (ds,
-   ls,
-   cTitle) {
-      return toHtml(A2(updateStyles,
+   var hBar = F2(function (ds,ls) {
+      return A2(updateStyles,
+      "legend-labels",
+      _L.fromArray([{ctor: "_Tuple2"
+                    ,_0: "display"
+                    ,_1: "block"}]))(A2(updateStyles,
       "chart-elements",
       _L.fromArray([{ctor: "_Tuple2"
-                    ,_0: "font"
-                    ,_1: "10px sans-serif"}
+                    ,_0: "background-color"
+                    ,_1: "steelblue"}
+                   ,{ctor: "_Tuple2"
+                    ,_0: "padding"
+                    ,_1: "3px"}
+                   ,{ctor: "_Tuple2"
+                    ,_0: "margin"
+                    ,_1: "1px"}
                    ,{ctor: "_Tuple2"
                     ,_0: "text-align"
-                    ,_1: "right"}
-                   ,{ctor: "_Tuple2"
-                    ,_0: "color"
-                    ,_1: "white"}]))(A2(updateStyles,
+                    ,_1: "right"}]))(A2(updateStyles,
       "chart-container",
       _L.fromArray([{ctor: "_Tuple2"
                     ,_0: "display"
-                    ,_1: "block"}]))(addValueToLabel(normalise(title(cTitle)(A3(chartInit,
+                    ,_1: "block"}
+                   ,{ctor: "_Tuple2"
+                    ,_0: "font"
+                    ,_1: "10px sans-serif"}
+                   ,{ctor: "_Tuple2"
+                    ,_0: "color"
+                    ,_1: "white"}]))(addValueToLabel(normalise(A3(chartInit,
       ds,
       ls,
-      BarHorizontal)))))));
+      BarHorizontal))))));
    });
-   _elm.Chart.Chart.values = {_op: _op
-                             ,hBar: hBar
-                             ,vBar: vBar
-                             ,pie: pie
-                             ,chartInit: chartInit
-                             ,title: title
-                             ,colours: colours
-                             ,addValueToLabel: addValueToLabel
-                             ,updateStyles: updateStyles};
-   return _elm.Chart.Chart.values;
+   _elm.Chart.values = {_op: _op
+                       ,hBar: hBar
+                       ,vBar: vBar
+                       ,pie: pie
+                       ,title: title
+                       ,colours: colours
+                       ,colors: colors
+                       ,addValueToLabel: addValueToLabel
+                       ,updateStyles: updateStyles
+                       ,toHtml: toHtml};
+   return _elm.Chart.values;
 };
 Elm.Color = Elm.Color || {};
 Elm.Color.make = function (_elm) {
@@ -15817,7 +15874,7 @@ Elm.Summary.Summary.make = function (_elm) {
    _L = _N.List.make(_elm),
    $moduleName = "Summary.Summary",
    $Basics = Elm.Basics.make(_elm),
-   $Chart$Chart = Elm.Chart.Chart.make(_elm),
+   $Chart = Elm.Chart.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $History = Elm.History.make(_elm),
    $Html = Elm.Html.make(_elm),
@@ -15846,7 +15903,11 @@ Elm.Summary.Summary.make = function (_elm) {
                       ,$Html$Attributes.$class("row")]),
          _L.fromArray([A2($Html.div,
          _L.fromArray([$Html$Attributes.$class("col-xs-12")]),
-         _L.fromArray([A3($Chart$Chart.hBar,
+         _L.fromArray([$Chart.toHtml(A2($Chart.updateStyles,
+         "container",
+         _L.fromArray([{ctor: "_Tuple2"
+                       ,_0: "border"
+                       ,_1: "none"}]))($Chart.title("Number of registrants expressing interest in subject")(A2($Chart.hBar,
          A2($List.map,
          function ($) {
             return $Basics.toFloat(function (_) {
@@ -15858,8 +15919,7 @@ Elm.Summary.Summary.make = function (_elm) {
          function (_) {
             return _.interest;
          },
-         sorted),
-         "Number of registrants expressing interest in subject")]))]));
+         sorted)))))]))]));
       }();
    });
    var NoOp = function (a) {

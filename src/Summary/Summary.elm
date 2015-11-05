@@ -11,7 +11,7 @@ import Effects exposing (Effects)
 import Task
 import History
 
-import Chart.Chart exposing (hBar)
+import Chart exposing (hBar, updateStyles, toHtml)
 
 -- MODEL
 
@@ -56,7 +56,9 @@ view address model =
             [ hBar
                 (List.map (toFloat << .count) sorted)
                 (List.map .interest sorted)
-                "Number of registrants expressing interest in subject"
+                |> Chart.title "Number of registrants expressing interest in subject"
+                |> updateStyles "container" [("border","none")]
+                |> toHtml
             ]
         ]
 
