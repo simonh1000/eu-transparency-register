@@ -12,7 +12,7 @@ import Effects exposing (Effects)
 
 import Register exposing (Action(..))
 import Nav exposing (Page(..), Action(..))
-import Summary.Summary as Summary exposing (Action(..))
+import Summary.Summary as Summary
 import Help
 
 -- MODEL

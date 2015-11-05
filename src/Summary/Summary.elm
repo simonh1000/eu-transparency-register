@@ -13,11 +13,7 @@ import Time exposing (Time)
 import Task
 import History
 
-<<<<<<< Updated upstream
-import Chart exposing (hBar, updateStyles, toHtml)
-=======
-import Chart exposing (hBar, pie, title, colours, toHtml)
->>>>>>> Stashed changes
+import Chart exposing (hBar, pie, title, colours, toHtml, updateStyles)
 
 -- MODEL
 type SectionMeasure =
@@ -137,13 +133,13 @@ view address model =
     in
     div [ id "summary", class "row" ]
         [ div [ class "col-xs-12" ]
-            [ hBar
-                (List.map (toFloat << .count) sorted)
-                (List.map .interest sorted)
-                |> Chart.title "Number of registrants expressing interest in subject"
-                |> updateStyles "container" [("border","none")]
-                |> toHtml
-            , button [ onClick address Animate ] [ text "start" ]
+            [ -- hBar
+                -- (List.map (toFloat << .count) sorted)
+                -- (List.map .interest sorted)
+                -- |> Chart.title "Number of registrants expressing interest in subject"
+                -- |> updateStyles "container" [("border","none")]
+                -- |> toHtml
+            button [ onClick address Animate ] [ text "start" ]
             , pie
                 (if model.sectionMeasure == Count then countModel else budgetModel)
                 labels
