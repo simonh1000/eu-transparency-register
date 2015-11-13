@@ -16,8 +16,8 @@ import History
 import Chart exposing (hBar, pie, title, colours, toHtml, updateStyles)
 
 -- MODEL
-type SectionMeasure =
-      Count
+type SectionMeasure
+    = Count
     | Budget
 
 type alias Interest =
@@ -32,7 +32,7 @@ type alias Section =
     }
 
 type alias Model =
-    { summary : List Interest
+    { interests : List Interest
     , sections : List Section
     , sectionsSimplified : List Section
     , sectionMeasure : SectionMeasure
@@ -50,17 +50,16 @@ initSection i c b =
     }
 
 init =
-    ( { summary = []
-      , sections = []
-      , sectionsSimplified = []
-      , sectionMeasure = Count
-      , msg = ""
-      }
-    , loadData )
+    { interests = []
+    , sections = []
+    , sectionsSimplified = []
+    , sectionMeasure = Count
+    , msg = ""
+    }
 
 -- UPDATE
-type Action =
-      Activate
+type Action
+    = Activate
     | InterestData (Result Http.Error (List Interest))
     | SectionsData (Result Http.Error (List Section))
     | NoOp (Maybe ())
@@ -71,9 +70,14 @@ update : Action -> Model -> (Model, Effects Action)
 update action model =
     case action of
         Activate ->
-            (model, loadData)
+            ( model
+            , Effects.batch
+                [ loadInterests
+                , loadSections
+                ]
+            )
         InterestData (Result.Ok data) ->
-            ( { model | summary <- data }, updateUrl )
+            ( { model | interests <- data }, updateUrl )
         SectionsData (Result.Ok data) ->
             let
                 totalBudget = List.sum (List.map .budget data)
@@ -96,7 +100,7 @@ update action model =
                 (othersBudget, othersCount, sections) =
                     foldl go (0, 0, []) data
                 simplifiedModel =
-                    sections ++ [{section = "others", count = othersCount, budget = othersBudget }]
+                    sections ++ [{section = "Others", count = othersCount, budget = othersBudget }]
             in
             ( { model | sections <- data, sectionsSimplified <- simplifiedModel }
             , updateUrl )
@@ -133,45 +137,59 @@ view address model =
     in
     div [ id "summary", class "row" ]
         [ div [ class "col-xs-12" ]
-            [ -- hBar
-                -- (List.map (toFloat << .count) sorted)
-                -- (List.map .interest sorted)
-                -- |> Chart.title "Number of registrants expressing interest in subject"
-                -- |> updateStyles "container" [("border","none")]
-                -- |> toHtml
-            button [ onClick address Animate ] [ text "start" ]
-            , pie
+            [ pie
                 (if model.sectionMeasure == Count then countModel else budgetModel)
                 labels
-                |> title "Number of registrees per Register sub-section"
+                |> title
+                    (if model.sectionMeasure == Count
+                     then "Number of registrees per sub-section"
+                     else "Lobby spend per sub-section"
+                    )
                 |> colours
-                    [ "#BF69B1", "#96A65B", "#D9A679", "#593F27", "#A63D33"
-                    , "#BF69B1", "#96A65B", "#D9A679", "#593F27", "#A63D33"
-                    , "#BF69B1", "#96A65B", "#D9A679", "#593F27", "#A63D33"
+                    [ "#4D4D4D", "#5DA5DA", "#FAA43A", "#60BD68", "#F17CB0", "#B2912F", "#B276B2", "#DECF3F", "#F15854", "#BF69B1"
+                    --  "#BF69B1", "#96A65B", "#D9A679", "#593F27", "#A63D33"
                     ]
+                |> updateStyles "container" [("border","none")]
                 |> toHtml
-            -- , pie
-            --     budgetModel
-            --     labels
-            --     |> title "Lobby spend per Register sub-section"
-            --     |> colours
-            --         [ "#BF69B1", "#96A65B", "#D9A679", "#593F27", "#A63D33"
-            --         , "#BF69B1", "#96A65B", "#D9A679", "#593F27", "#A63D33"
-            --         , "#BF69B1", "#96A65B", "#D9A679", "#593F27", "#A63D33"
-            --         ]
-            --     |> toHtml
+            , div
+                [ class "toggleContainer" ]
+                [ button
+                    [ onClick address Animate ]
+                    [ text <| if model.sectionMeasure == Count
+                        then "Switch to lobby spend"
+                        else "Switch to no. registrees"
+                    ]
+                ]
+            , div
+                [ class "interests" ]
+                [ hBar                      -- Interests
+                    (List.map (toFloat << .count) model.interests)
+                    (List.map .interest model.interests)
+                    |> Chart.title "Number of registrants expressing interest in subject"
+                    |> updateStyles
+                        "container"
+                        [ ("border", "none")
+                        , ("border-top", "3px solid black")
+                        ]
+                    |> toHtml
+                ]
             , p [] [ text model.msg ]
             ]
         ]
 
 -- TASKS
 
-loadData : Effects Action
-loadData =
-    -- Http.get issueDecoder ("/api/register/interests")
+loadInterests : Effects Action
+loadInterests =
+    Http.get issueDecoder ("/api/register/interests")
+        |> Task.toResult
+        |> Task.map InterestData
+        |> Effects.task
+
+loadSections : Effects Action
+loadSections =
     Http.get sectionsDecoder ("/api/register/sections")
         |> Task.toResult
-        -- |> Task.map InterestData
         |> Task.map SectionsData
         |> Effects.task
 

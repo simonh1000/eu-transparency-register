@@ -1,4 +1,3 @@
-
 "use strict";
 
 var mongoClient = require('mongodb');
@@ -21,6 +20,11 @@ function connectDB(cb) {
 	});
 }
 
+/*
+ * Iterates across list of issues
+ * Counts number of registrees citging that interest
+ * Puts summary totals in 'interest' collection
+ */
 function countInterests(db) {
 	let coll = db.collection(registerCollection);
 	let interests = db.collection(interestsCollection);
@@ -34,7 +38,7 @@ function countInterests(db) {
 				return {
 					issue: issue,
 					count: c
-				} 
+				}
 			});
 		});
 
@@ -47,18 +51,13 @@ function countInterests(db) {
 	.catch( Promise.reject("error simon") );
 }
 
-exports.index = (req, res) => {
-	connectDB( (err, db) => {
-		if (err) return res.status(500).send(err);
-
-		countInterests(db)
-		.then( response => res.send(response) );
-	});
-};
-
-function countSpend(db) {
+/*
+ * Calculates numbers and spend per 'sub-section'
+ * stores results in 'sections' collection 
+ */
+function sectionAnalyser(db) {
 	let register = db.collection(registerCollection);
-			
+
 	let simpleCount = register.aggregate([
 		{ "$group" : {_id : "$subsection", count: {$sum: 1} } }
 	]);
@@ -71,37 +70,50 @@ function countSpend(db) {
 	.then(results => {
 		let base = results[0];
 		let merge = results[1];
-		
+
 		let mergedResults = base.map( elem => {
 			let mergeVal = merge.find( e => e._id === elem._id );
 			elem.total = mergeVal.total;
 			return elem;
 		})
-		
+
 		return db.collection(sectionsCollection)
 		.insert(mergedResults);
 	})
-	.catch(err => Promise.reject("countSpend error: " + err));
+	.catch(err => Promise.reject("sectionAnalyser error: " + err));
 }
 
+/* A P I */
+exports.index = (req, res) => {
+	connectDB( (err, db) => {
+		if (err) return res.status(500).send(err);
+
+		Promise.all([ 
+			countInterests(db),
+			sectionAnalyser(db)
+		])
+		.then( responses => res.send(responses) )
+		.catch( err => res.status(500).send(err) );
+	});
+};
 
 /* LOCAL */
-connectDB( (err, db) => {
-	if (err) return console.log(err);
+// connectDB( (err, db) => {
+// 	if (err) return console.log(err);
 
-	// countInterests(db)
-	// .then( response => {
-	// 	console.log(response.result);
-	// 	db.close();
-	// });
-	
-	countSpend(db)
-	.then( results => {
-		console.log("countSpend", results.result)
-		db.close()
-	})
-	.catch( err => {
-		console.log(err)
-		db.close()
-	});
-});
+// 	// countInterests(db)
+// 	// .then( response => {
+// 	// 	console.log(response.result);
+// 	// 	db.close();
+// 	// });
+
+// 	sectionAnalyser(db)
+// 	.then( results => {
+// 		console.log("sectionAnalyser", results.result)
+// 		db.close()
+// 	})
+// 	.catch( err => {
+// 		console.log(err)
+// 		db.close()
+// 	});
+// });

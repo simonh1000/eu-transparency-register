@@ -1,4 +1,5 @@
 @import "../node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
+@import "Summary/summary.scss";
 @import "Matches/matches.scss";
 @import "Filters/filters.scss";
 @import "Entries/entries.scss";
@@ -31,12 +32,7 @@ nav {
         }
     }
 }
-#summary {
-    background-color: #eee;
-    & > div {
-        padding: 0;
-    }
-}
+
 .help-modal {
     position: absolute;
     top: 10px;
@@ -61,9 +57,11 @@ footer {
         height: 100%;
         background-image: url(flags.jpg);
         background-size: cover;
-        // & > div, .container, #register {
-        //     height: 100%;
-        // }
+        & > div, .container {
+            height: 100%;
+        }
+        #register {
+        }
     }
 
     body {
@@ -78,10 +76,12 @@ footer {
     }
 
     #register {
+        height: calc(100% - 60px);
         // flex: 2;
         // display: flex;
         // flex-direction: column;
         .main {
+            height: calc(100% - 126px);
             // flex: 10;
             // display: flex;
             // overflow: hidden;
@@ -92,18 +92,13 @@ footer {
             background: rgba(255, 255, 255, 0.97);
             & > div {
                 // margin: 15px;
-                overflow-y: scroll;
+                // overflow-y: scroll;
                 // height: 100%;
                 // align-items: stretch;
             }
         }
     }
-    #summary {
-        & > div {
-            padding: 0 15px;
-        }
-        padding: 10px;
-    }
+
     .help-modal {
         // position: absolute;
         top: 10%;

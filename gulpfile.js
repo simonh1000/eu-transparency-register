@@ -39,8 +39,8 @@ gulp.task('serve', function(cb){
 		}
   	})
 	.on('restart', function () {
-      console.log('restarted!')
-    })
+      console.log('restarted!');
+  });
 });
 
 /*
@@ -66,7 +66,7 @@ gulp.task('sass', function() {
 gulp.task('copyjs', function() {
 	gulp.src(paths.copy)
 	.pipe(gulp.dest(paths.compileDestination));
-})
+});
 
 gulp.task('compilation', ['home', 'sass', 'copyjs']);
 

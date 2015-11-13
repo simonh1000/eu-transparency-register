@@ -4,6 +4,8 @@
 
 var mongoClient = require('mongodb');
 var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:27017/lobby";
+
+// Create 3 global mongo collection variables
 var register,
 	interests,
 	sections;
@@ -61,6 +63,7 @@ exports.id = (req, res) => {
 
 exports.interests = (req, res) => {
 	interests.find({}, {_id:0})
+	.sort({'count' : -1 })
 	.toArray( (err, data) => {
 		if (err) return res.status(500).end();
 		res.send(data);

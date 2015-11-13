@@ -1,0 +1,26 @@
+#summary {
+    background-color: #eee;
+    & > div {
+        padding: 0;
+    }
+}
+
+@media (min-width: $screen-sm) {
+    #summary {
+        .toggleContainer {
+            background-color: #eee;
+            margin-top: -10px;
+            padding-bottom: 10px;
+            padding-left: 15px;
+        }
+        & > div {
+            background-color: white;
+            // padding: 0 15px;
+        }
+        // padding: 10px;
+        .interests {
+            margin-top: 20px;
+        }
+    }
+
+}

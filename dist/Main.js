@@ -113,7 +113,7 @@ Elm.App.make = function (_elm) {
                            RegisterAction,
                            newEffects)};
                  }() : _U.badIf($moduleName,
-                 "between lines 78 and 93");
+                 "between lines 79 and 94");
               }();
             case "NoOp":
             return {ctor: "_Tuple2"
@@ -167,9 +167,9 @@ Elm.App.make = function (_elm) {
                                    ,_0: _U.replace([["page"
                                                     ,$Nav.Summary]],
                                    model)
-                                   ,_1: A2($Effects.map,
-                                   SummaryAction,
-                                   $Basics.snd($Summary$Summary.init))};}
+                                   ,_1: $Effects.map(SummaryAction)($Basics.snd(A2($Summary$Summary.update,
+                                   $Summary$Summary.Activate,
+                                   model.summary)))};}
                          return function () {
                             var $ = A2($Register.update,
                             $Register.UrlParam(urlElems),
@@ -192,11 +192,11 @@ Elm.App.make = function (_elm) {
                               model)
                               ,_1: $Effects.none};}
                     _U.badCase($moduleName,
-                    "between lines 55 and 75");
+                    "between lines 55 and 76");
                  }();
               }();}
          _U.badCase($moduleName,
-         "between lines 50 and 113");
+         "between lines 50 and 114");
       }();
    });
    var view = F2(function (address,
@@ -230,7 +230,7 @@ Elm.App.make = function (_elm) {
                    ,help: false
                    ,page: $Nav.Summary
                    ,register: $Basics.fst($Register.init)
-                   ,summary: $Basics.fst($Summary$Summary.init)}
+                   ,summary: $Summary$Summary.init}
               ,_1: $Effects.none};
    var Model = F4(function (a,
    b,
@@ -15932,7 +15932,7 @@ Elm.Summary.Summary.make = function (_elm) {
    A2($Json$Decode._op[":="],
    "total",
    $Json$Decode.$float)));
-   var loadData = $Effects.task($Task.map(SectionsData)($Task.toResult(A2($Http.get,
+   var loadSections = $Effects.task($Task.map(SectionsData)($Task.toResult(A2($Http.get,
    sectionsDecoder,
    "/api/register/sections"))));
    var initInterest = F2(function (i,
@@ -15949,17 +15949,20 @@ Elm.Summary.Summary.make = function (_elm) {
    A2($Json$Decode._op[":="],
    "count",
    $Json$Decode.$int)));
+   var loadInterests = $Effects.task($Task.map(InterestData)($Task.toResult(A2($Http.get,
+   issueDecoder,
+   "/api/register/interests"))));
    var Model = F5(function (a,
    b,
    c,
    d,
    e) {
       return {_: {}
+             ,interests: a
              ,msg: e
              ,sectionMeasure: d
              ,sections: b
-             ,sectionsSimplified: c
-             ,summary: a};
+             ,sectionsSimplified: c};
    });
    var Section = F3(function (a,
    b,
@@ -15977,14 +15980,12 @@ Elm.Summary.Summary.make = function (_elm) {
    });
    var Budget = {ctor: "Budget"};
    var Count = {ctor: "Count"};
-   var init = {ctor: "_Tuple2"
-              ,_0: {_: {}
-                   ,msg: ""
-                   ,sectionMeasure: Count
-                   ,sections: _L.fromArray([])
-                   ,sectionsSimplified: _L.fromArray([])
-                   ,summary: _L.fromArray([])}
-              ,_1: loadData};
+   var init = {_: {}
+              ,interests: _L.fromArray([])
+              ,msg: ""
+              ,sectionMeasure: Count
+              ,sections: _L.fromArray([])
+              ,sectionsSimplified: _L.fromArray([])};
    var update = F2(function (action,
    model) {
       return function () {
@@ -15992,7 +15993,8 @@ Elm.Summary.Summary.make = function (_elm) {
          {case "Activate":
             return {ctor: "_Tuple2"
                    ,_0: model
-                   ,_1: loadData};
+                   ,_1: $Effects.batch(_L.fromArray([loadInterests
+                                                    ,loadSections]))};
             case "Animate":
             return {ctor: "_Tuple2"
                    ,_0: _U.replace([["sectionMeasure"
@@ -16004,7 +16006,7 @@ Elm.Summary.Summary.make = function (_elm) {
             switch (action._0.ctor)
               {case "Ok":
                  return {ctor: "_Tuple2"
-                        ,_0: _U.replace([["summary"
+                        ,_0: _U.replace([["interests"
                                          ,action._0._0]],
                         model)
                         ,_1: updateUrl};}
@@ -16056,7 +16058,7 @@ Elm.Summary.Summary.make = function (_elm) {
                                                                  _v9._2)};
                                  }();}
                             _U.badCase($moduleName,
-                            "between lines 85 and 95");
+                            "between lines 89 and 99");
                          }();
                       });
                       var $ = A3($List.foldl,
@@ -16074,7 +16076,7 @@ Elm.Summary.Summary.make = function (_elm) {
                       _L.fromArray([{_: {}
                                     ,budget: othersBudget
                                     ,count: othersCount
-                                    ,section: "others"}]));
+                                    ,section: "Others"}]));
                       return {ctor: "_Tuple2"
                              ,_0: _U.replace([["sections"
                                               ,action._0._0]
@@ -16085,7 +16087,7 @@ Elm.Summary.Summary.make = function (_elm) {
                    }();}
               break;}
          _U.badCase($moduleName,
-         "between lines 72 and 117");
+         "between lines 71 and 121");
       }();
    });
    var view = F2(function (address,
@@ -16111,29 +16113,54 @@ Elm.Summary.Summary.make = function (_elm) {
                       ,$Html$Attributes.$class("row")]),
          _L.fromArray([A2($Html.div,
          _L.fromArray([$Html$Attributes.$class("col-xs-12")]),
-         _L.fromArray([A2($Html.button,
+         _L.fromArray([$Chart.toHtml(A2($Chart.updateStyles,
+                      "container",
+                      _L.fromArray([{ctor: "_Tuple2"
+                                    ,_0: "border"
+                                    ,_1: "none"}]))($Chart.colours(_L.fromArray(["#4D4D4D"
+                                                                                ,"#5DA5DA"
+                                                                                ,"#FAA43A"
+                                                                                ,"#60BD68"
+                                                                                ,"#F17CB0"
+                                                                                ,"#B2912F"
+                                                                                ,"#B276B2"
+                                                                                ,"#DECF3F"
+                                                                                ,"#F15854"
+                                                                                ,"#BF69B1"]))($Chart.title(_U.eq(model.sectionMeasure,
+                      Count) ? "Number of registrees per sub-section" : "Lobby spend per sub-section")(A2($Chart.pie,
+                      _U.eq(model.sectionMeasure,
+                      Count) ? countModel : budgetModel,
+                      labels)))))
+                      ,A2($Html.div,
+                      _L.fromArray([$Html$Attributes.$class("toggleContainer")]),
+                      _L.fromArray([A2($Html.button,
                       _L.fromArray([A2($Html$Events.onClick,
                       address,
                       Animate)]),
-                      _L.fromArray([$Html.text("start")]))
-                      ,$Chart.toHtml($Chart.colours(_L.fromArray(["#BF69B1"
-                                                                 ,"#96A65B"
-                                                                 ,"#D9A679"
-                                                                 ,"#593F27"
-                                                                 ,"#A63D33"
-                                                                 ,"#BF69B1"
-                                                                 ,"#96A65B"
-                                                                 ,"#D9A679"
-                                                                 ,"#593F27"
-                                                                 ,"#A63D33"
-                                                                 ,"#BF69B1"
-                                                                 ,"#96A65B"
-                                                                 ,"#D9A679"
-                                                                 ,"#593F27"
-                                                                 ,"#A63D33"]))($Chart.title("Number of registrees per Register sub-section")(A2($Chart.pie,
-                      _U.eq(model.sectionMeasure,
-                      Count) ? countModel : budgetModel,
-                      labels))))
+                      _L.fromArray([$Html.text(_U.eq(model.sectionMeasure,
+                      Count) ? "Switch to lobby spend" : "Switch to no. registrees")]))]))
+                      ,A2($Html.div,
+                      _L.fromArray([$Html$Attributes.$class("interests")]),
+                      _L.fromArray([$Chart.toHtml(A2($Chart.updateStyles,
+                      "container",
+                      _L.fromArray([{ctor: "_Tuple2"
+                                    ,_0: "border"
+                                    ,_1: "none"}
+                                   ,{ctor: "_Tuple2"
+                                    ,_0: "border-top"
+                                    ,_1: "3px solid black"}]))($Chart.title("Number of registrants expressing interest in subject")(A2($Chart.hBar,
+                      A2($List.map,
+                      function ($) {
+                         return $Basics.toFloat(function (_) {
+                            return _.count;
+                         }($));
+                      },
+                      model.interests),
+                      A2($List.map,
+                      function (_) {
+                         return _.interest;
+                      },
+                      model.interests)))))]))
                       ,A2($Html.p,
                       _L.fromArray([]),
                       _L.fromArray([$Html.text(model.msg)]))]))]));

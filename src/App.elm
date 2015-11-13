@@ -28,7 +28,7 @@ init : (Model, Effects Action)
 init =
     ( { page = Summary
       , register = fst Register.init
-      , summary = fst Summary.init
+      , summary = Summary.init
       , help = False
       }
     -- , Effects.map SummaryAction (snd Summary.init)
@@ -55,7 +55,8 @@ update action model =
             case head urlElems of
                 Just "summary" ->
                     ( { model | page <- Summary }
-                    , Effects.map SummaryAction (snd Summary.init)
+                    , Effects.map SummaryAction <|
+                        snd (Summary.update Summary.Activate model.summary)
                     )
                 Just _ ->
                     let (newModel, newEffects) =
