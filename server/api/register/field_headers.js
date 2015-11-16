@@ -47,8 +47,8 @@ exports.headers = [ "_id"
 	, "source"
 	, "grants"
 	, "grantsSource"];
-	
-exports.issues = [
+
+exports.interests = [
 	"Agriculture and Rural Development",
 	"Education",
 	"Research and Technology",

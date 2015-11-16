@@ -5,18 +5,24 @@
 var mongoClient = require('mongodb');
 var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:27017/lobby";
 
+const SUMMARY = 'summary';
+// document IDs
+const INTERESTS = 'interests';
+const SECTIONS = 'sections';
+
 // Create 3 global mongo collection variables
 var register,
 	interests,
-	sections;
+	summary;
 
 mongoClient.connect(mongoUrl, function(err, db) {
 	if (err) throw err;
 
 	console.log("Connected to database", mongoUrl);
 	register = db.collection('lobby');
-	interests = db.collection('interests');
-	sections = db.collection('sections');
+	// interests = db.collection('interests');
+	// sections = db.collection('sections');
+	summary = db.collection(SUMMARY);
 });
 
 // var delaySend = function(data, res) {
@@ -62,19 +68,23 @@ exports.id = (req, res) => {
 };
 
 exports.interests = (req, res) => {
-	interests.find({}, {_id:0})
-	.sort({'count' : -1 })
+	// interests.find({}, {_id:0})
+	summary.find({_id:INTERESTS})
+	// .sort({'data.count' : -1 })
 	.toArray( (err, data) => {
 		if (err) return res.status(500).end();
-		res.send(data);
+
+		let sorted = data[0].data.sort( (r1,r2) => r2.count - r1.count );
+		res.send(sorted);
 	} );
 };
 
 exports.sections = (req, res) => {
-	sections.find({})
+	// sections.find({})
+	summary.find({_id:SECTIONS})
 	.toArray( (err, data) => {
 		if (err) return res.status(500).end();
-		res.send(data);
+		res.send(data[0].data);
 	} );
 };
 
