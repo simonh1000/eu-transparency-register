@@ -1,16 +1,20 @@
 "use strict";
 
 var mongoClient = require('mongodb');
-// var Promise = require("bluebird");
+var Promise = require("bluebird");
 
 var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:27017/lobby";
-// var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:27017/lobby";
 
-var registerCollection = 'lobby';
-var interestsCollection = 'interests';
-var sectionsCollection = 'sections';
+const REGISTER = 'register';
+const SUMMARY = 'summary';
+// document _id's
+const INTERESTS = 'interests';
+const SECTIONS = 'sections';
 
-var issues = require('./field_headers').issues;
+var interests = require('./field_headers').interests;
+
+// Function that returns a Promise of a database connection
+var mongoConnect = Promise.promisify(mongoClient.connect);
 
 function connectDB(cb) {
 	console.log(`connectDB: ${mongoUrl}`);
@@ -21,22 +25,22 @@ function connectDB(cb) {
 }
 
 /*
- * Iterates across list of issues
+ * Iterates across list of interests
  * Counts number of registrees citging that interest
  * Puts summary totals in 'interest' collection
  */
 function countInterests(db) {
-	let coll = db.collection(registerCollection);
-	let interests = db.collection(interestsCollection);
+	let coll = db.collection(REGISTER);
+	let summary = db.collection(SUMMARY);
 
 	let promises =
-		issues.map( issue => {
-			return coll.find( { 'interests' : { $elemMatch: {$eq: issue} } } )
+		interests.map( interest => {
+			return coll.find( { 'interests' : { $elemMatch: {$eq: interest} } } )
 			.count()
 			.then( c => {
-				console.log(`${issue} ${c}`);
+				// console.log(`${interest} ${c}`);
 				return {
-					issue: issue,
+					interest: interest,
 					count: c
 				}
 			});
@@ -44,19 +48,23 @@ function countInterests(db) {
 
 	return Promise.all(promises)
 	.then( results => {
-		console.log("all promises returned")
-		interests.drop();
-		return interests.insert(results);
+		console.log(`${results.length} Interest promises returned`);
+		// interests.drop();
+		return summary.replaceOne({_id:INTERESTS}, {_id:INTERESTS, data: results}, {upsert:true});
 	} )
-	.catch( Promise.reject("error simon") );
+	.catch( err => {
+		console.error(err);
+		return err;
+		// Promise.reject("countInterests error");
+	} );
 }
 
 /*
  * Calculates numbers and spend per 'sub-section'
- * stores results in 'sections' collection 
+ * stores results in 'sections' collection
  */
-function sectionAnalyser(db) {
-	let register = db.collection(registerCollection);
+function countSections(db) {
+	let register = db.collection(REGISTER);
 
 	let simpleCount = register.aggregate([
 		{ "$group" : {_id : "$subsection", count: {$sum: 1} } }
@@ -68,52 +76,54 @@ function sectionAnalyser(db) {
 
 	return Promise.all([simpleCount.toArray(), budgetCount.toArray()])
 	.then(results => {
-		let base = results[0];
-		let merge = results[1];
+		console.log(`${results.length} Sections promises resolved`);
+		let base = results[0]; 			// count data
+		let merge = results[1]; 		// spend data
 
+		// for each element in base (count) add the spend figure
 		let mergedResults = base.map( elem => {
 			let mergeVal = merge.find( e => e._id === elem._id );
 			elem.total = mergeVal.total;
 			return elem;
 		})
 
-		return db.collection(sectionsCollection)
-		.insert(mergedResults);
+		// db.collection(SECTIONS).drop();
+		return db.collection(SUMMARY)
+				.replaceOne({_id: SECTIONS}, {_id: SECTIONS, 'data': mergedResults}, {upsert: true});
 	})
-	.catch(err => Promise.reject("sectionAnalyser error: " + err));
+	.catch( err => Promise.reject(err) );
+}
+
+exports.makeSummaryData = function() {
+	var db;
+	return mongoConnect(mongoUrl)
+	.then( _db => {
+		db = _db;
+		return Promise.all([
+				countInterests(db),
+				countSections(db)
+			  ]);
+	})
+	.then( results => {
+		console.log('makeSummaryData success');
+		db.close();    // db.close
+		return results.map( r => r.result );
+	} )
+	.catch ( err => {
+		db.close();    // db.close
+		// Promise.reject(err);
+		return err
+	} );
 }
 
 /* A P I */
-exports.index = (req, res) => {
-	connectDB( (err, db) => {
-		if (err) return res.status(500).send(err);
+// exports.index = (req, res) => {
+// 	exports.makeSummaryData()
+// 	.then( responses => res.send(responses) )
+// 	.catch( err => res.status(500).send(err) );
+// };
 
-		Promise.all([ 
-			countInterests(db),
-			sectionAnalyser(db)
-		])
-		.then( responses => res.send(responses) )
-		.catch( err => res.status(500).send(err) );
-	});
-};
-
-/* LOCAL */
-// connectDB( (err, db) => {
-// 	if (err) return console.log(err);
-
-// 	// countInterests(db)
-// 	// .then( response => {
-// 	// 	console.log(response.result);
-// 	// 	db.close();
-// 	// });
-
-// 	sectionAnalyser(db)
-// 	.then( results => {
-// 		console.log("sectionAnalyser", results.result)
-// 		db.close()
-// 	})
-// 	.catch( err => {
-// 		console.log(err)
-// 		db.close()
-// 	});
-// });
+/* MANUAL TEST */
+// exports.makeSummaryData()
+// .then( responses => console.log(responses) )
+// .catch( err => console.error(err) );

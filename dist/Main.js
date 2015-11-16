@@ -15944,7 +15944,7 @@ Elm.Summary.Summary.make = function (_elm) {
    var issueDecoder = $Json$Decode.list(A3($Json$Decode.object2,
    initInterest,
    A2($Json$Decode._op[":="],
-   "issue",
+   "interest",
    $Json$Decode.string),
    A2($Json$Decode._op[":="],
    "count",
@@ -16004,7 +16004,13 @@ Elm.Summary.Summary.make = function (_elm) {
                    ,_1: $Effects.none};
             case "InterestData":
             switch (action._0.ctor)
-              {case "Ok":
+              {case "Err":
+                 return {ctor: "_Tuple2"
+                        ,_0: _U.replace([["msg"
+                                         ,errorHandler(action._0._0)]],
+                        model)
+                        ,_1: updateUrl};
+                 case "Ok":
                  return {ctor: "_Tuple2"
                         ,_0: _U.replace([["interests"
                                          ,action._0._0]],
@@ -16035,30 +16041,30 @@ Elm.Summary.Summary.make = function (_elm) {
                       },
                       action._0._0));
                       var go = F2(function (elem,
-                      _v9) {
+                      _v10) {
                          return function () {
-                            switch (_v9.ctor)
+                            switch (_v10.ctor)
                             {case "_Tuple3":
                                return function () {
                                     var normBudget = elem.budget / totalBudget;
                                     var normCount = elem.count / totalCount;
                                     return _U.cmp(normBudget,
                                     3.0e-2) < 0 ? {ctor: "_Tuple3"
-                                                  ,_0: _v9._0 + normBudget
-                                                  ,_1: _v9._1 + normCount
-                                                  ,_2: _v9._2} : {ctor: "_Tuple3"
-                                                                 ,_0: _v9._0
-                                                                 ,_1: _v9._1
-                                                                 ,_2: A2($List._op["::"],
-                                                                 _U.replace([["count"
-                                                                             ,normCount]
-                                                                            ,["budget"
-                                                                             ,normBudget]],
-                                                                 elem),
-                                                                 _v9._2)};
+                                                  ,_0: _v10._0 + normBudget
+                                                  ,_1: _v10._1 + normCount
+                                                  ,_2: _v10._2} : {ctor: "_Tuple3"
+                                                                  ,_0: _v10._0
+                                                                  ,_1: _v10._1
+                                                                  ,_2: A2($List._op["::"],
+                                                                  _U.replace([["count"
+                                                                              ,normCount]
+                                                                             ,["budget"
+                                                                              ,normBudget]],
+                                                                  elem),
+                                                                  _v10._2)};
                                  }();}
                             _U.badCase($moduleName,
-                            "between lines 89 and 99");
+                            "between lines 91 and 101");
                          }();
                       });
                       var $ = A3($List.foldl,
@@ -16087,7 +16093,7 @@ Elm.Summary.Summary.make = function (_elm) {
                    }();}
               break;}
          _U.badCase($moduleName,
-         "between lines 71 and 121");
+         "between lines 71 and 123");
       }();
    });
    var view = F2(function (address,

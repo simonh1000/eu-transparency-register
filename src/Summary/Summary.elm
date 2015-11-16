@@ -78,12 +78,14 @@ update action model =
             )
         InterestData (Result.Ok data) ->
             ( { model | interests <- data }, updateUrl )
+        InterestData (Result.Err msg) ->
+            ( { model | msg <- errorHandler msg }, updateUrl )
         SectionsData (Result.Ok data) ->
             let
                 totalBudget = List.sum (List.map .budget data)
                 totalCount = List.sum (List.map .count data)
 
-                -- if budget is significant fraction of total include as is, otherwise as to 'others'
+                -- if budget is significant fraction of total include as is, otherwise add to 'others'
                 go : Section -> (Float, Float, List Section) -> (Float, Float, List Section)
                 go elem (accBudget, accCount, accS) =
                     let
@@ -197,7 +199,7 @@ issueDecoder : Decoder (List Interest)
 issueDecoder =
     object2
         initInterest
-        ("issue" := string)
+        ("interest" := string)
         ("count" := int)
     |> list
 
