@@ -13,6 +13,7 @@ Elm.App.make = function (_elm) {
    $Basics = Elm.Basics.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $Help = Elm.Help.make(_elm),
+   $History = Elm.History.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $Html$Events = Elm.Html.Events.make(_elm),
@@ -23,9 +24,13 @@ Elm.App.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
    $String = Elm.String.make(_elm),
-   $Summary$Summary = Elm.Summary.Summary.make(_elm);
+   $Summary$Summary = Elm.Summary.Summary.make(_elm),
+   $Task = Elm.Task.make(_elm);
    var NoOp = function (a) {
       return {ctor: "NoOp",_0: a};
+   };
+   var updateUrl = function (displayed) {
+      return $Effects.task($Task.map(NoOp)($Task.toMaybe($History.replacePath(displayed))));
    };
    var Help = {ctor: "Help"};
    var helpButton = function (address) {
@@ -78,42 +83,59 @@ Elm.App.make = function (_elm) {
                    ,_1: $Effects.none};
             case "NavAction":
             return function () {
-                 var newPage = $Nav.update(action._0);
-                 return _U.eq(newPage,
-                 model.page) ? {ctor: "_Tuple2"
-                               ,_0: model
-                               ,_1: $Effects.none} : _U.eq(newPage,
-                 $Nav.Summary) ? function () {
-                    var $ = A2($Summary$Summary.update,
-                    $Summary$Summary.Activate,
-                    model.summary),
-                    newModel = $._0,
-                    newEffects = $._1;
-                    return {ctor: "_Tuple2"
-                           ,_0: _U.replace([["page"
-                                            ,newPage]
-                                           ,["summary",newModel]],
-                           model)
-                           ,_1: A2($Effects.map,
-                           SummaryAction,
-                           newEffects)};
-                 }() : _U.eq(newPage,
-                 $Nav.Register) ? function () {
-                    var $ = A2($Register.update,
-                    $Register.UrlParam(_L.fromArray([])),
-                    model.register),
-                    newModel = $._0,
-                    newEffects = $._1;
-                    return {ctor: "_Tuple2"
-                           ,_0: _U.replace([["register"
-                                            ,newModel]
-                                           ,["page",$Nav.Register]],
-                           model)
-                           ,_1: A2($Effects.map,
-                           RegisterAction,
-                           newEffects)};
-                 }() : _U.badIf($moduleName,
-                 "between lines 79 and 94");
+                 var _v6 = $Nav.update(action._0);
+                 switch (_v6.ctor)
+                 {case "Recent":
+                    return function () {
+                         var $ = A2($Register.update,
+                         $Register.UrlParam(_L.fromArray(["recent"])),
+                         model.register),
+                         newModel = $._0,
+                         newEffects = $._1;
+                         return {ctor: "_Tuple2"
+                                ,_0: _U.replace([["register"
+                                                 ,newModel]
+                                                ,["page",$Nav.Register]],
+                                model)
+                                ,_1: $Effects.batch(_L.fromArray([A2($Effects.map,
+                                                                 RegisterAction,
+                                                                 newEffects)
+                                                                 ,updateUrl("recent")]))};
+                      }();
+                    case "Register":
+                    return function () {
+                         var $ = A2($Register.update,
+                         $Register.UrlParam(_L.fromArray([])),
+                         model.register),
+                         newModel = $._0,
+                         newEffects = $._1;
+                         return {ctor: "_Tuple2"
+                                ,_0: _U.replace([["register"
+                                                 ,newModel]
+                                                ,["page",$Nav.Register]],
+                                model)
+                                ,_1: A2($Effects.map,
+                                RegisterAction,
+                                newEffects)};
+                      }();
+                    case "Summary":
+                    return function () {
+                         var $ = A2($Summary$Summary.update,
+                         $Summary$Summary.Activate,
+                         model.summary),
+                         newModel = $._0,
+                         newEffects = $._1;
+                         return {ctor: "_Tuple2"
+                                ,_0: _U.replace([["page"
+                                                 ,$Nav.Summary]
+                                                ,["summary",newModel]],
+                                model)
+                                ,_1: A2($Effects.map,
+                                SummaryAction,
+                                newEffects)};
+                      }();}
+                 _U.badCase($moduleName,
+                 "between lines 76 and 111");
               }();
             case "NoOp":
             return {ctor: "_Tuple2"
@@ -159,9 +181,9 @@ Elm.App.make = function (_elm) {
                  "/",
                  action._0));
                  return function () {
-                    var _v6 = $List.head(urlElems);
-                    switch (_v6.ctor)
-                    {case "Just": switch (_v6._0)
+                    var _v7 = $List.head(urlElems);
+                    switch (_v7.ctor)
+                    {case "Just": switch (_v7._0)
                          {case "summary":
                             return {ctor: "_Tuple2"
                                    ,_0: _U.replace([["page"
@@ -192,11 +214,11 @@ Elm.App.make = function (_elm) {
                               model)
                               ,_1: $Effects.none};}
                     _U.badCase($moduleName,
-                    "between lines 55 and 76");
+                    "between lines 54 and 75");
                  }();
               }();}
          _U.badCase($moduleName,
-         "between lines 50 and 114");
+         "between lines 49 and 128");
       }();
    });
    var view = F2(function (address,
@@ -228,7 +250,7 @@ Elm.App.make = function (_elm) {
    var init = {ctor: "_Tuple2"
               ,_0: {_: {}
                    ,help: false
-                   ,page: $Nav.Summary
+                   ,page: $Nav.Register
                    ,register: $Basics.fst($Register.init)
                    ,summary: $Summary$Summary.init}
               ,_1: $Effects.none};
@@ -2920,7 +2942,7 @@ Elm.Entries.Entries.make = function (_elm) {
                id,
                model.cache),
                $ = _raw.ctor === "Just" ? _raw : _U.badCase($moduleName,
-               "on line 115, column 32 to 50"),
+               "on line 114, column 32 to 50"),
                entry = $._0;
                return A2($Entries$Entry.view,
                A2($Signal.forwardTo,
@@ -3034,7 +3056,8 @@ Elm.Entries.Entries.make = function (_elm) {
                                                  ,A3($Dict.insert,
                                                  action._0._0.id,
                                                  $Entries$Entry.init(action._0._0),
-                                                 newModel.cache)]],
+                                                 newModel.cache)]
+                                                ,["message",action._0._0.id]],
                                 newModel)
                                 ,_1: newEffects};
                       }();}
@@ -3054,7 +3077,7 @@ Elm.Entries.Entries.make = function (_elm) {
                       ,_0: model
                       ,_1: $Effects.none};}
             _U.badCase($moduleName,
-            "between lines 60 and 100");
+            "between lines 59 and 99");
          }();
       }();
    });
@@ -6411,8 +6434,13 @@ Elm.Matches.Matches.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
    $Task = Elm.Task.make(_elm);
-   var errorMapper = function (err) {
-      return "An error has occurred. Try again or report to author";
+   var errorHandler = function (err) {
+      return function () {
+         switch (err.ctor)
+         {case "UnexpectedPayload":
+            return err._0;}
+         return "http error";
+      }();
    };
    var GetEntry = function (a) {
       return {ctor: "GetEntry"
@@ -6426,7 +6454,7 @@ Elm.Matches.Matches.make = function (_elm) {
       GetEntry(match.id))]),
       _L.fromArray([$Html.text(match.orgName)]));
    });
-   var view = F2(function (address,
+   var viewFilterResults = F2(function (address,
    model) {
       return A2($Html.div,
       _L.fromArray([$Html$Attributes.id("matches")
@@ -6441,6 +6469,57 @@ Elm.Matches.Matches.make = function (_elm) {
                    viewMatch(address),
                    model.matches))]));
    });
+   var viewRecents = F2(function (address,
+   model) {
+      return A2($Html.div,
+      _L.fromArray([$Html$Attributes.id("matches")
+                   ,$Html$Attributes.$class("col-xs-12 col-sm-4")]),
+      _L.fromArray([A2($Html.div,
+                   _L.fromArray([$Html$Attributes.$class("recent entries")]),
+                   _L.fromArray([A2($Html.h2,
+                                _L.fromArray([]),
+                                _L.fromArray([$Html.text(A2($Basics._op["++"],
+                                $Basics.toString($List.length(model.newstuff.entries)),
+                                " Recent new entries"))]))
+                                ,$Html.div(_L.fromArray([$Html$Attributes.$class("mContainer")]))(A2($List.map,
+                                viewMatch(address),
+                                model.newstuff.entries))]))
+                   ,A2($Html.div,
+                   _L.fromArray([$Html$Attributes.$class("recent entries")]),
+                   _L.fromArray([A2($Html.h2,
+                                _L.fromArray([]),
+                                _L.fromArray([$Html.text(A2($Basics._op["++"],
+                                $Basics.toString($List.length(model.newstuff.updates)),
+                                " Recent updates"))]))
+                                ,$Html.div(_L.fromArray([$Html$Attributes.$class("mContainer")]))(A2($List.map,
+                                viewMatch(address),
+                                model.newstuff.updates))]))]));
+   });
+   var view = F2(function (address,
+   model) {
+      return function () {
+         var _v2 = model.resultsType;
+         switch (_v2.ctor)
+         {case "FilterMatches":
+            return A2(viewFilterResults,
+              address,
+              model);
+            case "Recents":
+            return A2(viewRecents,
+              address,
+              model);}
+         _U.badCase($moduleName,
+         "between lines 90 and 92");
+      }();
+   });
+   var RecentsData = function (a) {
+      return {ctor: "RecentsData"
+             ,_0: a};
+   };
+   var getRecents = $Effects.task($Task.map(RecentsData)($Task.toResult(A2($Http.get,
+   $Matches$MatchesDecoder.recentsDecoder,
+   "/api/register/recents"))));
+   var GetRecents = {ctor: "GetRecents"};
    var MatchesReceived = function (a) {
       return {ctor: "MatchesReceived"
              ,_0: a};
@@ -6468,6 +6547,32 @@ Elm.Matches.Matches.make = function (_elm) {
          searchTerms)))));
       }();
    };
+   var GetMatchFor = function (a) {
+      return {ctor: "GetMatchFor"
+             ,_0: a};
+   };
+   var Model = F5(function (a,
+   b,
+   c,
+   d,
+   e) {
+      return {_: {}
+             ,matches: a
+             ,message: e
+             ,newstuff: b
+             ,resultsType: d
+             ,searching: c};
+   });
+   var Recents = {ctor: "Recents"};
+   var FilterMatches = {ctor: "FilterMatches"};
+   var init = {_: {}
+              ,matches: _L.fromArray([])
+              ,message: ""
+              ,newstuff: A2($Matches$MatchesDecoder.initNew,
+              _L.fromArray([]),
+              _L.fromArray([]))
+              ,resultsType: FilterMatches
+              ,searching: false};
    var update = F2(function (action,
    model) {
       return function () {
@@ -6479,43 +6584,48 @@ Elm.Matches.Matches.make = function (_elm) {
                                    ,["message","Searching...."]],
                    model)
                    ,_1: getMatches(action._0)};
+            case "GetRecents":
+            return {ctor: "_Tuple2"
+                   ,_0: model
+                   ,_1: getRecents};
             case "MatchesReceived":
             switch (action._0.ctor)
               {case "Err":
                  return {ctor: "_Tuple2"
                         ,_0: _U.replace([["message"
-                                         ,errorMapper(action._0._0)]],
+                                         ,errorHandler(action._0._0)]],
                         model)
                         ,_1: $Effects.none};
                  case "Ok":
                  return {ctor: "_Tuple2"
                         ,_0: _U.replace([["matches"
                                          ,action._0._0]
+                                        ,["resultsType",FilterMatches]
                                         ,["message"
                                          ,_U.eq($List.length(action._0._0),
                                          0) ? "No results found" : ""]],
                         model)
                         ,_1: $Effects.none};}
+              break;
+            case "RecentsData":
+            switch (action._0.ctor)
+              {case "Err":
+                 return {ctor: "_Tuple2"
+                        ,_0: _U.replace([["message"
+                                         ,errorHandler(action._0._0)]],
+                        model)
+                        ,_1: $Effects.none};
+                 case "Ok":
+                 return {ctor: "_Tuple2"
+                        ,_0: _U.replace([["resultsType"
+                                         ,Recents]
+                                        ,["newstuff",action._0._0]],
+                        model)
+                        ,_1: $Effects.none};}
               break;}
          _U.badCase($moduleName,
-         "between lines 37 and 51");
+         "between lines 49 and 78");
       }();
-   });
-   var GetMatchFor = function (a) {
-      return {ctor: "GetMatchFor"
-             ,_0: a};
-   };
-   var init = {_: {}
-              ,matches: _L.fromArray([])
-              ,message: ""
-              ,searching: false};
-   var Model = F3(function (a,
-   b,
-   c) {
-      return {_: {}
-             ,matches: a
-             ,message: c
-             ,searching: b};
    });
    _elm.Matches.Matches.values = {_op: _op
                                  ,init: init
@@ -6524,6 +6634,8 @@ Elm.Matches.Matches.make = function (_elm) {
                                  ,Model: Model
                                  ,GetMatchFor: GetMatchFor
                                  ,MatchesReceived: MatchesReceived
+                                 ,GetRecents: GetRecents
+                                 ,RecentsData: RecentsData
                                  ,GetEntry: GetEntry};
    return _elm.Matches.Matches.values;
 };
@@ -6546,6 +6658,18 @@ Elm.Matches.MatchesDecoder.make = function (_elm) {
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
+   var initNew = F2(function (e,
+   u) {
+      return {_: {}
+             ,entries: e
+             ,updates: u};
+   });
+   var NewStuff = F2(function (a,
+   b) {
+      return {_: {}
+             ,entries: a
+             ,updates: b};
+   });
    var init = F2(function (i,o) {
       return {_: {}
              ,id: i
@@ -6560,13 +6684,24 @@ Elm.Matches.MatchesDecoder.make = function (_elm) {
    "orgName",
    $Json$Decode.string));
    var matchesDecoder = $Json$Decode.list(matchDecoder);
+   var recentsDecoder = A3($Json$Decode.object2,
+   initNew,
+   A2($Json$Decode._op[":="],
+   "entries",
+   matchesDecoder),
+   A2($Json$Decode._op[":="],
+   "updates",
+   matchesDecoder));
    var Model = F2(function (a,b) {
       return {_: {}
              ,id: a
              ,orgName: b};
    });
    _elm.Matches.MatchesDecoder.values = {_op: _op
+                                        ,initNew: initNew
                                         ,matchesDecoder: matchesDecoder
+                                        ,recentsDecoder: recentsDecoder
+                                        ,NewStuff: NewStuff
                                         ,Model: Model};
    return _elm.Matches.MatchesDecoder.values;
 };
@@ -15013,19 +15148,22 @@ Elm.Nav.make = function (_elm) {
    var NoOp = function (a) {
       return {ctor: "NoOp",_0: a};
    };
+   var GoRecent = {ctor: "GoRecent"};
    var GoSummary = {ctor: "GoSummary"};
    var GoRegister = {ctor: "GoRegister"};
+   var Recent = {ctor: "Recent"};
    var Summary = {ctor: "Summary"};
    var Register = {ctor: "Register"};
    var update = function (action) {
       return function () {
          switch (action.ctor)
-         {case "GoRegister":
+         {case "GoRecent": return Recent;
+            case "GoRegister":
             return Register;
             case "GoSummary":
             return Summary;}
          _U.badCase($moduleName,
-         "between lines 17 and 20");
+         "between lines 22 and 26");
       }();
    };
    var navbar = function (address) {
@@ -15037,6 +15175,11 @@ Elm.Nav.make = function (_elm) {
                    ,A2($Html.ul,
                    _L.fromArray([$Html$Attributes.$class("col-xs-6 menu")]),
                    _L.fromArray([A2($Html.li,
+                                _L.fromArray([A2($Html$Events.onClick,
+                                address,
+                                GoRecent)]),
+                                _L.fromArray([$Html.text($Basics.toString(Recent))]))
+                                ,A2($Html.li,
                                 _L.fromArray([A2($Html$Events.onClick,
                                 address,
                                 GoRegister)]),
@@ -15052,9 +15195,11 @@ Elm.Nav.make = function (_elm) {
                      ,navbar: navbar
                      ,GoRegister: GoRegister
                      ,GoSummary: GoSummary
+                     ,GoRecent: GoRecent
                      ,NoOp: NoOp
                      ,Register: Register
-                     ,Summary: Summary};
+                     ,Summary: Summary
+                     ,Recent: Recent};
    return _elm.Nav.values;
 };
 Elm.Register = Elm.Register || {};
@@ -15166,26 +15311,47 @@ Elm.Register.make = function (_elm) {
                         newMatchEffects)};
               }();
             case "UrlParam":
-            return function () {
+            switch (action._0.ctor)
+              {case "::":
+                 switch (action._0._0)
+                   {case "recent":
+                      switch (action._0._1.ctor)
+                        {case "[]": return function () {
+                                var $ = A2($Matches$Matches.update,
+                                $Matches$Matches.GetRecents,
+                                model.matches),
+                                newModel = $._0,
+                                newEffects = $._1;
+                                return {ctor: "_Tuple2"
+                                       ,_0: _U.replace([["matches"
+                                                        ,newModel]],
+                                       model)
+                                       ,_1: A2($Effects.map,
+                                       MatchAction,
+                                       newEffects)};
+                             }();}
+                        break;}
+                   break;}
+              return function () {
                  var go = F2(function (id_,
-                 _v7) {
+                 _v9) {
                     return function () {
-                       switch (_v7.ctor)
+                       switch (_v9.ctor)
                        {case "_Tuple2":
                           return function () {
                                var $ = A2($Entries$Entries.update,
                                $Entries$Entries.GetEntryFor(id_),
-                               _v7._0),
+                               _v9._0),
                                newM = $._0,
                                newE = $._1;
                                return {ctor: "_Tuple2"
                                       ,_0: newM
                                       ,_1: A2($List._op["::"],
                                       newE,
-                                      _v7._1)};
+                                      _v9._1)};
                             }();}
                        _U.badCase($moduleName,
-                       "between lines 92 and 93");
+                       "between lines 84 and 85");
                     }();
                  });
                  var $ = A3($List.foldl,
@@ -15205,7 +15371,7 @@ Elm.Register.make = function (_elm) {
                         effects))};
               }();}
          _U.badCase($moduleName,
-         "between lines 45 and 98");
+         "between lines 45 and 91");
       }();
    });
    var FilterAction = function (a) {

@@ -16,6 +16,8 @@ router.get('/search', controller.search);
 router.get('/interests', controller.interests);
 router.get('/sections', controller.sections);
 
+router.get('/recents', controller.newentries);
+
 // router.get('/update', processor.index);
 router.get('/ingest',	ingester.index);            // copies into database, and then runs post-processors
 

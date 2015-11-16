@@ -1,6 +1,7 @@
 #matches {
     // flex: 1;
     border-bottom: 1px solid #bbb;
+    overflow-y: hidden;
     // padding: 10px 5px;
 
     .mContainer {
@@ -29,9 +30,18 @@
 @media (min-width: $screen-sm) {
     #matches {
         border: none;
+        // height: calc(100% - 32px);
         height: 100%;
+        .recent {
+            height: calc(50% - 15px);
+        }
         .mContainer {
-            max-height: 500px;
+            min-height: 0;
+            max-height: calc(100% - 24px);
+            // height: calc(100% - 20px);
+        }
+        .entries {
+            // border-top: 1px solid #eee;
         }
     }
 }

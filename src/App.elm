@@ -26,12 +26,11 @@ type alias Model =
 
 init : (Model, Effects Action)
 init =
-    ( { page = Summary
+    ( { page = Register
       , register = fst Register.init
       , summary = Summary.init
       , help = False
       }
-    -- , Effects.map SummaryAction (snd Summary.init)
     , Effects.none
     )
 
@@ -74,17 +73,32 @@ update action model =
         -- NavAction (Nav.NoOp _) -> (model, Effects.none)
 
         NavAction navAction ->
-            let
-                newPage = Nav.update navAction
-            in if | newPage == model.page ->
-                        (model, Effects.none)
-                  | newPage == Summary ->
+            case Nav.update navAction of
+                -- model.page ->
+            -- let
+            --     newPage = Nav.update navAction
+            -- in if | newPage == model.page ->
+                        -- (model, Effects.none)
+                Summary ->
+                --   | newPage == Summary ->
                         let (newModel, newEffects) = Summary.update Summary.Activate model.summary
                         in
-                        ( { model | page <- newPage, summary <- newModel }
+                        ( { model | page <- Summary, summary <- newModel }
                         , Effects.map SummaryAction newEffects
                         )
-                  | newPage == Register ->
+                Recent ->
+                    let (newModel, newEffects) =
+                        Register.update (Register.UrlParam ["recent"]) model.register
+                    in  ( { model |
+                            register <- newModel
+                            , page <- Register }
+                        , Effects.batch
+                            [ Effects.map RegisterAction newEffects
+                            , updateUrl "recent"
+                            ]
+                        )
+                Register ->
+                --   | newPage == Register ->
                       let (newModel, newEffects) =
                           Register.update (Register.UrlParam []) model.register
                       in  ( { model |
@@ -148,3 +162,10 @@ helpModal address model =
                 ] [ text "Close" ]
             ]
         else div [] []
+
+updateUrl : String -> Effects Action
+updateUrl displayed =
+    History.replacePath displayed
+        |> Task.toMaybe
+        |> Task.map NoOp
+        |> Effects.task

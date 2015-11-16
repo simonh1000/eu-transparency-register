@@ -2,26 +2,28 @@
 
 "use strict";
 
+var moment = require('moment');
 var mongoClient = require('mongodb');
 var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:27017/lobby";
 
+const CHANGES = 'changes';
 const SUMMARY = 'summary';
+const REGISTER = 'register';
 // document IDs
 const INTERESTS = 'interests';
 const SECTIONS = 'sections';
 
 // Create 3 global mongo collection variables
 var register,
-	interests,
-	summary;
+	summary,
+	changes;
 
 mongoClient.connect(mongoUrl, function(err, db) {
 	if (err) throw err;
 
 	console.log("Connected to database", mongoUrl);
-	register = db.collection('lobby');
-	// interests = db.collection('interests');
-	// sections = db.collection('sections');
+	register = db.collection(REGISTER);
+	changes = db.collection(CHANGES);
 	summary = db.collection(SUMMARY);
 });
 
@@ -85,6 +87,26 @@ exports.sections = (req, res) => {
 	.toArray( (err, data) => {
 		if (err) return res.status(500).end();
 		res.send(data[0].data);
+	} );
+};
+
+exports.newentries = (req, res) => {
+	// find all records with id < 14 days ago
+	// concat results
+	let minus14 = moment().subtract(14, 'days').format();
+
+	changes.find({_id: {$gte: minus14}})
+	.toArray( (err, data) => {
+		if (err) return res.status(500).end();
+		// results likely to be an array of several elements, so combine them
+		let combined =
+			data.reduce(
+				(acc, dataset) => ( { entries: acc.entries.concat(dataset.entries),
+					                  updates: acc.updates.concat(dataset.updates) } ),
+				{ entries: [], updates: []}
+			);
+
+		res.send(combined);
 	} );
 };
 

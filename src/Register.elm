@@ -70,30 +70,23 @@ update action model =
                 , Effects.map EntryAction newEntriesEffects
                 )
 
-        -- UrlParam str ->
-        --     let
-        --         ids = filter ((/=) "") (split "/" str)
-        --
-        --         go : String -> (Entries.Model, List (Effects Entries.Action)) -> (Entries.Model, List (Effects Entries.Action))
-        --         go id_ (model, effects) =
-        --             let (newM, newE) = Entries.update (GetEntryFor id_) model
-        --             in  (newM, newE :: effects)
-        --
-        --         (newEntriesModel, effects) = foldl go (model.entries, []) ids
-        --     in  ( { model | entries <- newEntriesModel }
-        --         , Effects.batch <| map (Effects.map EntryAction) effects
-        --         )
+        UrlParam ["recent"] ->
+            let (newModel, newEffects) =
+                Matches.update Matches.GetRecents model.matches
+            in ( { model |
+                   matches <- newModel }
+               , Effects.map MatchAction newEffects
+               )
         UrlParam ids ->
             let
-                -- ids = filter ((/=) "") (split "/" str)
-
                 go : String -> (Entries.Model, List (Effects Entries.Action)) -> (Entries.Model, List (Effects Entries.Action))
                 go id_ (model, effects) =
                     let (newM, newE) = Entries.update (GetEntryFor id_) model
                     in  (newM, newE :: effects)
 
                 (newEntriesModel, effects) = foldl go (model.entries, [ Entries.updateUrl [""] ]) ids
-            in  ( { model | entries <- newEntriesModel }
+            in
+                ( { model | entries <- newEntriesModel }
                 , Effects.batch <| map (Effects.map EntryAction) effects
                 )
 

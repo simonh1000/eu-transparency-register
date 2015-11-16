@@ -10,7 +10,7 @@ var Promise = require("bluebird");
 var processor = require("./processor");
 
 /* *NEEDS TO BE VAR ***************************** */
-var mongoUrl = process.env.MONGO_URI || "mongodb://hotbelgo:ber3la6mo6nT@ds047114.mongolab.com:47114/euregister";
+var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:27017/lobby";
 
 // Collection names
 const REGISTER = 'register';
@@ -49,9 +49,9 @@ function getXls(fname) {
 // Reads xls file from disk and returns as json
 function xls2Json(fname) {
 	return new Promise( (resolve, reject) => {
-		console.log("Reading data", fname+'.xls');
+		console.log(`ingest: Reading ${fname}.xls, for insertion in ${mongoUrl}`);
 		var wbook = XLSX.readFile(fname+'.xls');
-		console.log("Converting to json...");
+		console.log("ingest: Converting to json...");
 
 		var worksheet = wbook.Sheets[SHEET_NAME];
 
@@ -83,6 +83,8 @@ function rawMapper(entry) {
 				return parseInt(val);
 			case 'costsAbsolute':
 				return parseInt(val);
+			case 'noFTEs':
+				return parseFloat(val);
 			default: return val
 		}
 	}
@@ -213,11 +215,12 @@ function handleUpdate(fname, cb) {
 		// returns {newEntries: [Entry], updates: [Entry]}
 		let newUpdated = getNewOrUpdatedEntries(existingKeyedData, newData);
 
-		// Create new doc {_id: date, entries: [{id, name}], updates:...}
+		// Create new doc {_id: date, entries: [{_id, name}], updates:...}
+		// store using _id in the array so that Elm can use same decoder for this as for search results
 		let changesObj = {
 			_id: moment().format(),
-			entries: newUpdated.newEntries.map( e => ({id:e._id, orgName:e.orgName}) ),
-			updates: newUpdated.updates.map( e => ({id:e._id, orgName:e.orgName}) )
+			entries: newUpdated.newEntries.map( e => ({_id:e._id, orgName:e.orgName}) ),
+			updates: newUpdated.updates.map( e => ({_id:e._id, orgName:e.orgName}) )
 		};
 		let changesPromise =
 			db.collection(CHANGES).insertOne(changesObj)
@@ -309,11 +312,12 @@ function insertLocal(fname, cb) {
 		let coll = db.collection(REGISTER);
 
 		coll.drop();
+		console.log('ingest: insertLocal - replacing DB');
 
 		coll.insertMany(newJson, (err, res) => {
 			if (err) throw err;
 
-			console.log(`ingester: Inserted ${res.insertedCount} entries into ${REGISTER}. Closing DB connection`);
+			console.log(`ingest: Inserted ${res.insertedCount} entries into ${REGISTER}. Closing DB connection`);
 			db.close();
             cb();
 		});
@@ -328,9 +332,10 @@ function insertLocal(fname, cb) {
 // 	.catch( err => console.error(err) );
 
 // run update from local file
-// handleUpdate('./tmp')
+// handleUpdate('./reg16-11')
+// 	.then( ingestRes => Promise.all([Promise.resolve(ingestRes), processor.makeSummaryData()]) )
 // 	.then( () => console.log('done') )
 // 	.catch( err => console.error(err) );
 
 // Re-initialise data from local file
-insertLocal('./oct28', () => console.log("done"))
+// insertLocal('./oct28', () => console.log("done"))

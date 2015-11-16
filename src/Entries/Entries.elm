@@ -43,9 +43,8 @@ type Action =
 update : Action -> Model -> (Model, Effects Action)
 update action model =
     let
-        -- addMessage : String -> Model -> Model
-        -- addMessage str model = { model | message <- str ++ model.message }
-
+        -- once we have the data (whihc might be immediately if in cache),
+        -- add to displayed list and start animation
         insertEntry : String -> (Model, Effects Action)
         insertEntry id =
             let newDisplayed = id :: model.displayed
@@ -68,7 +67,7 @@ update action model =
         EntryReceived (Result.Ok entry) ->
             let (newModel, newEffects) = insertEntry entry.id
             in
-            ( { newModel | cache <- insert entry.id (Entry.init entry) newModel.cache }
+            ( { newModel | cache <- insert entry.id (Entry.init entry) newModel.cache, message <- entry.id }
             , newEffects
             )
         EntryReceived (Result.Err msg) ->
