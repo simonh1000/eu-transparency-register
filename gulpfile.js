@@ -17,20 +17,23 @@ var paths = {
 	home    : ['src/index.jade'],
 	scss    : ['src/**/*.scss'],
 	elm     : "src/**/*.elm",
-	elmMain     : "src/Main.elm",
+	elmMain : "src/Main.elm",
 	copy    : "src/Summary/d3.js"
 };
 
 /*
  * S E R V E R
  */
+var config = require("./ignore/settings");
+
 gulp.task('serve', function(cb){
 	var called = false;
 	return nodemon({
 		"script": 'server/bin/www',     // port 5000 by default
 	    "watch": paths.server,
 		"ext": "js",
-		"env": require("./ignore/settings")
+		// "env": {'NODE_ENV' : "development"}
+		"env": config
 	})
 	.on('start', function () {
 		if (!called) {
@@ -112,6 +115,15 @@ gulp.task('compilation', ['home', 'sass', 'copyjs']);
  */
 gulp.task('default', ['compilation', 'elm-compile', 'watch']);
 
+// gulp.task('ingest', function(cb) {
+// 	var command =  'npm run env MONGO_URI='+config.MONGO_URI+ ' server/api/register/ingest';
+//
+// 	require('child_process').exec(command, function (err, stdout, stderr) {
+//     console.log(stdout);
+//     console.log(stderr);
+//     cb(err);
+//   });
+// });
 /* ******
 
 gulp.task('injectjs', ['home'], function() {

@@ -10,7 +10,7 @@ var Promise = require("bluebird");
 var processor = require("./processor");
 
 /* *NEEDS TO BE VAR ***************************** */
-var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:27017/lobby";
+var mongoUrl = process.env.MONGO_URI || "mongodb://hotbelgo:ber3la6mo6nT@ds047114.mongolab.com:47114/euregister"
 
 // Collection names
 const REGISTER = 'register';
@@ -181,7 +181,7 @@ function getChanges(existing, newData) {
 	console.log('ingest: newEntryCount', newEntries.length);
 	console.log('ingest: newDataCount', updates.length);
 	return {
-		newEntries: newEntries,
+		entries: newEntries,
 		updates: updates
 	}
 }
@@ -221,11 +221,9 @@ function handleUpdate(fname, cb) {
 		let newUpdated = getChanges(existingKeyedData, newData);
 		// add date as _id
 		newUpdated._id = moment().format();
-		// let changesObj = {
-		// 	_id: moment().format(),
-		// 	entries: newUpdated.newEntries; // .map( e => ({_id:e._id, orgName:e.orgName}) ),
-		// 	updates: newUpdated.updates; //.map( e => ({_id:e._id, orgName:e.orgName}) )
-		// };
+		// ********
+		// only add non-empty lists
+		// ***********************
 		let changesPromise =
 			db.collection(CHANGES)
 			.insertOne(newUpdated)

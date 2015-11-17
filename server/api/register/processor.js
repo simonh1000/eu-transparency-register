@@ -3,7 +3,7 @@
 var mongoClient = require('mongodb');
 var Promise = require("bluebird");
 
-var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:27017/lobby";
+var mongoUrl = process.env.MONGO_URI || "mongodb://hotbelgo:ber3la6mo6nT@ds047114.mongolab.com:47114/euregister";
 
 const REGISTER = 'register';
 const SUMMARY = 'summary';

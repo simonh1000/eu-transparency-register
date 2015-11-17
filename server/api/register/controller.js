@@ -101,11 +101,14 @@ exports.newentries = (req, res) => {
 		// results likely to be an array of several elements, so combine them
 		let combined =
 			data.reduce(
-				(acc, dataset) => ( { entries: acc.entries.concat(dataset.newEntries),
-					                  updates: acc.updates.concat(dataset.updates) } ),
+				(acc, dataset) => {
+					console.log(dataset.newEntries);
+					return { entries: acc.entries.concat(dataset.entries),
+					         updates: acc.updates.concat(dataset.updates) }
+				 },
 				{ entries: [], updates: [] }
 			);
-
+		// console.log(combined.entries);
 		res.send(combined);
 	} );
 };
