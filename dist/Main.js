@@ -258,28 +258,32 @@ Elm.App.make = function (_elm) {
    model) {
       return A2($Html.div,
       _L.fromArray([$Html$Attributes.$class(A2($Basics._op["++"],
-      "container ",
+      "App ",
       $Basics.toString(model.navbar.page)))]),
       _L.fromArray([A2($Nav.view,
                    A2($Signal.forwardTo,
                    address,
                    NavAction),
                    model.navbar)
-                   ,A2(helpModal,address,model)
-                   ,_U.eq(model.navbar.page,
-                   $Nav.Summary) ? A2($Summary$Summary.view,
-                   A2($Signal.forwardTo,
-                   address,
-                   SummaryAction),
-                   model.summary) : A2($Register.view,
-                   A2($Signal.forwardTo,
-                   address,
-                   RegisterAction),
-                   model.register)
-                   ,footerDiv(address)
                    ,A2($Html.div,
-                   _L.fromArray([]),
-                   _L.fromArray([$Html.text(model.msg)]))]));
+                   _L.fromArray([$Html$Attributes.$class("container")]),
+                   _L.fromArray([A2(helpModal,
+                                address,
+                                model)
+                                ,_U.eq(model.navbar.page,
+                                $Nav.Summary) ? A2($Summary$Summary.view,
+                                A2($Signal.forwardTo,
+                                address,
+                                SummaryAction),
+                                model.summary) : A2($Register.view,
+                                A2($Signal.forwardTo,
+                                address,
+                                RegisterAction),
+                                model.register)
+                                ,footerDiv(address)
+                                ,A2($Html.div,
+                                _L.fromArray([]),
+                                _L.fromArray([$Html.text(model.msg)]))]))]));
    });
    var MetaReceived = function (a) {
       return {ctor: "MetaReceived"
@@ -15224,6 +15228,7 @@ Elm.Nav.make = function (_elm) {
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $Html$Events = Elm.Html.Events.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
@@ -15272,40 +15277,86 @@ Elm.Nav.make = function (_elm) {
                                ,Summary]],
               model);}
          _U.badCase($moduleName,
-         "between lines 34 and 39");
+         "between lines 35 and 40");
       }();
    });
    var view = F2(function (address,
    model) {
-      return A2($Html.nav,
-      _L.fromArray([$Html$Attributes.$class("row")]),
-      _L.fromArray([A2($Html.h1,
-                   _L.fromArray([$Html$Attributes.$class("col-xs-6")]),
-                   _L.fromArray([$Html.text("European Lobby Register ")
-                                ,A2($Html.span,
-                                _L.fromArray([]),
-                                _L.fromArray([$Html.text(A2($Basics._op["++"],
-                                "(",
-                                A2($Basics._op["++"],
-                                model.regCount,
-                                " entries)")))]))]))
-                   ,A2($Html.ul,
-                   _L.fromArray([$Html$Attributes.$class("col-xs-6 menu")]),
-                   _L.fromArray([A2($Html.li,
-                                _L.fromArray([A2($Html$Events.onClick,
-                                address,
-                                GoRecent)]),
-                                _L.fromArray([$Html.text($Basics.toString(Recent))]))
-                                ,A2($Html.li,
-                                _L.fromArray([A2($Html$Events.onClick,
-                                address,
-                                GoRegister)]),
-                                _L.fromArray([$Html.text($Basics.toString(Register))]))
-                                ,A2($Html.li,
-                                _L.fromArray([A2($Html$Events.onClick,
-                                address,
-                                GoSummary)]),
-                                _L.fromArray([$Html.text($Basics.toString(Summary))]))]))]));
+      return function () {
+         var onNavClick = function (act) {
+            return A4($Html$Events.onWithOptions,
+            "click",
+            {_: {}
+            ,preventDefault: true
+            ,stopPropagation: true},
+            $Json$Decode.succeed(act),
+            $Signal.message(address));
+         };
+         return A2($Html.nav,
+         _L.fromArray([$Html$Attributes.$class("navbar navbar-inverse")]),
+         _L.fromArray([A2($Html.div,
+         _L.fromArray([$Html$Attributes.$class("container")]),
+         _L.fromArray([A2($Html.div,
+                      _L.fromArray([$Html$Attributes.$class("navbar-header")]),
+                      _L.fromArray([A2($Html.button,
+                                   _L.fromArray([$Html$Attributes.type$("button")
+                                                ,$Html$Attributes.$class("navbar-toggle collapsed")
+                                                ,A2($Html$Attributes.attribute,
+                                                "data-toggle",
+                                                "collapse")
+                                                ,A2($Html$Attributes.attribute,
+                                                "data-target",
+                                                "#navbar")
+                                                ,A2($Html$Attributes.attribute,
+                                                "aria-expanded",
+                                                "false")]),
+                                   _L.fromArray([A2($Html.span,
+                                                _L.fromArray([$Html$Attributes.$class("sr-only")]),
+                                                _L.fromArray([$Html.text("Toggle navigation")]))
+                                                ,A2($Html.span,
+                                                _L.fromArray([$Html$Attributes.$class("icon-bar")]),
+                                                _L.fromArray([]))
+                                                ,A2($Html.span,
+                                                _L.fromArray([$Html$Attributes.$class("icon-bar")]),
+                                                _L.fromArray([]))
+                                                ,A2($Html.span,
+                                                _L.fromArray([$Html$Attributes.$class("icon-bar")]),
+                                                _L.fromArray([]))]))
+                                   ,A2($Html.a,
+                                   _L.fromArray([$Html$Attributes.$class("navbar-brand")
+                                                ,$Html$Attributes.href("/")]),
+                                   _L.fromArray([$Html.text("EU Lobby Register ")
+                                                ,A2($Html.span,
+                                                _L.fromArray([$Html$Attributes.$class("hidden-xs")]),
+                                                _L.fromArray([$Html.text(A2($Basics._op["++"],
+                                                "(",
+                                                A2($Basics._op["++"],
+                                                model.regCount,
+                                                " entries)")))]))]))]))
+                      ,A2($Html.div,
+                      _L.fromArray([$Html$Attributes.$class("collapse navbar-collapse")
+                                   ,$Html$Attributes.id("navbar")]),
+                      _L.fromArray([A2($Html.ul,
+                      _L.fromArray([$Html$Attributes.$class("nav navbar-nav")]),
+                      _L.fromArray([A2($Html.li,
+                                   _L.fromArray([]),
+                                   _L.fromArray([A2($Html.a,
+                                   _L.fromArray([$Html$Attributes.href("#")
+                                                ,onNavClick(GoRegister)]),
+                                   _L.fromArray([$Html.text($Basics.toString(Register))]))]))
+                                   ,A2($Html.li,
+                                   _L.fromArray([]),
+                                   _L.fromArray([A2($Html.a,
+                                   _L.fromArray([$Html$Attributes.href("#")
+                                                ,onNavClick(GoRecent)]),
+                                   _L.fromArray([$Html.text("Recent changes")]))]))
+                                   ,A2($Html.li,
+                                   _L.fromArray([]),
+                                   _L.fromArray([A2($Html.a,
+                                   _L.fromArray([$Html$Attributes.href("#")
+                                                ,onNavClick(GoSummary)]),
+                                   _L.fromArray([$Html.text($Basics.toString(Summary))]))]))]))]))]))]));
+      }();
    });
    _elm.Nav.values = {_op: _op
                      ,init: init

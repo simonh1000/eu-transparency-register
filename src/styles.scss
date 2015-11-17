@@ -4,36 +4,39 @@
 @import "Filters/filters.scss";
 @import "Entries/entries.scss";
 
-nav, footer {
+footer {
     display: block;
-    // height: 80px;
+    height: 80px;
     background-color: #222;
 }
 
 nav {
-    padding: 15px 0;
-    h1 {
-        font-size: 18px;
-        float: left;
-        margin: 0;
-        color: rgb(193, 209, 240);
-        span {
-            font-size: 14px;
-        }
+    &.navbar {
+        margin-bottom: 0;
     }
-    ul {
-        text-align: right;
-        list-style-type: none;
-        li {
-            margin-left: 10px;
-            color: white;
-            display: inline;
-            cursor: pointer;
-            &:hover {
-                text-decoration: underline;
-            }
-        }
+//     padding: 15px 0;
+//     h1 {
+//         font-size: 18px;
+//         float: left;
+//         margin: 0;
+//         color: rgb(193, 209, 240);
+    .navbar-brand span {
+        font-size: 14px;
     }
+//     }
+//     ul {
+//         text-align: right;
+//         list-style-type: none;
+//         li {
+//             margin-left: 10px;
+//             color: white;
+//             display: inline;
+//             cursor: pointer;
+//             &:hover {
+//                 text-decoration: underline;
+//             }
+//         }
+//     }
 }
 
 .help-modal {
@@ -64,7 +67,7 @@ footer {
         height: 100%;
         background-image: url(flags.jpg);
         background-size: cover;
-        & > div, .container {
+        & > div, .App, .App .container {
             height: 100%;
         }
         #register {
@@ -76,11 +79,11 @@ footer {
         background-color: rgb(236, 236, 236);
         font-family: sans-serif;
     }
-    nav {
-        h1 {
-            font-size: 28px;
-        }
-    }
+    // nav {
+    //     h1 {
+    //         font-size: 28px;
+    //     }
+    // }
 
     #register {
         height: calc(100% - 85px);    // 60 (filters) + 25 (footer)

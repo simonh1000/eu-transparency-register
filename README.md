@@ -9,3 +9,9 @@ elm-package install
 
 gulp
 ```
+
+## ToDo
+
+ - Switch to typescript
+ - Improve navbar
+ - add countries summary pie chart

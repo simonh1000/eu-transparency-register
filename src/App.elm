@@ -140,14 +140,16 @@ update action model =
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-    div [ class <| "container " ++ toString model.navbar.page ]
+    div [ class <| "App " ++ toString model.navbar.page ]
         [ Nav.view (Signal.forwardTo address NavAction) model.navbar
-        , helpModal address model
-        , if model.navbar.page == Summary
-            then Summary.view (Signal.forwardTo address SummaryAction) model.summary
-            else Register.view (Signal.forwardTo address RegisterAction) model.register
-        , footerDiv address
-        , div [] [ text model.msg ]
+        , div [ class "container" ]
+            [ helpModal address model
+            , if model.navbar.page == Summary
+                then Summary.view (Signal.forwardTo address SummaryAction) model.summary
+                else Register.view (Signal.forwardTo address RegisterAction) model.register
+            , footerDiv address
+            , div [] [ text model.msg ]
+            ]
         ]
 
 footerDiv : Signal.Address Action -> Html
