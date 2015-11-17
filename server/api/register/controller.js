@@ -93,30 +93,29 @@ exports.sections = (req, res) => {
 exports.newentries = (req, res) => {
 	// find all records with id < 14 days ago
 	// concat results
-	let minus14 = moment().subtract(14, 'days').format();
+	let minus7 = moment().subtract(7, 'days').format();
 
-	changes.find({_id: {$gte: minus14}})
+	changes.find({_id: {$gte: minus7}})
 	.toArray( (err, data) => {
-		if (err) return res.status(500).end();
+		if (err) return res.sendStatus(500).end();
 		// results likely to be an array of several elements, so combine them
 		let combined =
 			data.reduce(
-				(acc, dataset) => ( { entries: acc.entries.concat(dataset.entries),
+				(acc, dataset) => ( { entries: acc.entries.concat(dataset.newEntries),
 					                  updates: acc.updates.concat(dataset.updates) } ),
-				{ entries: [], updates: []}
+				{ entries: [], updates: [] }
 			);
 
 		res.send(combined);
 	} );
 };
 
-// test route
-// router.get('/', (req, res) => {
-exports.test = (req, res) => {
-	register.find({'orgName': {'$regex': 'goog', $options: 'i'}})
-	.toArray( (err, data) => {
+// provides total count
+exports.meta = (req, res) => {
+	register.find({})
+	.count( (err, data) => {
 		if (err) throw err;
 		// delaySend(data, res);
-		res.send(data);
+		res.send({count:data});
 	});
 };

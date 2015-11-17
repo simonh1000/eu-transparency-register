@@ -10,6 +10,7 @@ const SUMMARY = 'summary';
 // document _id's
 const INTERESTS = 'interests';
 const SECTIONS = 'sections';
+const COUNTRIES = 'countries';
 
 var interests = require('./field_headers').interests;
 
@@ -91,7 +92,26 @@ function countSections(db) {
 		return db.collection(SUMMARY)
 				.replaceOne({_id: SECTIONS}, {_id: SECTIONS, 'data': mergedResults}, {upsert: true});
 	})
-	.catch( err => Promise.reject(err) );
+	// .catch( err => Promise.reject(err) );
+}
+
+/*
+ * Calculates numbers and spend per 'sub-section'
+ * stores results in 'sections' collection
+ */
+function countCountries(db) {
+	let register = db.collection(REGISTER);
+
+	let countries = register.aggregate([
+		{ "$group" : {_id : "$hqCountry", count: {$sum: 1} } }
+	]);
+
+	return countries.toArray()
+		.then( results => {
+			console.log(`Countries Promise returned ${results.length} countries in DB`);
+			return db.collection(SUMMARY)
+					.replaceOne({_id: COUNTRIES}, {_id: COUNTRIES, 'data': results}, {upsert: true});
+		} );
 }
 
 exports.makeSummaryData = function() {
@@ -101,7 +121,8 @@ exports.makeSummaryData = function() {
 		db = _db;
 		return Promise.all([
 				countInterests(db),
-				countSections(db)
+				countSections(db),    // .then( result => ({"sections": result.upserted}) ),
+				countCountries(db)
 			  ]);
 	})
 	.then( results => {

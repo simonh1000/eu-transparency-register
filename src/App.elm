@@ -7,37 +7,47 @@ import String exposing (split, toLower)
 import List exposing (head, tail, filter)
 
 import History
-import Task exposing (..)
+import Http
+import Json.Decode as Json exposing ( (:=) )
+import Task exposing (Task)
 import Effects exposing (Effects)
 
 import Register exposing (Action(..))
 import Nav exposing (Page(..), Action(..))
 import Summary.Summary as Summary
 import Help
+import Common
 
 -- MODEL
 
 type alias Model =
-    { page : Page
+    { navbar : Nav.Model
+    -- , page : Nav.Page
+    -- , regCount : String
     , register : Register.Model
     , summary : Summary.Model
-    , help    : Bool
+    , help : Bool
+    , msg : String
     }
 
 init : (Model, Effects Action)
 init =
-    ( { page = Register
+    ( { navbar = Nav.init Register ""
+    --   , page = Register
+    --   , regCount = ""
       , register = fst Register.init
       , summary = Summary.init
       , help = False
+      , msg = ""
       }
-    , Effects.none
+    , getMeta
     )
 
 -- UPDATE
 
 type Action =
     UrlParam String
+    | MetaReceived (Result Http.Error String)
     | RegisterAction Register.Action
     | NavAction Nav.Action
     | SummaryAction Summary.Action
@@ -53,7 +63,7 @@ update action model =
             in
             case head urlElems of
                 Just "summary" ->
-                    ( { model | page <- Summary }
+                    ( { model | navbar <- Nav.update GoSummary model.navbar }
                     , Effects.map SummaryAction <|
                         snd (Summary.update Summary.Activate model.summary)
                     )
@@ -62,50 +72,49 @@ update action model =
                         Register.update (Register.UrlParam urlElems) model.register
                     in  ( { model |
                               register <- newModel
-                            , page <- Register }
+                            , navbar <- Nav.update GoRegister model.navbar }
                         , Effects.map RegisterAction newEffects
                         )
                 Nothing ->
-                    ( { model | page <- Register }
+                    ( { model | navbar <- Nav.update GoRegister model.navbar }
                     , Effects.none
                     )
 
-        -- NavAction (Nav.NoOp _) -> (model, Effects.none)
+        MetaReceived (Result.Ok val)->
+            ( { model | navbar <- Nav.update (Nav.CountData val) model.navbar }
+            , Effects.none
+            )
+        MetaReceived (Result.Err err)->
+            ( { model | msg <- Common.errorHandler err }
+            , Effects.none
+            )
 
+        -- NavAction (Nav.NoOp _) -> (model, Effects.none)
         NavAction navAction ->
-            case Nav.update navAction of
-                -- model.page ->
-            -- let
-            --     newPage = Nav.update navAction
-            -- in if | newPage == model.page ->
-                        -- (model, Effects.none)
-                Summary ->
-                --   | newPage == Summary ->
-                        let (newModel, newEffects) = Summary.update Summary.Activate model.summary
-                        in
-                        ( { model | page <- Summary, summary <- newModel }
+            let tmpModel = { model | navbar <- Nav.update navAction model.navbar }
+            in
+            case navAction of
+                GoSummary ->
+                    let (newModel, newEffects) = Summary.update Summary.Activate model.summary
+                    in
+                        ( { tmpModel | summary <- newModel }
                         , Effects.map SummaryAction newEffects
                         )
-                Recent ->
+                GoRecent ->
                     let (newModel, newEffects) =
                         Register.update (Register.UrlParam ["recent"]) model.register
-                    in  ( { model |
-                            register <- newModel
-                            , page <- Register }
+                    in  ( { tmpModel | register <- newModel }
                         , Effects.batch
                             [ Effects.map RegisterAction newEffects
                             , updateUrl "recent"
                             ]
                         )
-                Register ->
-                --   | newPage == Register ->
-                      let (newModel, newEffects) =
-                          Register.update (Register.UrlParam []) model.register
-                      in  ( { model |
-                                register <- newModel
-                              , page <- Register }
-                          , Effects.map RegisterAction newEffects
-                          )
+                GoRegister ->
+                    let (newModel, newEffects) =
+                        Register.update (Register.UrlParam []) model.register
+                    in  ( { tmpModel | register <- newModel }
+                        , Effects.map RegisterAction newEffects
+                        )
 
 
         RegisterAction regAction ->
@@ -131,23 +140,27 @@ update action model =
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-    div [ class <| "container " ++ toString model.page ]
-        [ Nav.navbar (Signal.forwardTo address NavAction)
+    div [ class <| "container " ++ toString model.navbar.page ]
+        [ Nav.view (Signal.forwardTo address NavAction) model.navbar
         , helpModal address model
-        , if model.page == Summary
+        , if model.navbar.page == Summary
             then Summary.view (Signal.forwardTo address SummaryAction) model.summary
             else Register.view (Signal.forwardTo address RegisterAction) model.register
-        , helpButton address
+        , footerDiv address
+        , div [] [ text model.msg ]
         ]
 
-helpButton : Signal.Address Action -> Html
-helpButton address =
+footerDiv : Signal.Address Action -> Html
+footerDiv address =
     footer [ class "row" ]
         [ div [ class "col-xs-12" ]
-            [ button
+            [ span
+                [ ] [ text "Simon Hampton, 2015" ]
+            , button
                 [ class "btn btn-default btn-xs"
                 , onClick address Help
-                ] [ text "Notes, privacy, source code or report a problem" ]
+                ]
+                [ text "Notes, privacy, source code or report a problem" ]
             ]
         ]
 
@@ -162,6 +175,15 @@ helpModal address model =
                 ] [ text "Close" ]
             ]
         else div [] []
+
+-- TASKS
+getMeta : Effects Action
+getMeta =
+    Http.get (Json.map toString ("count" := Json.int)) ("/api/register/meta")
+        |> Task.toResult
+        |> Task.map MetaReceived
+        |> Effects.task
+
 
 updateUrl : String -> Effects Action
 updateUrl displayed =

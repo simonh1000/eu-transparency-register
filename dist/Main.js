@@ -11,12 +11,15 @@ Elm.App.make = function (_elm) {
    _L = _N.List.make(_elm),
    $moduleName = "App",
    $Basics = Elm.Basics.make(_elm),
+   $Common = Elm.Common.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $Help = Elm.Help.make(_elm),
    $History = Elm.History.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $Html$Events = Elm.Html.Events.make(_elm),
+   $Http = Elm.Http.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Nav = Elm.Nav.make(_elm),
@@ -33,17 +36,20 @@ Elm.App.make = function (_elm) {
       return $Effects.task($Task.map(NoOp)($Task.toMaybe($History.replacePath(displayed))));
    };
    var Help = {ctor: "Help"};
-   var helpButton = function (address) {
+   var footerDiv = function (address) {
       return A2($Html.footer,
       _L.fromArray([$Html$Attributes.$class("row")]),
       _L.fromArray([A2($Html.div,
       _L.fromArray([$Html$Attributes.$class("col-xs-12")]),
-      _L.fromArray([A2($Html.button,
-      _L.fromArray([$Html$Attributes.$class("btn btn-default btn-xs")
-                   ,A2($Html$Events.onClick,
-                   address,
-                   Help)]),
-      _L.fromArray([$Html.text("Notes, privacy, source code or report a problem")]))]))]));
+      _L.fromArray([A2($Html.span,
+                   _L.fromArray([]),
+                   _L.fromArray([$Html.text("Simon Hampton, 2015")]))
+                   ,A2($Html.button,
+                   _L.fromArray([$Html$Attributes.$class("btn btn-default btn-xs")
+                                ,A2($Html$Events.onClick,
+                                address,
+                                Help)]),
+                   _L.fromArray([$Html.text("Notes, privacy, source code or report a problem")]))]))]));
    };
    var helpModal = F2(function (address,
    model) {
@@ -81,61 +87,81 @@ Elm.App.make = function (_elm) {
                                     ,$Basics.not(model.help)]],
                    model)
                    ,_1: $Effects.none};
+            case "MetaReceived":
+            switch (action._0.ctor)
+              {case "Err":
+                 return {ctor: "_Tuple2"
+                        ,_0: _U.replace([["msg"
+                                         ,$Common.errorHandler(action._0._0)]],
+                        model)
+                        ,_1: $Effects.none};
+                 case "Ok":
+                 return {ctor: "_Tuple2"
+                        ,_0: _U.replace([["navbar"
+                                         ,A2($Nav.update,
+                                         $Nav.CountData(action._0._0),
+                                         model.navbar)]],
+                        model)
+                        ,_1: $Effects.none};}
+              break;
             case "NavAction":
             return function () {
-                 var _v6 = $Nav.update(action._0);
-                 switch (_v6.ctor)
-                 {case "Recent":
-                    return function () {
-                         var $ = A2($Register.update,
-                         $Register.UrlParam(_L.fromArray(["recent"])),
-                         model.register),
-                         newModel = $._0,
-                         newEffects = $._1;
-                         return {ctor: "_Tuple2"
-                                ,_0: _U.replace([["register"
-                                                 ,newModel]
-                                                ,["page",$Nav.Register]],
-                                model)
-                                ,_1: $Effects.batch(_L.fromArray([A2($Effects.map,
-                                                                 RegisterAction,
-                                                                 newEffects)
-                                                                 ,updateUrl("recent")]))};
-                      }();
-                    case "Register":
-                    return function () {
-                         var $ = A2($Register.update,
-                         $Register.UrlParam(_L.fromArray([])),
-                         model.register),
-                         newModel = $._0,
-                         newEffects = $._1;
-                         return {ctor: "_Tuple2"
-                                ,_0: _U.replace([["register"
-                                                 ,newModel]
-                                                ,["page",$Nav.Register]],
-                                model)
-                                ,_1: A2($Effects.map,
-                                RegisterAction,
-                                newEffects)};
-                      }();
-                    case "Summary":
-                    return function () {
-                         var $ = A2($Summary$Summary.update,
-                         $Summary$Summary.Activate,
-                         model.summary),
-                         newModel = $._0,
-                         newEffects = $._1;
-                         return {ctor: "_Tuple2"
-                                ,_0: _U.replace([["page"
-                                                 ,$Nav.Summary]
-                                                ,["summary",newModel]],
-                                model)
-                                ,_1: A2($Effects.map,
-                                SummaryAction,
-                                newEffects)};
-                      }();}
-                 _U.badCase($moduleName,
-                 "between lines 76 and 111");
+                 var tmpModel = _U.replace([["navbar"
+                                            ,A2($Nav.update,
+                                            action._0,
+                                            model.navbar)]],
+                 model);
+                 return function () {
+                    switch (action._0.ctor)
+                    {case "GoRecent":
+                       return function () {
+                            var $ = A2($Register.update,
+                            $Register.UrlParam(_L.fromArray(["recent"])),
+                            model.register),
+                            newModel = $._0,
+                            newEffects = $._1;
+                            return {ctor: "_Tuple2"
+                                   ,_0: _U.replace([["register"
+                                                    ,newModel]],
+                                   tmpModel)
+                                   ,_1: $Effects.batch(_L.fromArray([A2($Effects.map,
+                                                                    RegisterAction,
+                                                                    newEffects)
+                                                                    ,updateUrl("recent")]))};
+                         }();
+                       case "GoRegister":
+                       return function () {
+                            var $ = A2($Register.update,
+                            $Register.UrlParam(_L.fromArray([])),
+                            model.register),
+                            newModel = $._0,
+                            newEffects = $._1;
+                            return {ctor: "_Tuple2"
+                                   ,_0: _U.replace([["register"
+                                                    ,newModel]],
+                                   tmpModel)
+                                   ,_1: A2($Effects.map,
+                                   RegisterAction,
+                                   newEffects)};
+                         }();
+                       case "GoSummary":
+                       return function () {
+                            var $ = A2($Summary$Summary.update,
+                            $Summary$Summary.Activate,
+                            model.summary),
+                            newModel = $._0,
+                            newEffects = $._1;
+                            return {ctor: "_Tuple2"
+                                   ,_0: _U.replace([["summary"
+                                                    ,newModel]],
+                                   tmpModel)
+                                   ,_1: A2($Effects.map,
+                                   SummaryAction,
+                                   newEffects)};
+                         }();}
+                    _U.badCase($moduleName,
+                    "between lines 96 and 120");
+                 }();
               }();
             case "NoOp":
             return {ctor: "_Tuple2"
@@ -181,13 +207,15 @@ Elm.App.make = function (_elm) {
                  "/",
                  action._0));
                  return function () {
-                    var _v7 = $List.head(urlElems);
-                    switch (_v7.ctor)
-                    {case "Just": switch (_v7._0)
+                    var _v10 = $List.head(urlElems);
+                    switch (_v10.ctor)
+                    {case "Just": switch (_v10._0)
                          {case "summary":
                             return {ctor: "_Tuple2"
-                                   ,_0: _U.replace([["page"
-                                                    ,$Nav.Summary]],
+                                   ,_0: _U.replace([["navbar"
+                                                    ,A2($Nav.update,
+                                                    $Nav.GoSummary,
+                                                    model.navbar)]],
                                    model)
                                    ,_1: $Effects.map(SummaryAction)($Basics.snd(A2($Summary$Summary.update,
                                    $Summary$Summary.Activate,
@@ -201,7 +229,10 @@ Elm.App.make = function (_elm) {
                             return {ctor: "_Tuple2"
                                    ,_0: _U.replace([["register"
                                                     ,newModel]
-                                                   ,["page",$Nav.Register]],
+                                                   ,["navbar"
+                                                    ,A2($Nav.update,
+                                                    $Nav.GoRegister,
+                                                    model.navbar)]],
                                    model)
                                    ,_1: A2($Effects.map,
                                    RegisterAction,
@@ -209,16 +240,18 @@ Elm.App.make = function (_elm) {
                          }();
                        case "Nothing":
                        return {ctor: "_Tuple2"
-                              ,_0: _U.replace([["page"
-                                               ,$Nav.Register]],
+                              ,_0: _U.replace([["navbar"
+                                               ,A2($Nav.update,
+                                               $Nav.GoRegister,
+                                               model.navbar)]],
                               model)
                               ,_1: $Effects.none};}
                     _U.badCase($moduleName,
-                    "between lines 54 and 75");
+                    "between lines 64 and 83");
                  }();
               }();}
          _U.badCase($moduleName,
-         "between lines 49 and 128");
+         "between lines 59 and 137");
       }();
    });
    var view = F2(function (address,
@@ -226,12 +259,14 @@ Elm.App.make = function (_elm) {
       return A2($Html.div,
       _L.fromArray([$Html$Attributes.$class(A2($Basics._op["++"],
       "container ",
-      $Basics.toString(model.page)))]),
-      _L.fromArray([$Nav.navbar(A2($Signal.forwardTo,
+      $Basics.toString(model.navbar.page)))]),
+      _L.fromArray([A2($Nav.view,
+                   A2($Signal.forwardTo,
                    address,
-                   NavAction))
+                   NavAction),
+                   model.navbar)
                    ,A2(helpModal,address,model)
-                   ,_U.eq(model.page,
+                   ,_U.eq(model.navbar.page,
                    $Nav.Summary) ? A2($Summary$Summary.view,
                    A2($Signal.forwardTo,
                    address,
@@ -241,8 +276,22 @@ Elm.App.make = function (_elm) {
                    address,
                    RegisterAction),
                    model.register)
-                   ,helpButton(address)]));
+                   ,footerDiv(address)
+                   ,A2($Html.div,
+                   _L.fromArray([]),
+                   _L.fromArray([$Html.text(model.msg)]))]));
    });
+   var MetaReceived = function (a) {
+      return {ctor: "MetaReceived"
+             ,_0: a};
+   };
+   var getMeta = $Effects.task($Task.map(MetaReceived)($Task.toResult(A2($Http.get,
+   A2($Json$Decode.map,
+   $Basics.toString,
+   A2($Json$Decode._op[":="],
+   "count",
+   $Json$Decode.$int)),
+   "/api/register/meta"))));
    var UrlParam = function (a) {
       return {ctor: "UrlParam"
              ,_0: a};
@@ -250,17 +299,22 @@ Elm.App.make = function (_elm) {
    var init = {ctor: "_Tuple2"
               ,_0: {_: {}
                    ,help: false
-                   ,page: $Nav.Register
+                   ,msg: ""
+                   ,navbar: A2($Nav.init,
+                   $Nav.Register,
+                   "")
                    ,register: $Basics.fst($Register.init)
                    ,summary: $Summary$Summary.init}
-              ,_1: $Effects.none};
-   var Model = F4(function (a,
+              ,_1: getMeta};
+   var Model = F5(function (a,
    b,
    c,
-   d) {
+   d,
+   e) {
       return {_: {}
              ,help: d
-             ,page: a
+             ,msg: e
+             ,navbar: a
              ,register: b
              ,summary: c};
    });
@@ -1686,6 +1740,35 @@ Elm.Color.make = function (_elm) {
                        ,gray: gray
                        ,darkGray: darkGray};
    return _elm.Color.values;
+};
+Elm.Common = Elm.Common || {};
+Elm.Common.make = function (_elm) {
+   "use strict";
+   _elm.Common = _elm.Common || {};
+   if (_elm.Common.values)
+   return _elm.Common.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Common",
+   $Basics = Elm.Basics.make(_elm),
+   $Http = Elm.Http.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var errorHandler = function (err) {
+      return function () {
+         switch (err.ctor)
+         {case "UnexpectedPayload":
+            return err._0;}
+         return "http error";
+      }();
+   };
+   _elm.Common.values = {_op: _op
+                        ,errorHandler: errorHandler};
+   return _elm.Common.values;
 };
 Elm.Debug = Elm.Debug || {};
 Elm.Debug.make = function (_elm) {
@@ -6567,7 +6650,7 @@ Elm.Matches.Matches.make = function (_elm) {
    var FilterMatches = {ctor: "FilterMatches"};
    var init = {_: {}
               ,matches: _L.fromArray([])
-              ,message: ""
+              ,message: "Use the filters above to find some registrees"
               ,newstuff: A2($Matches$MatchesDecoder.initNew,
               _L.fromArray([]),
               _L.fromArray([]))
@@ -15148,30 +15231,64 @@ Elm.Nav.make = function (_elm) {
    var NoOp = function (a) {
       return {ctor: "NoOp",_0: a};
    };
+   var CountData = function (a) {
+      return {ctor: "CountData"
+             ,_0: a};
+   };
    var GoRecent = {ctor: "GoRecent"};
    var GoSummary = {ctor: "GoSummary"};
    var GoRegister = {ctor: "GoRegister"};
+   var init = F2(function (p,c) {
+      return {_: {}
+             ,page: p
+             ,regCount: c};
+   });
+   var Model = F2(function (a,b) {
+      return {_: {}
+             ,page: a
+             ,regCount: b};
+   });
    var Recent = {ctor: "Recent"};
    var Summary = {ctor: "Summary"};
    var Register = {ctor: "Register"};
-   var update = function (action) {
+   var update = F2(function (action,
+   model) {
       return function () {
          switch (action.ctor)
-         {case "GoRecent": return Recent;
+         {case "CountData":
+            return _U.replace([["regCount"
+                               ,action._0]],
+              model);
+            case "GoRecent":
+            return _U.replace([["page"
+                               ,Recent]],
+              model);
             case "GoRegister":
-            return Register;
+            return _U.replace([["page"
+                               ,Register]],
+              model);
             case "GoSummary":
-            return Summary;}
+            return _U.replace([["page"
+                               ,Summary]],
+              model);}
          _U.badCase($moduleName,
-         "between lines 22 and 26");
+         "between lines 34 and 39");
       }();
-   };
-   var navbar = function (address) {
+   });
+   var view = F2(function (address,
+   model) {
       return A2($Html.nav,
       _L.fromArray([$Html$Attributes.$class("row")]),
       _L.fromArray([A2($Html.h1,
                    _L.fromArray([$Html$Attributes.$class("col-xs-6")]),
-                   _L.fromArray([$Html.text("European Lobby Register")]))
+                   _L.fromArray([$Html.text("European Lobby Register ")
+                                ,A2($Html.span,
+                                _L.fromArray([]),
+                                _L.fromArray([$Html.text(A2($Basics._op["++"],
+                                "(",
+                                A2($Basics._op["++"],
+                                model.regCount,
+                                " entries)")))]))]))
                    ,A2($Html.ul,
                    _L.fromArray([$Html$Attributes.$class("col-xs-6 menu")]),
                    _L.fromArray([A2($Html.li,
@@ -15189,17 +15306,20 @@ Elm.Nav.make = function (_elm) {
                                 address,
                                 GoSummary)]),
                                 _L.fromArray([$Html.text($Basics.toString(Summary))]))]))]));
-   };
+   });
    _elm.Nav.values = {_op: _op
+                     ,init: init
                      ,update: update
-                     ,navbar: navbar
+                     ,view: view
+                     ,Model: Model
+                     ,Register: Register
+                     ,Summary: Summary
+                     ,Recent: Recent
                      ,GoRegister: GoRegister
                      ,GoSummary: GoSummary
                      ,GoRecent: GoRecent
-                     ,NoOp: NoOp
-                     ,Register: Register
-                     ,Summary: Summary
-                     ,Recent: Recent};
+                     ,CountData: CountData
+                     ,NoOp: NoOp};
    return _elm.Nav.values;
 };
 Elm.Register = Elm.Register || {};

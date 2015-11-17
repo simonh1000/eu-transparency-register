@@ -16,7 +16,10 @@ nav {
         font-size: 18px;
         float: left;
         margin: 0;
-        color: rgb(193, 209, 240)
+        color: rgb(193, 209, 240);
+        span {
+            font-size: 14px;
+        }
     }
     ul {
         text-align: right;
@@ -50,6 +53,10 @@ h2 {
 }
 footer {
     padding: 5px 15px;
+    span {
+        color: white;
+        padding-right: 30px;
+    }
 }
 
 @media (min-width: $screen-sm) {

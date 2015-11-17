@@ -18,7 +18,7 @@ router.get('/sections', controller.sections);
 
 router.get('/recents', controller.newentries);
 
-// router.get('/update', processor.index);
+router.get('/meta', controller.meta);
 router.get('/ingest',	ingester.index);            // copies into database, and then runs post-processors
 
 module.exports = router;

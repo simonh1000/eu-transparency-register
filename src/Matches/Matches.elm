@@ -33,7 +33,7 @@ init =
     , newstuff = MatchesDecoder.initNew [] []
     , searching = False
     , resultsType = FilterMatches
-    , message = "" }
+    , message = "Use the filters above to find some registrees" }
 
 -- UPDATE
 
