@@ -15337,7 +15337,7 @@ Elm.Nav.make = function (_elm) {
                       _L.fromArray([$Html$Attributes.$class("collapse navbar-collapse")
                                    ,$Html$Attributes.id("navbar")]),
                       _L.fromArray([A2($Html.ul,
-                      _L.fromArray([$Html$Attributes.$class("nav navbar-nav")]),
+                      _L.fromArray([$Html$Attributes.$class("nav navbar-nav navbar-right")]),
                       _L.fromArray([A2($Html.li,
                                    _L.fromArray([]),
                                    _L.fromArray([A2($Html.a,
@@ -16415,7 +16415,13 @@ Elm.Summary.Summary.make = function (_elm) {
                       othersCount = $._1,
                       sections = $._2;
                       var simplifiedModel = A2($Basics._op["++"],
-                      sections,
+                      A2($List.sortBy,
+                      function ($) {
+                         return $Basics.negate(function (_) {
+                            return _.count;
+                         }($));
+                      },
+                      sections),
                       _L.fromArray([{_: {}
                                     ,budget: othersBudget
                                     ,count: othersCount
@@ -16430,7 +16436,7 @@ Elm.Summary.Summary.make = function (_elm) {
                    }();}
               break;}
          _U.badCase($moduleName,
-         "between lines 71 and 123");
+         "between lines 71 and 124");
       }();
    });
    var view = F2(function (address,

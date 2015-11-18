@@ -93,7 +93,7 @@
             }
         }
         .eContainer {
-            height: calc(100% - 30px);
+            max-height: calc(100% - 24px);
             overflow-y: scroll;
         }
     }

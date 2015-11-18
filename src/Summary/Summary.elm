@@ -87,22 +87,23 @@ update action model =
 
                 -- if budget is significant fraction of total include as is, otherwise add to 'others'
                 go : Section -> (Float, Float, List Section) -> (Float, Float, List Section)
-                go elem (accBudget, accCount, accS) =
+                go elem (othersBudg, othersCnt, accS) =
                     let
                         normCount = elem.count / totalCount
                         normBudget = elem.budget / totalBudget
                     in
                     if normBudget < 0.03
-                        then (accBudget + normBudget, accCount + normCount, accS)
+                        then (othersBudg + normBudget, othersCnt + normCount, accS)
                         else
-                            ( accBudget
-                            , accCount
+                            ( othersBudg
+                            , othersCnt
                             , { elem | count <- normCount, budget <- normBudget } :: accS
                             )
                 (othersBudget, othersCount, sections) =
                     foldl go (0, 0, []) data
                 simplifiedModel =
-                    sections ++ [{section = "Others", count = othersCount, budget = othersBudget }]
+                    (List.sortBy (negate << .count) sections) ++
+                    [{section = "Others", count = othersCount, budget = othersBudget }]
             in
             ( { model | sections <- data, sectionsSimplified <- simplifiedModel }
             , updateUrl )
