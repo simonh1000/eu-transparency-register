@@ -10,7 +10,7 @@ var Promise = require("bluebird");
 var processor = require("./processor");
 
 /* *NEEDS TO BE VAR ***************************** */
-var mongoUrl = process.env.MONGO_URI || "mongodb://hotbelgo:ber3la6mo6nT@ds047114.mongolab.com:47114/euregister"
+var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:2701/lobby"
 
 // Collection names
 const REGISTER = 'register';
@@ -146,10 +146,11 @@ function isDifferrent(existing, entry) {
 			if ((typeof entry[prop] !== 'object' && existing[prop] !== entry[prop])
 				|| (typeof entry[prop] == 'object' && !arraysEqual(existing[prop], entry[prop]))) {
 
-				// console.log(`new data for ${entry.orgName.substr(0,20)}, ${prop}: ${existing[prop]} -> ${entry[prop]}`);
+				console.log(`updated ${prop}: ${entry.orgName.substr(0,20)}: ${existing[prop]} -> ${entry[prop]}`);
 				return true;
 			}
 		} else {
+			// new data field supplied, also considered an update
 			return true;
 		}
 	}
@@ -338,15 +339,15 @@ function insertLocal(fname, cb) {
 /* MANUAL TEST
 */
 // download new data
-// getXls('./' + moment().format(DDMM))
+// getXls('./reg' + moment().format('DD-MM'))
 // 	.then( () => console.log('done') )
 // 	.catch( err => console.error(err) );
 
 // run update from local file
-// handleUpdate('./reg17-11')
+// handleUpdate('./reg18-11')
 // 	.then( ingestRes => Promise.all([Promise.resolve(ingestRes), processor.makeSummaryData()]) )
 // 	.then( console.log.bind(this) )
 // 	.catch( err => console.error(err) );
 
 // Re-initialise data from local file
-// insertLocal('./oct28', () => console.log("done"))
+// insertLocal('./reg17-11', () => console.log("done"))

@@ -6,7 +6,6 @@ import Html.Events exposing (onClick)
 import String exposing (split, toLower)
 import List exposing (head, tail, filter)
 
-import History
 import Http
 import Json.Decode as Json exposing ( (:=) )
 import Task exposing (Task)
@@ -45,76 +44,80 @@ init =
 
 -- UPDATE
 
-type Action =
-    UrlParam String
-    | MetaReceived (Result Http.Error String)
-    | RegisterAction Register.Action
+type Action
+    = UrlParam String
     | NavAction Nav.Action
     | SummaryAction Summary.Action
+    | RegisterAction Register.Action
+    | MetaReceived (Result Http.Error String)
     | Help
-    | NoOp (Maybe ())
+    -- | NoOp (Maybe ())
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
+    let
+        switchSummary =
+            let
+                navModel = Nav.update GoSummary model.navbar
+                (_, sumEffects) = Summary.update Summary.Activate model.summary
+            in  ( { model | navbar <- navModel }
+                , Effects.map SummaryAction sumEffects    -- download data, update url
+                )
+        switchRegister params =
+            let
+                navModel = Nav.update (GoRegister params) model.navbar   -- set page in model
+                (newModel, newEffects) =
+                    Register.update (Register.Activate params) model.register
+            in
+                ( { model
+                    | navbar <- navModel
+                    , register <- newModel }
+                , Effects.map RegisterAction newEffects
+                )
+    in
     case action of
+         -- download data (if necessary), switch view
         UrlParam str -> -- (model, Effects.none)
             let
                 urlElems = filter ((/=) "") (split "/" str)
             in
             case head urlElems of
-                Just "summary" ->
-                    ( { model | navbar <- Nav.update GoSummary model.navbar }
-                    , Effects.map SummaryAction <|
-                        snd (Summary.update Summary.Activate model.summary)
-                    )
-                Just _ ->
-                    let (newModel, newEffects) =
-                        Register.update (Register.UrlParam urlElems) model.register
-                    in  ( { model |
-                              register <- newModel
-                            , navbar <- Nav.update GoRegister model.navbar }
-                        , Effects.map RegisterAction newEffects
-                        )
-                Nothing ->
-                    ( { model | navbar <- Nav.update GoRegister model.navbar }
-                    , Effects.none
-                    )
-
-        MetaReceived (Result.Ok val)->
-            ( { model | navbar <- Nav.update (Nav.CountData val) model.navbar }
-            , Effects.none
-            )
-        MetaReceived (Result.Err err)->
-            ( { model | msg <- Common.errorHandler err }
-            , Effects.none
-            )
-
-        -- NavAction (Nav.NoOp _) -> (model, Effects.none)
+                Just "summary" ->  switchSummary
+                otherwise -> switchRegister urlElems
+                -- Just _ ->
+                --     let (newModel, newEffects) =
+                --         Register.update (Register.UrlParam urlElems) model.register
+                --     in  ( { model |
+                --               register <- newModel
+                --             , navbar <- Nav.update GoRegister model.navbar }
+                --         , Effects.map RegisterAction newEffects
+                --         )
+                -- Nothing ->
+                --     ( { model | navbar <- Nav.update GoRegister model.navbar }
+                --     , Effects.none
+                --     )
+        -- update URL, download data (if necessary), switch view (change page model)
         NavAction navAction ->
-            let tmpModel = { model | navbar <- Nav.update navAction model.navbar }
-            in
+            -- let tmpModel = { model | navbar <- Nav.update navAction model.navbar }
+            -- in
             case navAction of
-                GoSummary ->
-                    let (newModel, newEffects) = Summary.update Summary.Activate model.summary
-                    in
-                        ( { tmpModel | summary <- newModel }
-                        , Effects.map SummaryAction newEffects
-                        )
-                GoRecent ->
-                    let (newModel, newEffects) =
-                        Register.update (Register.UrlParam ["recent"]) model.register
-                    in  ( { tmpModel | register <- newModel }
-                        , Effects.batch
-                            [ Effects.map RegisterAction newEffects
-                            , updateUrl "recent"
-                            ]
-                        )
-                GoRegister ->
-                    let (newModel, newEffects) =
-                        Register.update (Register.UrlParam []) model.register
-                    in  ( { tmpModel | register <- newModel }
-                        , Effects.map RegisterAction newEffects
-                        )
+                GoSummary -> switchSummary
+                GoRegister params -> switchRegister params
+                -- GoRecent ->
+                --     let (newModel, newEffects) =
+                --         Register.update (Register.UrlParam ["recent"]) model.register
+                --     in  ( { tmpModel | register <- newModel }
+                --         , Effects.batch
+                --             [ Effects.map RegisterAction newEffects
+                --             , updateUrl "recent"
+                --             ]
+                --         )
+                -- GoRegister ->
+                --     let (newModel, newEffects) =
+                --         Register.update (Register.UrlParam []) model.register
+                --     in  ( { tmpModel | register <- newModel }
+                --         , Effects.map RegisterAction newEffects
+                --         )
 
 
         RegisterAction regAction ->
@@ -129,12 +132,21 @@ update action model =
                 , Effects.map SummaryAction newEffects
                 )
 
+        MetaReceived (Result.Ok val)->
+            ( { model | navbar <- Nav.update (Nav.CountData val) model.navbar }
+            , Effects.none
+            )
+        MetaReceived (Result.Err err)->
+            ( { model | msg <- Common.errorHandler err }
+            , Effects.none
+            )
+
         Help ->
             ( { model | help <- not model.help }
             , Effects.none
             )
 
-        NoOp _ -> ( model, Effects.none )
+        -- NoOp _ -> ( model, Effects.none )
 
 -- VIEW
 
@@ -184,12 +196,4 @@ getMeta =
     Http.get (Json.map toString ("count" := Json.int)) ("/api/register/meta")
         |> Task.toResult
         |> Task.map MetaReceived
-        |> Effects.task
-
-
-updateUrl : String -> Effects Action
-updateUrl displayed =
-    History.replacePath displayed
-        |> Task.toMaybe
-        |> Task.map NoOp
         |> Effects.task

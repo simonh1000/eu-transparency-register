@@ -12,6 +12,7 @@ import Effects exposing (Effects)
 import Time exposing (Time)
 import Task
 import History
+import Common exposing (errorHandler)
 
 import Chart exposing (hBar, pie, title, colours, toHtml, updateStyles)
 
@@ -71,10 +72,12 @@ update action model =
     case action of
         Activate ->
             ( model
-            , Effects.batch
+            , if List.length model.interests == 0
+              then Effects.batch
                 [ loadInterests
                 , loadSections
                 ]
+              else Effects.none
             )
         InterestData (Result.Ok data) ->
             ( { model | interests <- data }, updateUrl )
@@ -123,11 +126,6 @@ update action model =
         --     -- advance animations
         --     -- call next Tick (unless finished?)
 
-errorHandler : Http.Error -> String
-errorHandler err =
-    case err of
-        Http.UnexpectedPayload s -> s
-        otherwise -> "http error"
 
 -- VIEW
 

@@ -15,6 +15,7 @@ import Matches.MatchesDecoder as MatchesDecoder exposing (Id, matchesDecoder)
 
 type alias Match = MatchesDecoder.Model
 type alias NewStuff = MatchesDecoder.NewStuff
+
 type ResultsType
     = FilterMatches
     | Recents
@@ -37,9 +38,10 @@ init =
 
 -- UPDATE
 
-type Action =
-      GetMatchFor Filters.Model
-    | MatchesReceived (Result Http.Error (List Match))
+type Action
+    = SetRegister
+    | GetMatchFor Filters.Model
+    | MatchesData (Result Http.Error (List Match))
     | GetRecents
     | RecentsData (Result Http.Error NewStuff)
     | GetEntry Id                   -- caught by App
@@ -47,24 +49,28 @@ type Action =
 update : Action -> Model -> (Model, Effects Action)
 update action model =
     case action of
+        SetRegister ->
+            ( { model | resultsType <- FilterMatches }
+            , Effects.none
+            )
         GetMatchFor searchModel ->
             ( { model | matches <- [], message <- "Searching...." }
             , getMatches searchModel
             )
-        MatchesReceived (Result.Ok ms) ->
+        MatchesData (Result.Ok ms) ->
             ( { model |
                 matches <- ms
               , resultsType <- FilterMatches
               , message <- if List.length ms == 0 then "No results found" else "" }
             , Effects.none
             )
-        MatchesReceived (Result.Err err) ->
+        MatchesData (Result.Err err) ->
             ( { model | message <- errorHandler err }
             , Effects.none
             )
         GetRecents ->
             ( model
-            , getRecents )
+            , getRecents )     -- if no data aslready in model then ....
         RecentsData (Result.Ok recs) ->
             ( { model |
                 resultsType <- Recents
@@ -133,7 +139,7 @@ getMatches model =
     in
     Http.get matchesDecoder (Http.url "/api/register/search/" searchTerms)
         |> Task.toResult
-        |> Task.map MatchesReceived
+        |> Task.map MatchesData
         |> Effects.task
 
 

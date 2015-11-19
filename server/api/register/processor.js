@@ -3,7 +3,7 @@
 var mongoClient = require('mongodb');
 var Promise = require("bluebird");
 
-var mongoUrl = process.env.MONGO_URI || "mongodb://hotbelgo:ber3la6mo6nT@ds047114.mongolab.com:47114/euregister";
+var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:2701/lobby";
 
 const REGISTER = 'register';
 const SUMMARY = 'summary';
@@ -16,14 +16,6 @@ var interests = require('./field_headers').interests;
 
 // Function that returns a Promise of a database connection
 var mongoConnect = Promise.promisify(mongoClient.connect);
-
-function connectDB(cb) {
-	console.log(`connectDB: ${mongoUrl}`);
-	mongoClient.connect(mongoUrl, function(err, db) {
-		console.log("Connected to database", err);
-		cb(err, db);
-	});
-}
 
 /*
  * Iterates across list of interests

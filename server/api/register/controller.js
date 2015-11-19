@@ -102,7 +102,7 @@ exports.newentries = (req, res) => {
 		let combined =
 			data.reduce(
 				(acc, dataset) => {
-					console.log(dataset.newEntries);
+					// console.log("reduce", dataset.entries);
 					return { entries: acc.entries.concat(dataset.entries),
 					         updates: acc.updates.concat(dataset.updates) }
 				 },

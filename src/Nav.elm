@@ -24,18 +24,18 @@ init p c = { page = p, regCount = c }
 -- UPDATE
 
 type Action =
-      GoRegister
+      GoRegister (List String)
     | GoSummary
-    | GoRecent
+    -- | GoRecent
     | CountData String
-    | NoOp (Maybe ())
+    -- | NoOp (Maybe ())
 
 update : Action -> Model -> Model
 update action model =
     case action of
         GoSummary -> { model | page <- Summary }
-        GoRegister -> { model | page <- Register }
-        GoRecent -> { model | page <- Recent }
+        GoRegister _ -> { model | page <- Register }
+        -- GoRecent -> { model | page <- Recent }
         CountData c -> { model | regCount <- c }
         -- NoOp -> (Register, updateUrl Register)
 
@@ -72,26 +72,11 @@ view address model =
                     ]
                 ]
             , div [ class "collapse navbar-collapse", id "navbar" ]
-                [ ul [ class "nav navbar-nav" ]
-                    [ li [] [ a [ href "#", onNavClick GoRegister ] [ text (toString Register) ] ]
-                    , li [] [ a [ href "#", onNavClick GoRecent ] [ text "Recent changes" ] ]
+                [ ul [ class "nav navbar-nav navbar-right" ]
+                    [ li [] [ a [ href "#", onNavClick (GoRegister []) ] [ text (toString Register) ] ]
+                    , li [] [ a [ href "#", onNavClick (GoRegister ["recent"]) ] [ text "Recent changes" ] ]
                     , li [] [ a [ href "#", onNavClick GoSummary ]  [ text (toString Summary) ] ]
                     ]
                 ]
             ]
         ]
-
--- view : Signal.Address Action -> Model -> Html
--- view address model =
---     nav [ class "row" ]
---         [ h1
---             [ class "col-xs-6" ]
---             [ text "European Lobby Register "
---             , span [] [ text <| "(" ++ model.regCount ++ " entries)"]
---             ]
---         , ul [ class "col-xs-6 menu" ]
---             [ li [ onClick address GoRecent ] [ text (toString Recent) ]
---             , li [ onClick address GoRegister ] [ text (toString Register) ]
---             , li [ onClick address GoSummary ]  [ text (toString Summary) ]
---             ]
---         ]
