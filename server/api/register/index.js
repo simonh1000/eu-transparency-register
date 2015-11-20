@@ -13,12 +13,14 @@ var ingester = require("./ingester");
 
 router.get('/id/:id', controller.id);
 router.get('/search', controller.search);
-router.get('/interests', controller.interests);
-router.get('/sections', controller.sections);
+// router.get('/interests', controller.interests);
+// router.get('/sections', controller.sections);
+// router.get('/countries', controller.countries);
+router.get('/summary', controller.summary);
 
 router.get('/recents', controller.newentries);
 
-router.get('/meta', controller.meta);
-router.get('/ingest',	ingester.index);            // copies into database, and then runs post-processors
+router.get('/meta', controller.meta);           // returns count of register
+// router.get('/ingest',	ingester.index);            // copies into database, and then runs post-processors
 
 module.exports = router;

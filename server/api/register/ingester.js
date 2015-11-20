@@ -344,7 +344,7 @@ function insertLocal(fname, cb) {
 // 	.catch( err => console.error(err) );
 
 // run update from local file
-// handleUpdate('./reg18-11')
+// handleUpdate('./reg19-11')
 // 	.then( ingestRes => Promise.all([Promise.resolve(ingestRes), processor.makeSummaryData()]) )
 // 	.then( console.log.bind(this) )
 // 	.catch( err => console.error(err) );

@@ -140,6 +140,7 @@ view address model =
         -- , p [] [ text model.message ]
         ]
 
+-- INPUTS / TASKS / EFFECTS
 
 updateUrl : String -> Effects Action
 updateUrl displayed =

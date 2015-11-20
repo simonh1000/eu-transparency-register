@@ -1,9 +1,13 @@
+/*
+ * CALCULATE SUMMARY INFORMATION
+ */
+
 "use strict";
 
 var mongoClient = require('mongodb');
 var Promise = require("bluebird");
 
-var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:2701/lobby";
+var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:27017/lobby";
 
 const REGISTER = 'register';
 const SUMMARY = 'summary';
@@ -24,7 +28,6 @@ var mongoConnect = Promise.promisify(mongoClient.connect);
  */
 function countInterests(db) {
 	let coll = db.collection(REGISTER);
-	let summary = db.collection(SUMMARY);
 
 	let promises =
 		interests.map( interest => {
@@ -43,7 +46,7 @@ function countInterests(db) {
 	.then( results => {
 		console.log(`${results.length} Interest promises returned`);
 		// interests.drop();
-		return summary.replaceOne({_id:INTERESTS}, {_id:INTERESTS, data: results}, {upsert:true});
+		return db.collection(SUMMARY).replaceOne({_id:INTERESTS}, {_id:INTERESTS, data: results}, {upsert:true});
 	} )
 	.catch( err => {
 		console.error(err);
@@ -81,28 +84,40 @@ function countSections(db) {
 		})
 
 		// db.collection(SECTIONS).drop();
-		return db.collection(SUMMARY)
-				.replaceOne({_id: SECTIONS}, {_id: SECTIONS, 'data': mergedResults}, {upsert: true});
+		return db.collection(SUMMARY).replaceOne(
+					{_id: SECTIONS},
+					{_id: SECTIONS, 'data': mergedResults},
+					{upsert: true}
+				);
 	})
 	// .catch( err => Promise.reject(err) );
 }
 
 /*
  * Calculates numbers and spend per 'sub-section'
- * stores results in 'sections' collection
+ * stores results as {_id: 'sections', ...}
  */
 function countCountries(db) {
 	let register = db.collection(REGISTER);
 
+	// let countries = register.aggregate([
+	// 	{ "$group" : {_id : "$hqCountry", count: {$sum: 1} } }
+	// ]);
+
 	let countries = register.aggregate([
-		{ "$group" : {_id : "$hqCountry", count: {$sum: 1} } }
+		{ "$match" : {subsection: "Companies & groups"} },
+		{ "$group" : {_id : "$hqCountry", count: {$sum: 1} } },
+		{ "$sort" : {"count": -1}}
 	]);
 
 	return countries.toArray()
 		.then( results => {
 			console.log(`Countries Promise returned ${results.length} countries in DB`);
-			return db.collection(SUMMARY)
-					.replaceOne({_id: COUNTRIES}, {_id: COUNTRIES, 'data': results}, {upsert: true});
+			return db.collection(SUMMARY).replaceOne(
+					{_id: COUNTRIES},
+					{_id: COUNTRIES, 'data': results},
+					{upsert: true}
+				);
 		} );
 }
 
@@ -112,15 +127,15 @@ exports.makeSummaryData = function() {
 	.then( _db => {
 		db = _db;
 		return Promise.all([
-				countInterests(db),
-				countSections(db),    // .then( result => ({"sections": result.upserted}) ),
-				countCountries(db)
+				countInterests(db).then( res => ({"interests": !!res.result.ok}) ),
+				countSections(db).then( res => ({"sections": !!res.result.ok}) ),
+				countCountries(db).then( res => ({"countries": !!res.result.ok}) )
 			  ]);
 	})
 	.then( results => {
 		console.log('makeSummaryData success');
 		db.close();    // db.close
-		return results.map( r => r.result );
+		return results; //.map( r => r.result );
 	} )
 	.catch ( err => {
 		db.close();    // db.close
@@ -137,6 +152,6 @@ exports.makeSummaryData = function() {
 // };
 
 /* MANUAL TEST */
-// exports.makeSummaryData()
-// .then( responses => console.log(responses) )
-// .catch( err => console.error(err) );
+exports.makeSummaryData()
+.then( responses => console.log(responses) )
+.catch( err => console.error(err) );

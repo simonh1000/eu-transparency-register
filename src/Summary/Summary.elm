@@ -12,36 +12,48 @@ import Effects exposing (Effects)
 import Time exposing (Time)
 import Task
 import History
-import Common exposing (errorHandler)
 
-import Chart exposing (hBar, pie, title, colours, toHtml, updateStyles)
+import Chart exposing (hBar, pie, title, colours, toHtml, updateStyles, addValueToLabel)
+
+import Common exposing (errorHandler)
+import Summary.SummaryDecoder as Decoder exposing (SummaryInfo(..), Section, Interest, Country)
 
 -- MODEL
 type SectionMeasure
     = Count
     | Budget
 
-type alias Interest =
-    { interest: String
-    , count: Int
-    }
-
-type alias Section =
-    { section : String
-    , count : Float
-    , budget: Float
-    }
+-- type alias Interest =
+--     { interest: String
+--     , count: Int
+--     }
+--
+-- type alias Country =
+--     { country: String
+--     , count: Float
+--     }
+--
+-- type alias Section =
+--     { section : String
+--     , count : Float
+--     , budget: Float
+--     }
 
 type alias Model =
     { interests : List Interest
     , sections : List Section
     , sectionsSimplified : List Section
+    , countries : List Country
     , sectionMeasure : SectionMeasure
     , msg : String
     }
 
 initInterest i c =
     { interest = i
+    , count = c
+    }
+initCountry i c =
+    { country = i
     , count = c
     }
 initSection i c b =
@@ -53,6 +65,7 @@ initSection i c b =
 init =
     { interests = []
     , sections = []
+    , countries = []
     , sectionsSimplified = []
     , sectionMeasure = Count
     , msg = ""
@@ -63,6 +76,8 @@ type Action
     = Activate
     | InterestData (Result Http.Error (List Interest))
     | SectionsData (Result Http.Error (List Section))
+    | CountryData (Result Http.Error (List Country))
+    | SummaryData (Result Http.Error (List SummaryInfo))
     | NoOp (Maybe ())
     | Animate
     | Tick Time
@@ -73,44 +88,31 @@ update action model =
         Activate ->
             ( model
             , if List.length model.interests == 0
-              then Effects.batch
-                [ loadInterests
-                , loadSections
-                ]
+              then loadSummary
               else Effects.none
             )
-        InterestData (Result.Ok data) ->
-            ( { model | interests <- data }, updateUrl )
-        InterestData (Result.Err msg) ->
-            ( { model | msg <- errorHandler msg }, updateUrl )
-        SectionsData (Result.Ok data) ->
-            let
-                totalBudget = List.sum (List.map .budget data)
-                totalCount = List.sum (List.map .count data)
-
-                -- if budget is significant fraction of total include as is, otherwise add to 'others'
-                go : Section -> (Float, Float, List Section) -> (Float, Float, List Section)
-                go elem (othersBudg, othersCnt, accS) =
-                    let
-                        normCount = elem.count / totalCount
-                        normBudget = elem.budget / totalBudget
-                    in
-                    if normBudget < 0.03
-                        then (othersBudg + normBudget, othersCnt + normCount, accS)
-                        else
-                            ( othersBudg
-                            , othersCnt
-                            , { elem | count <- normCount, budget <- normBudget } :: accS
-                            )
-                (othersBudget, othersCount, sections) =
-                    foldl go (0, 0, []) data
-                simplifiedModel =
-                    (List.sortBy (negate << .count) sections) ++
-                    [{section = "Others", count = othersCount, budget = othersBudget }]
-            in
-            ( { model | sections <- data, sectionsSimplified <- simplifiedModel }
+        -- InterestData (Result.Ok data) ->
+        --     ( { model | interests <- data }, updateUrl )
+        -- InterestData (Result.Err msg) ->
+        --     ( { model | msg <- errorHandler msg }, updateUrl )
+        -- CountryData (Result.Ok data) ->
+        --     ( { model | countries <- data }, updateUrl )
+        -- CountryData (Result.Err msg) ->
+        --     ( { model | msg <- "Country Decoder error: " ++ errorHandler msg }, updateUrl )
+        -- SectionsData (Result.Ok data) ->
+        --     ( { model | sections <- data, sectionsSimplified <- simplifySectionsData data }
+        --     , updateUrl )
+        -- SectionsData (Result.Err msg) ->
+        --     ( { model | msg <- errorHandler msg }, updateUrl )
+        SummaryData (Result.Ok [Sections sData, Interests iData, Countries cData]) ->
+            ( { model
+                | sections <- sData
+                , sectionsSimplified <- simplifySectionsData sData
+                , countries <- simplifyCountiesData cData
+                , interests <- List.sortBy (negate << .count) iData
+               }
             , updateUrl )
-        SectionsData (Result.Err msg) ->
+        SummaryData (Result.Err msg) ->
             ( { model | msg <- errorHandler msg }, updateUrl )
         -- URL  U P D A T E S
         NoOp _ -> ( model, Effects.none )
@@ -118,14 +120,54 @@ update action model =
             ( { model | sectionMeasure <- if model.sectionMeasure == Count then Budget else Count }
             , Effects.none
             )
-        --     let
-        --     -- create a set of animations
-        --         animations = List.map (\e -> animation 0 |> from )
-        --     -- call for first Tick
-        -- Tick time ->
-        --     -- advance animations
-        --     -- call next Tick (unless finished?)
 
+simplifySectionsData : List Section -> List Section
+simplifySectionsData data =
+    let
+        totalBudget = List.sum (List.map .budget data)
+        totalCount = List.sum (List.map .count data)
+
+        -- if budget is significant fraction of total include as is, otherwise add to 'others'
+        go : Section -> (Float, Float, List Section) -> (Float, Float, List Section)
+        go elem (othersBudg, othersCnt, accS) =
+            let
+                normCount = elem.count / totalCount
+                normBudget = elem.budget / totalBudget
+            in
+            if normBudget < 0.03
+                then (othersBudg + normBudget, othersCnt + normCount, accS)
+                else
+                    ( othersBudg
+                    , othersCnt
+                    , { elem | count <- normCount, budget <- normBudget } :: accS
+                    )
+        (othersBudget, othersCount, sections) =
+            foldl go (0, 0, []) data
+    in
+        (List.sortBy (negate << .count) sections) ++
+        [{section = "Others", count = othersCount, budget = othersBudget }]
+
+simplifyCountiesData : List Country -> List Country
+simplifyCountiesData data =
+    let
+        total = List.sum (List.map .count data)
+
+        -- if budget is significant fraction of total include as is, otherwise add to 'others'
+        go : Country -> (Float, List Country) -> (Float, List Country)
+        go elem (othersCnt, accS) =
+            let
+                normCount = (toFloat << round) <| elem.count / total * 100
+            in
+            if normCount < 3
+                then (othersCnt + normCount, accS)        -- add to others
+                else
+                    ( othersCnt
+                    , { elem | count <- normCount } :: accS    -- keep, by coping into accumulatro directly
+                    )
+        (othersCount, accCountries) =
+            foldl go (0, []) data
+    in
+        (List.sortBy (negate << .count) accCountries) ++ [{country = "RoW", count = othersCount }]
 
 -- VIEW
 
@@ -139,6 +181,18 @@ view address model =
     div [ id "summary", class "row" ]
         [ div [ class "col-xs-12" ]
             [ pie
+                (List.map .count model.countries)
+                (List.map .country model.countries)
+                |> title "Corporate registrees by HQ Country"
+                |> addValueToLabel
+                |> colours
+                    [ "#5DA5DA", "#FAA43A", "#60BD68", "#F17CB0", "#B2912F", "#DECF3F", "#9a9a9a", "#F15854", "#BF69B1", "#4D4D4D"
+                    ]
+                |> updateStyles "container" [("border","none")]
+                |> toHtml
+            ]
+        , div [ class "col-xs-12" ]
+            [ pie
                 (if model.sectionMeasure == Count then countModel else budgetModel)
                 labels
                 |> title
@@ -147,7 +201,7 @@ view address model =
                      else "Lobby spend per sub-section"
                     )
                 |> colours
-                    [ "#4D4D4D", "#5DA5DA", "#FAA43A", "#60BD68", "#F17CB0", "#B2912F", "#B276B2", "#DECF3F", "#F15854", "#BF69B1"
+                    [ "#5DA5DA", "#FAA43A", "#60BD68", "#F17CB0", "#B2912F", "#B276B2", "#DECF3F", "#F15854", "#BF69B1", "#4D4D4D"
                     --  "#BF69B1", "#96A65B", "#D9A679", "#593F27", "#A63D33"
                     ]
                 |> updateStyles "container" [("border","none")]
@@ -180,36 +234,58 @@ view address model =
 
 -- TASKS
 
-loadInterests : Effects Action
-loadInterests =
-    Http.get issueDecoder ("/api/register/interests")
+-- loadInterests : Effects Action
+-- loadInterests =
+--     Http.get issueDecoder ("/api/register/interests")
+--         |> Task.toResult
+--         |> Task.map InterestData
+--         |> Effects.task
+--
+-- loadCountries : Effects Action
+-- loadCountries =
+--     Http.get countryDecoder ("/api/register/countries")
+--         |> Task.toResult
+--         |> Task.map CountryData
+--         |> Effects.task
+--
+-- loadSections : Effects Action
+-- loadSections =
+--     Http.get sectionsDecoder ("/api/register/sections")
+--         |> Task.toResult
+--         |> Task.map SectionsData
+--         |> Effects.task
+
+loadSummary : Effects Action
+loadSummary =
+    Http.get Decoder.listSummaryDecoder ("/api/register/summary")
         |> Task.toResult
-        |> Task.map InterestData
+        |> Task.map SummaryData
         |> Effects.task
 
-loadSections : Effects Action
-loadSections =
-    Http.get sectionsDecoder ("/api/register/sections")
-        |> Task.toResult
-        |> Task.map SectionsData
-        |> Effects.task
-
-issueDecoder : Decoder (List Interest)
-issueDecoder =
-    object2
-        initInterest
-        ("interest" := string)
-        ("count" := int)
-    |> list
-
-sectionsDecoder : Decoder (List Section)
-sectionsDecoder =
-    object3
-        initSection
-        ("_id" := string)
-        ("count" := float)
-        ("total" := float)
-    |> list
+-- issueDecoder : Decoder (List Interest)
+-- issueDecoder =
+--     object2
+--         initInterest
+--         ("interest" := string)
+--         ("count" := int)
+--     |> list
+--
+-- countryDecoder : Decoder (List Country)
+-- countryDecoder =
+--     object2
+--         initCountry
+--         ("_id" := string)
+--         ("count" := int)
+--     |> list
+--
+-- sectionsDecoder : Decoder (List Section)
+-- sectionsDecoder =
+--     object3
+--         initSection
+--         ("_id" := string)
+--         ("count" := float)
+--         ("total" := float)
+--     |> list
 
 updateUrl : Effects Action
 updateUrl =

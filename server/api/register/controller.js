@@ -12,6 +12,7 @@ const REGISTER = 'register';
 // document IDs
 const INTERESTS = 'interests';
 const SECTIONS = 'sections';
+const COUNTRIES	= 'countries';
 
 // Create 3 global mongo collection variables
 var register,
@@ -87,6 +88,22 @@ exports.sections = (req, res) => {
 	.toArray( (err, data) => {
 		if (err) return res.status(500).end();
 		res.send(data[0].data);
+	} );
+};
+
+exports.countries = (req, res) => {
+	summary.find({_id:COUNTRIES})
+	.toArray( (err, data) => {
+		if (err) return res.status(500).end();
+		res.send(data[0].data);
+	} );
+};
+
+exports.summary = (req, res) => {
+	summary.find()
+	.toArray( (err, data) => {
+		if (err) return res.status(500).end();
+		res.send(data);
 	} );
 };
 

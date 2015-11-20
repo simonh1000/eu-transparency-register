@@ -16193,13 +16193,126 @@ Elm.Summary.Summary.make = function (_elm) {
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $Html$Events = Elm.Html.Events.make(_elm),
    $Http = Elm.Http.make(_elm),
-   $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
+   $Summary$SummaryDecoder = Elm.Summary.SummaryDecoder.make(_elm),
    $Task = Elm.Task.make(_elm),
    $Time = Elm.Time.make(_elm);
+   var simplifyCountiesData = function (data) {
+      return function () {
+         var total = $List.sum(A2($List.map,
+         function (_) {
+            return _.count;
+         },
+         data));
+         var go = F2(function (elem,
+         _v0) {
+            return function () {
+               switch (_v0.ctor)
+               {case "_Tuple2":
+                  return function () {
+                       var normCount = $Basics.toFloat($Basics.round(elem.count / total * 100));
+                       return _U.cmp(normCount,
+                       3) < 0 ? {ctor: "_Tuple2"
+                                ,_0: _v0._0 + normCount
+                                ,_1: _v0._1} : {ctor: "_Tuple2"
+                                               ,_0: _v0._0
+                                               ,_1: A2($List._op["::"],
+                                               _U.replace([["count"
+                                                           ,normCount]],
+                                               elem),
+                                               _v0._1)};
+                    }();}
+               _U.badCase($moduleName,
+               "between lines 158 and 166");
+            }();
+         });
+         var $ = A3($List.foldl,
+         go,
+         {ctor: "_Tuple2"
+         ,_0: 0
+         ,_1: _L.fromArray([])},
+         data),
+         othersCount = $._0,
+         accCountries = $._1;
+         return A2($Basics._op["++"],
+         A2($List.sortBy,
+         function ($) {
+            return $Basics.negate(function (_) {
+               return _.count;
+            }($));
+         },
+         accCountries),
+         _L.fromArray([{_: {}
+                       ,count: othersCount
+                       ,country: "RoW"}]));
+      }();
+   };
+   var simplifySectionsData = function (data) {
+      return function () {
+         var totalCount = $List.sum(A2($List.map,
+         function (_) {
+            return _.count;
+         },
+         data));
+         var totalBudget = $List.sum(A2($List.map,
+         function (_) {
+            return _.budget;
+         },
+         data));
+         var go = F2(function (elem,
+         _v4) {
+            return function () {
+               switch (_v4.ctor)
+               {case "_Tuple3":
+                  return function () {
+                       var normBudget = elem.budget / totalBudget;
+                       var normCount = elem.count / totalCount;
+                       return _U.cmp(normBudget,
+                       3.0e-2) < 0 ? {ctor: "_Tuple3"
+                                     ,_0: _v4._0 + normBudget
+                                     ,_1: _v4._1 + normCount
+                                     ,_2: _v4._2} : {ctor: "_Tuple3"
+                                                    ,_0: _v4._0
+                                                    ,_1: _v4._1
+                                                    ,_2: A2($List._op["::"],
+                                                    _U.replace([["count"
+                                                                ,normCount]
+                                                               ,["budget"
+                                                                ,normBudget]],
+                                                    elem),
+                                                    _v4._2)};
+                    }();}
+               _U.badCase($moduleName,
+               "between lines 133 and 143");
+            }();
+         });
+         var $ = A3($List.foldl,
+         go,
+         {ctor: "_Tuple3"
+         ,_0: 0
+         ,_1: 0
+         ,_2: _L.fromArray([])},
+         data),
+         othersBudget = $._0,
+         othersCount = $._1,
+         sections = $._2;
+         return A2($Basics._op["++"],
+         A2($List.sortBy,
+         function ($) {
+            return $Basics.negate(function (_) {
+               return _.count;
+            }($));
+         },
+         sections),
+         _L.fromArray([{_: {}
+                       ,budget: othersBudget
+                       ,count: othersCount
+                       ,section: "Others"}]));
+      }();
+   };
    var Tick = function (a) {
       return {ctor: "Tick",_0: a};
    };
@@ -16208,6 +16321,17 @@ Elm.Summary.Summary.make = function (_elm) {
       return {ctor: "NoOp",_0: a};
    };
    var updateUrl = $Effects.task($Task.map(NoOp)($Task.toMaybe($History.replacePath("/summary"))));
+   var SummaryData = function (a) {
+      return {ctor: "SummaryData"
+             ,_0: a};
+   };
+   var loadSummary = $Effects.task($Task.map(SummaryData)($Task.toResult(A2($Http.get,
+   $Summary$SummaryDecoder.listSummaryDecoder,
+   "/api/register/summary"))));
+   var CountryData = function (a) {
+      return {ctor: "CountryData"
+             ,_0: a};
+   };
    var SectionsData = function (a) {
       return {ctor: "SectionsData"
              ,_0: a};
@@ -16225,66 +16349,36 @@ Elm.Summary.Summary.make = function (_elm) {
              ,count: c
              ,section: i};
    });
-   var sectionsDecoder = $Json$Decode.list(A4($Json$Decode.object3,
-   initSection,
-   A2($Json$Decode._op[":="],
-   "_id",
-   $Json$Decode.string),
-   A2($Json$Decode._op[":="],
-   "count",
-   $Json$Decode.$float),
-   A2($Json$Decode._op[":="],
-   "total",
-   $Json$Decode.$float)));
-   var loadSections = $Effects.task($Task.map(SectionsData)($Task.toResult(A2($Http.get,
-   sectionsDecoder,
-   "/api/register/sections"))));
+   var initCountry = F2(function (i,
+   c) {
+      return {_: {}
+             ,count: c
+             ,country: i};
+   });
    var initInterest = F2(function (i,
    c) {
       return {_: {}
              ,count: c
              ,interest: i};
    });
-   var issueDecoder = $Json$Decode.list(A3($Json$Decode.object2,
-   initInterest,
-   A2($Json$Decode._op[":="],
-   "interest",
-   $Json$Decode.string),
-   A2($Json$Decode._op[":="],
-   "count",
-   $Json$Decode.$int)));
-   var loadInterests = $Effects.task($Task.map(InterestData)($Task.toResult(A2($Http.get,
-   issueDecoder,
-   "/api/register/interests"))));
-   var Model = F5(function (a,
+   var Model = F6(function (a,
    b,
    c,
    d,
-   e) {
+   e,
+   f) {
       return {_: {}
+             ,countries: d
              ,interests: a
-             ,msg: e
-             ,sectionMeasure: d
+             ,msg: f
+             ,sectionMeasure: e
              ,sections: b
              ,sectionsSimplified: c};
-   });
-   var Section = F3(function (a,
-   b,
-   c) {
-      return {_: {}
-             ,budget: c
-             ,count: b
-             ,section: a};
-   });
-   var Interest = F2(function (a,
-   b) {
-      return {_: {}
-             ,count: b
-             ,interest: a};
    });
    var Budget = {ctor: "Budget"};
    var Count = {ctor: "Count"};
    var init = {_: {}
+              ,countries: _L.fromArray([])
               ,interests: _L.fromArray([])
               ,msg: ""
               ,sectionMeasure: Count
@@ -16298,8 +16392,7 @@ Elm.Summary.Summary.make = function (_elm) {
             return {ctor: "_Tuple2"
                    ,_0: model
                    ,_1: _U.eq($List.length(model.interests),
-                   0) ? $Effects.batch(_L.fromArray([loadInterests
-                                                    ,loadSections])) : $Effects.none};
+                   0) ? loadSummary : $Effects.none};
             case "Animate":
             return {ctor: "_Tuple2"
                    ,_0: _U.replace([["sectionMeasure"
@@ -16307,7 +16400,11 @@ Elm.Summary.Summary.make = function (_elm) {
                                     Count) ? Budget : Count]],
                    model)
                    ,_1: $Effects.none};
-            case "InterestData":
+            case "NoOp":
+            return {ctor: "_Tuple2"
+                   ,_0: model
+                   ,_1: $Effects.none};
+            case "SummaryData":
             switch (action._0.ctor)
               {case "Err":
                  return {ctor: "_Tuple2"
@@ -16316,95 +16413,47 @@ Elm.Summary.Summary.make = function (_elm) {
                         model)
                         ,_1: updateUrl};
                  case "Ok":
-                 return {ctor: "_Tuple2"
-                        ,_0: _U.replace([["interests"
-                                         ,action._0._0]],
-                        model)
-                        ,_1: updateUrl};}
-              break;
-            case "NoOp":
-            return {ctor: "_Tuple2"
-                   ,_0: model
-                   ,_1: $Effects.none};
-            case "SectionsData":
-            switch (action._0.ctor)
-              {case "Err":
-                 return {ctor: "_Tuple2"
-                        ,_0: _U.replace([["msg"
-                                         ,$Common.errorHandler(action._0._0)]],
-                        model)
-                        ,_1: updateUrl};
-                 case "Ok": return function () {
-                      var totalCount = $List.sum(A2($List.map,
-                      function (_) {
-                         return _.count;
-                      },
-                      action._0._0));
-                      var totalBudget = $List.sum(A2($List.map,
-                      function (_) {
-                         return _.budget;
-                      },
-                      action._0._0));
-                      var go = F2(function (elem,
-                      _v8) {
-                         return function () {
-                            switch (_v8.ctor)
-                            {case "_Tuple3":
-                               return function () {
-                                    var normBudget = elem.budget / totalBudget;
-                                    var normCount = elem.count / totalCount;
-                                    return _U.cmp(normBudget,
-                                    3.0e-2) < 0 ? {ctor: "_Tuple3"
-                                                  ,_0: _v8._0 + normBudget
-                                                  ,_1: _v8._1 + normCount
-                                                  ,_2: _v8._2} : {ctor: "_Tuple3"
-                                                                 ,_0: _v8._0
-                                                                 ,_1: _v8._1
-                                                                 ,_2: A2($List._op["::"],
-                                                                 _U.replace([["count"
-                                                                             ,normCount]
-                                                                            ,["budget"
-                                                                             ,normBudget]],
-                                                                 elem),
-                                                                 _v8._2)};
-                                 }();}
-                            _U.badCase($moduleName,
-                            "between lines 94 and 104");
-                         }();
-                      });
-                      var $ = A3($List.foldl,
-                      go,
-                      {ctor: "_Tuple3"
-                      ,_0: 0
-                      ,_1: 0
-                      ,_2: _L.fromArray([])},
-                      action._0._0),
-                      othersBudget = $._0,
-                      othersCount = $._1,
-                      sections = $._2;
-                      var simplifiedModel = A2($Basics._op["++"],
-                      A2($List.sortBy,
-                      function ($) {
-                         return $Basics.negate(function (_) {
-                            return _.count;
-                         }($));
-                      },
-                      sections),
-                      _L.fromArray([{_: {}
-                                    ,budget: othersBudget
-                                    ,count: othersCount
-                                    ,section: "Others"}]));
-                      return {ctor: "_Tuple2"
-                             ,_0: _U.replace([["sections"
-                                              ,action._0._0]
-                                             ,["sectionsSimplified"
-                                              ,simplifiedModel]],
-                             model)
-                             ,_1: updateUrl};
-                   }();}
+                 switch (action._0._0.ctor)
+                   {case "::":
+                      switch (action._0._0._0.ctor)
+                        {case "Sections":
+                           switch (action._0._0._1.ctor)
+                             {case "::":
+                                switch (action._0._0._1._0.ctor)
+                                  {case "Interests":
+                                     switch (action._0._0._1._1.ctor)
+                                       {case "::":
+                                          switch (action._0._0._1._1._0.ctor)
+                                            {case "Countries":
+                                               switch (action._0._0._1._1._1.ctor)
+                                                 {case "[]":
+                                                    return {ctor: "_Tuple2"
+                                                           ,_0: _U.replace([["sections"
+                                                                            ,action._0._0._0._0]
+                                                                           ,["sectionsSimplified"
+                                                                            ,simplifySectionsData(action._0._0._0._0)]
+                                                                           ,["countries"
+                                                                            ,simplifyCountiesData(action._0._0._1._1._0._0)]
+                                                                           ,["interests"
+                                                                            ,A2($List.sortBy,
+                                                                            function ($) {
+                                                                               return $Basics.negate(function (_) {
+                                                                                  return _.count;
+                                                                               }($));
+                                                                            },
+                                                                            action._0._0._1._0._0)]],
+                                                           model)
+                                                           ,_1: updateUrl};}
+                                                 break;}
+                                            break;}
+                                       break;}
+                                  break;}
+                             break;}
+                        break;}
+                   break;}
               break;}
          _U.badCase($moduleName,
-         "between lines 72 and 127");
+         "between lines 87 and 122");
       }();
    });
    var view = F2(function (address,
@@ -16429,58 +16478,84 @@ Elm.Summary.Summary.make = function (_elm) {
          _L.fromArray([$Html$Attributes.id("summary")
                       ,$Html$Attributes.$class("row")]),
          _L.fromArray([A2($Html.div,
-         _L.fromArray([$Html$Attributes.$class("col-xs-12")]),
-         _L.fromArray([$Chart.toHtml(A2($Chart.updateStyles,
-                      "container",
-                      _L.fromArray([{ctor: "_Tuple2"
-                                    ,_0: "border"
-                                    ,_1: "none"}]))($Chart.colours(_L.fromArray(["#4D4D4D"
-                                                                                ,"#5DA5DA"
-                                                                                ,"#FAA43A"
-                                                                                ,"#60BD68"
-                                                                                ,"#F17CB0"
-                                                                                ,"#B2912F"
-                                                                                ,"#B276B2"
-                                                                                ,"#DECF3F"
-                                                                                ,"#F15854"
-                                                                                ,"#BF69B1"]))($Chart.title(_U.eq(model.sectionMeasure,
-                      Count) ? "Number of registrees per sub-section" : "Lobby spend per sub-section")(A2($Chart.pie,
-                      _U.eq(model.sectionMeasure,
-                      Count) ? countModel : budgetModel,
-                      labels)))))
-                      ,A2($Html.div,
-                      _L.fromArray([$Html$Attributes.$class("toggleContainer")]),
-                      _L.fromArray([A2($Html.button,
-                      _L.fromArray([A2($Html$Events.onClick,
-                      address,
-                      Animate)]),
-                      _L.fromArray([$Html.text(_U.eq(model.sectionMeasure,
-                      Count) ? "Switch to lobby spend" : "Switch to no. registrees")]))]))
-                      ,A2($Html.div,
-                      _L.fromArray([$Html$Attributes.$class("interests")]),
+                      _L.fromArray([$Html$Attributes.$class("col-xs-12")]),
                       _L.fromArray([$Chart.toHtml(A2($Chart.updateStyles,
                       "container",
                       _L.fromArray([{ctor: "_Tuple2"
                                     ,_0: "border"
-                                    ,_1: "none"}
-                                   ,{ctor: "_Tuple2"
-                                    ,_0: "border-top"
-                                    ,_1: "3px solid black"}]))($Chart.title("Number of registrants expressing interest in subject")(A2($Chart.hBar,
-                      A2($List.map,
-                      function ($) {
-                         return $Basics.toFloat(function (_) {
-                            return _.count;
-                         }($));
-                      },
-                      model.interests),
+                                    ,_1: "none"}]))($Chart.colours(_L.fromArray(["#5DA5DA"
+                                                                                ,"#FAA43A"
+                                                                                ,"#60BD68"
+                                                                                ,"#F17CB0"
+                                                                                ,"#B2912F"
+                                                                                ,"#DECF3F"
+                                                                                ,"#9a9a9a"
+                                                                                ,"#F15854"
+                                                                                ,"#BF69B1"
+                                                                                ,"#4D4D4D"]))($Chart.addValueToLabel($Chart.title("Corporate registrees by HQ Country")(A2($Chart.pie,
                       A2($List.map,
                       function (_) {
-                         return _.interest;
+                         return _.count;
                       },
-                      model.interests)))))]))
-                      ,A2($Html.p,
-                      _L.fromArray([]),
-                      _L.fromArray([$Html.text(model.msg)]))]))]));
+                      model.countries),
+                      A2($List.map,
+                      function (_) {
+                         return _.country;
+                      },
+                      model.countries)))))))]))
+                      ,A2($Html.div,
+                      _L.fromArray([$Html$Attributes.$class("col-xs-12")]),
+                      _L.fromArray([$Chart.toHtml(A2($Chart.updateStyles,
+                                   "container",
+                                   _L.fromArray([{ctor: "_Tuple2"
+                                                 ,_0: "border"
+                                                 ,_1: "none"}]))($Chart.colours(_L.fromArray(["#5DA5DA"
+                                                                                             ,"#FAA43A"
+                                                                                             ,"#60BD68"
+                                                                                             ,"#F17CB0"
+                                                                                             ,"#B2912F"
+                                                                                             ,"#B276B2"
+                                                                                             ,"#DECF3F"
+                                                                                             ,"#F15854"
+                                                                                             ,"#BF69B1"
+                                                                                             ,"#4D4D4D"]))($Chart.title(_U.eq(model.sectionMeasure,
+                                   Count) ? "Number of registrees per sub-section" : "Lobby spend per sub-section")(A2($Chart.pie,
+                                   _U.eq(model.sectionMeasure,
+                                   Count) ? countModel : budgetModel,
+                                   labels)))))
+                                   ,A2($Html.div,
+                                   _L.fromArray([$Html$Attributes.$class("toggleContainer")]),
+                                   _L.fromArray([A2($Html.button,
+                                   _L.fromArray([A2($Html$Events.onClick,
+                                   address,
+                                   Animate)]),
+                                   _L.fromArray([$Html.text(_U.eq(model.sectionMeasure,
+                                   Count) ? "Switch to lobby spend" : "Switch to no. registrees")]))]))
+                                   ,A2($Html.div,
+                                   _L.fromArray([$Html$Attributes.$class("interests")]),
+                                   _L.fromArray([$Chart.toHtml(A2($Chart.updateStyles,
+                                   "container",
+                                   _L.fromArray([{ctor: "_Tuple2"
+                                                 ,_0: "border"
+                                                 ,_1: "none"}
+                                                ,{ctor: "_Tuple2"
+                                                 ,_0: "border-top"
+                                                 ,_1: "3px solid black"}]))($Chart.title("Number of registrants expressing interest in subject")(A2($Chart.hBar,
+                                   A2($List.map,
+                                   function ($) {
+                                      return $Basics.toFloat(function (_) {
+                                         return _.count;
+                                      }($));
+                                   },
+                                   model.interests),
+                                   A2($List.map,
+                                   function (_) {
+                                      return _.interest;
+                                   },
+                                   model.interests)))))]))
+                                   ,A2($Html.p,
+                                   _L.fromArray([]),
+                                   _L.fromArray([$Html.text(model.msg)]))]))]));
       }();
    });
    _elm.Summary.Summary.values = {_op: _op
@@ -16491,10 +16566,165 @@ Elm.Summary.Summary.make = function (_elm) {
                                  ,Activate: Activate
                                  ,InterestData: InterestData
                                  ,SectionsData: SectionsData
+                                 ,CountryData: CountryData
+                                 ,SummaryData: SummaryData
                                  ,NoOp: NoOp
                                  ,Animate: Animate
                                  ,Tick: Tick};
    return _elm.Summary.Summary.values;
+};
+Elm.Summary = Elm.Summary || {};
+Elm.Summary.SummaryDecoder = Elm.Summary.SummaryDecoder || {};
+Elm.Summary.SummaryDecoder.make = function (_elm) {
+   "use strict";
+   _elm.Summary = _elm.Summary || {};
+   _elm.Summary.SummaryDecoder = _elm.Summary.SummaryDecoder || {};
+   if (_elm.Summary.SummaryDecoder.values)
+   return _elm.Summary.SummaryDecoder.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Summary.SummaryDecoder",
+   $Basics = Elm.Basics.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var initCountry = F2(function (i,
+   c) {
+      return {_: {}
+             ,count: c
+             ,country: i};
+   });
+   var countriesDecoder = $Json$Decode.list(A3($Json$Decode.object2,
+   initCountry,
+   A2($Json$Decode._op[":="],
+   "_id",
+   $Json$Decode.string),
+   A2($Json$Decode._op[":="],
+   "count",
+   $Json$Decode.$float)));
+   var initSection = F3(function (i,
+   c,
+   b) {
+      return {_: {}
+             ,budget: b
+             ,count: c
+             ,section: i};
+   });
+   var sectionsDecoder = $Json$Decode.list(A4($Json$Decode.object3,
+   initSection,
+   A2($Json$Decode._op[":="],
+   "_id",
+   $Json$Decode.string),
+   A2($Json$Decode._op[":="],
+   "count",
+   $Json$Decode.$float),
+   A2($Json$Decode._op[":="],
+   "total",
+   $Json$Decode.$float)));
+   var initInterest = F2(function (i,
+   c) {
+      return {_: {}
+             ,count: c
+             ,interest: i};
+   });
+   var interestsDecoder = $Json$Decode.list(A3($Json$Decode.object2,
+   initInterest,
+   A2($Json$Decode._op[":="],
+   "interest",
+   $Json$Decode.string),
+   A2($Json$Decode._op[":="],
+   "count",
+   $Json$Decode.$int)));
+   var Summary = F3(function (a,
+   b,
+   c) {
+      return {_: {}
+             ,countries: c
+             ,interests: b
+             ,sections: a};
+   });
+   var Country = F2(function (a,
+   b) {
+      return {_: {}
+             ,count: b
+             ,country: a};
+   });
+   var Section = F3(function (a,
+   b,
+   c) {
+      return {_: {}
+             ,budget: c
+             ,count: b
+             ,section: a};
+   });
+   var Interest = F2(function (a,
+   b) {
+      return {_: {}
+             ,count: b
+             ,interest: a};
+   });
+   var Countries = function (a) {
+      return {ctor: "Countries"
+             ,_0: a};
+   };
+   var Sections = function (a) {
+      return {ctor: "Sections"
+             ,_0: a};
+   };
+   var Interests = function (a) {
+      return {ctor: "Interests"
+             ,_0: a};
+   };
+   var summaryItemDecoder = function (item) {
+      return function () {
+         var dec = function () {
+            switch (item)
+            {case "countries":
+               return A2($Json$Decode.map,
+                 Countries,
+                 countriesDecoder);
+               case "interests":
+               return A2($Json$Decode.map,
+                 Interests,
+                 interestsDecoder);
+               case "sections":
+               return A2($Json$Decode.map,
+                 Sections,
+                 sectionsDecoder);}
+            _U.badCase($moduleName,
+            "between lines 74 and 78");
+         }();
+         return A2($Json$Decode._op[":="],
+         "data",
+         dec);
+      }();
+   };
+   var listSummaryDecoder = $Json$Decode.list(A2($Json$Decode.andThen,
+   A2($Json$Decode._op[":="],
+   "_id",
+   $Json$Decode.string),
+   summaryItemDecoder));
+   _elm.Summary.SummaryDecoder.values = {_op: _op
+                                        ,Interests: Interests
+                                        ,Sections: Sections
+                                        ,Countries: Countries
+                                        ,Interest: Interest
+                                        ,Section: Section
+                                        ,Country: Country
+                                        ,Summary: Summary
+                                        ,initInterest: initInterest
+                                        ,initSection: initSection
+                                        ,initCountry: initCountry
+                                        ,interestsDecoder: interestsDecoder
+                                        ,sectionsDecoder: sectionsDecoder
+                                        ,countriesDecoder: countriesDecoder
+                                        ,summaryItemDecoder: summaryItemDecoder
+                                        ,listSummaryDecoder: listSummaryDecoder};
+   return _elm.Summary.SummaryDecoder.values;
 };
 Elm.Svg = Elm.Svg || {};
 Elm.Svg.make = function (_elm) {
