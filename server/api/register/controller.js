@@ -77,7 +77,7 @@ exports.interests = (req, res) => {
 	.toArray( (err, data) => {
 		if (err) return res.status(500).end();
 
-		let sorted = data[0].data.sort( (r1,r2) => r2.count - r1.count );
+		let sorted = data[0].data.sortBy( (r1,r2) => r2.count - r1.count );
 		res.send(sorted);
 	} );
 };
@@ -103,7 +103,7 @@ exports.summary = (req, res) => {
 	summary.find()
 	.toArray( (err, data) => {
 		if (err) return res.status(500).end();
-		res.send(data);
+		res.send(data.sort( (e2, e1) => e1._id < e2._id ));
 	} );
 };
 

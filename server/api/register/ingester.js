@@ -338,13 +338,14 @@ function insertLocal(fname, cb) {
 
 /* MANUAL TEST
 */
+let fname = './reg' + moment().format('DD-MM');
 // download new data
 // getXls('./reg' + moment().format('DD-MM'))
 // 	.then( () => console.log('done') )
 // 	.catch( err => console.error(err) );
 
 // run update from local file
-// handleUpdate('./reg19-11')
+// handleUpdate(fname)
 // 	.then( ingestRes => Promise.all([Promise.resolve(ingestRes), processor.makeSummaryData()]) )
 // 	.then( console.log.bind(this) )
 // 	.catch( err => console.error(err) );

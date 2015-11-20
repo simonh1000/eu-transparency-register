@@ -104,7 +104,7 @@ update action model =
         --     , updateUrl )
         -- SectionsData (Result.Err msg) ->
         --     ( { model | msg <- errorHandler msg }, updateUrl )
-        SummaryData (Result.Ok [Sections sData, Interests iData, Countries cData]) ->
+        SummaryData (Result.Ok [Countries cData, Interests iData, Sections sData]) ->
             ( { model
                 | sections <- sData
                 , sectionsSimplified <- simplifySectionsData sData
@@ -158,7 +158,7 @@ simplifyCountiesData data =
             let
                 normCount = (toFloat << round) <| elem.count / total * 100
             in
-            if normCount < 3
+            if normCount < 4
                 then (othersCnt + normCount, accS)        -- add to others
                 else
                     ( othersCnt

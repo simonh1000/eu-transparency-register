@@ -127,10 +127,10 @@ exports.makeSummaryData = function() {
 	.then( _db => {
 		db = _db;
 		return Promise.all([
-				countInterests(db).then( res => ({"interests": !!res.result.ok}) ),
-				countSections(db).then( res => ({"sections": !!res.result.ok}) ),
-				countCountries(db).then( res => ({"countries": !!res.result.ok}) )
-			  ]);
+			countSections(db).then( res => ({"sections": !!res.result.ok}) ),
+			countInterests(db).then( res => ({"interests": !!res.result.ok}) ),
+			countCountries(db).then( res => ({"countries": !!res.result.ok}) )
+		  ]);
 	})
 	.then( results => {
 		console.log('makeSummaryData success');
@@ -152,6 +152,6 @@ exports.makeSummaryData = function() {
 // };
 
 /* MANUAL TEST */
-exports.makeSummaryData()
-.then( responses => console.log(responses) )
-.catch( err => console.error(err) );
+// exports.makeSummaryData()
+// .then( responses => console.log(responses) )
+// .catch( err => console.error(err) );

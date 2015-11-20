@@ -16215,7 +16215,7 @@ Elm.Summary.Summary.make = function (_elm) {
                   return function () {
                        var normCount = $Basics.toFloat($Basics.round(elem.count / total * 100));
                        return _U.cmp(normCount,
-                       3) < 0 ? {ctor: "_Tuple2"
+                       4) < 0 ? {ctor: "_Tuple2"
                                 ,_0: _v0._0 + normCount
                                 ,_1: _v0._1} : {ctor: "_Tuple2"
                                                ,_0: _v0._0
@@ -16416,7 +16416,7 @@ Elm.Summary.Summary.make = function (_elm) {
                  switch (action._0._0.ctor)
                    {case "::":
                       switch (action._0._0._0.ctor)
-                        {case "Sections":
+                        {case "Countries":
                            switch (action._0._0._1.ctor)
                              {case "::":
                                 switch (action._0._0._1._0.ctor)
@@ -16424,16 +16424,16 @@ Elm.Summary.Summary.make = function (_elm) {
                                      switch (action._0._0._1._1.ctor)
                                        {case "::":
                                           switch (action._0._0._1._1._0.ctor)
-                                            {case "Countries":
+                                            {case "Sections":
                                                switch (action._0._0._1._1._1.ctor)
                                                  {case "[]":
                                                     return {ctor: "_Tuple2"
                                                            ,_0: _U.replace([["sections"
-                                                                            ,action._0._0._0._0]
+                                                                            ,action._0._0._1._1._0._0]
                                                                            ,["sectionsSimplified"
-                                                                            ,simplifySectionsData(action._0._0._0._0)]
+                                                                            ,simplifySectionsData(action._0._0._1._1._0._0)]
                                                                            ,["countries"
-                                                                            ,simplifyCountiesData(action._0._0._1._1._0._0)]
+                                                                            ,simplifyCountiesData(action._0._0._0._0)]
                                                                            ,["interests"
                                                                             ,A2($List.sortBy,
                                                                             function ($) {
