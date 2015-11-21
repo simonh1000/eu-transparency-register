@@ -1,4 +1,4 @@
-module Entries.Entries (Model, Action(..), init, update, view, updateUrl) where
+module Entries.Entries (Model, Action(..), init, update, view) where
 
 import Html exposing (..)
 import Html.Attributes exposing (class, id, type', href, style)
@@ -9,7 +9,7 @@ import Dict exposing (Dict, insert, get)
 import Http
 import Effects exposing (Effects)
 import Task exposing (..)
-import History
+-- import History
 
 import Entries.EntryDecoder as EntryDecoder exposing (Id, Model, entryDecoder)
 import Entries.Entry as Entry exposing (Action(..))
@@ -49,49 +49,54 @@ update action model =
         insertEntry id =
             let newDisplayed = id :: model.displayed
             in
-            ( { model | displayed <- newDisplayed }
+            ( { model | displayed = newDisplayed }
             , Effects.batch
                 [ Effects.map (EntryAction id) (Effects.tick Entry.Tick)    -- Entry animation
-                , updateUrl newDisplayed
+                -- , updateUrl newDisplayed   -- History
+                , Effects.none
                 ]
             )
     in
     case action of
-        GetEntryFor id -> --( { model | message <- "GetEntryFor " ++ model.message }, Effects.none )
-          if | List.member id model.displayed ->        -- already showing, ignore click
+        GetEntryFor id -> --( { model | message = "GetEntryFor " ++ model.message }, Effects.none )
+            if List.member id model.displayed then        -- already showing, ignore click
                 ( model, Effects.none )
-             | Dict.member id model.cache ->            -- cached
+            else if Dict.member id model.cache then            -- cached
                 insertEntry id
-             | otherwise ->
+            else
                 ( model, loadEntry id )
         EntryReceived (Result.Ok entry) ->
             let (newModel, newEffects) = insertEntry entry.id
             in
-            ( { newModel | cache <- insert entry.id (Entry.init entry) newModel.cache, message <- entry.id }
+            ( { newModel | cache = insert entry.id (Entry.init entry) newModel.cache, message = entry.id }
             , newEffects
             )
         EntryReceived (Result.Err msg) ->
-            ( { model | message <- errorHandler msg }
+            ( { model | message = errorHandler msg }
             , Effects.none
             )
 
         -- C L O S E
         CloseAll ->
-            ( { model | displayed <- [] }, updateUrl [] )
+            ( { model | displayed = [] }
+            -- , updateUrl []    -- History
+            , Effects.none
+            )
         EntryAction id Close ->
             let
                 newDisplayed = List.filter (\d -> d /= id) model.displayed
             in
             ( { model |
-                displayed <- newDisplayed
-              , cache <- Dict.update id (Maybe.map (Entry.init << .data)) model.cache -- reset cache entry
+                displayed = newDisplayed
+              , cache = Dict.update id (Maybe.map (Entry.init << .data)) model.cache -- reset cache entry
               }
-            , updateUrl newDisplayed
+            -- , updateUrl newDisplayed   -- History
+            , Effects.none
             )
 
         -- E X P A N D
         EntryAction id entryAction ->    -- i.e. Expand
-            ( { model | cache <- Dict.update id (Entry.update entryAction |> Maybe.map) model.cache }
+            ( { model | cache = Dict.update id (Entry.update entryAction |> Maybe.map) model.cache }
             , Effects.none
             )
 
@@ -111,7 +116,7 @@ view address model =
     let
         viewMapper : Id -> Html
         viewMapper id =
-            let (Just entry) = get id model.cache
+            let entry = Maybe.withDefault Entry.initEmpty (get id model.cache)
             in Entry.view (Signal.forwardTo address (EntryAction id)) entry
     in
     div [ id "entries", class "col-xs-12 col-sm-8" ]
@@ -137,13 +142,13 @@ loadEntry id =
         |> Task.map EntryReceived
         |> Effects.task
 
-updateUrl : List String -> Effects Action
-updateUrl displayed =
-    combineIds displayed
-        |> History.replacePath
-        |> Task.toMaybe
-        |> Task.map NoOp
-        |> Effects.task
+-- updateUrl : List String -> Effects Action
+-- updateUrl displayed =
+--     combineIds displayed
+--         |> History.replacePath
+--         |> Task.toMaybe
+--         |> Task.map NoOp
+--         |> Effects.task
 
 -- [x,y,z] --> /x/y/z
 combineIds : List String -> String

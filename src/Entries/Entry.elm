@@ -1,4 +1,4 @@
-module Entries.Entry (Model, Action(..), init, update, view) where
+module Entries.Entry (Model, Action(..), init, initEmpty, update, view) where
 
 import Html exposing (..)
 import Html.Attributes exposing (class, id, type', href, style)
@@ -26,6 +26,8 @@ init data =
     , entry = True
     }
 
+initEmpty = init EntryDecoder.initEmpty
+
 -- U P D A T E
 
 type Action =
@@ -36,8 +38,9 @@ type Action =
 update : Action -> Model -> Model
 update action model =
     case action of
-        Tick _ -> { model | entry <- False }
-        Expand -> { model | expand <- not model.expand }
+        Tick _ -> { model | entry = False }
+        Expand -> { model | expand = not model.expand }
+        Close -> model
 
 -- V I E W
 

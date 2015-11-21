@@ -6,7 +6,7 @@ import Html.Events exposing (onClick)
 import String exposing (split)
 import List exposing (filter, foldl, map)
 
-import History
+-- import History
 import Task exposing (Task)
 import Effects exposing (Effects)
 
@@ -32,7 +32,6 @@ init =
     ( { filters = Filters.init
       , matches = Matches.init
       , entries = Entries.init
-    --   , display = Filtered
       , message = "Initialising"
       }
     , Effects.none
@@ -56,15 +55,17 @@ update action model =
         Activate params ->
             case params of
                 [] ->
-                    ( { model | matches <- fst <| Matches.update Matches.SetRegister model.matches }
-                    , updateUrl "default" )   -- homepage
+                    ( { model | matches = fst <| Matches.update Matches.SetRegister model.matches }
+                    -- , updateUrl "/"   -- homepage
+                    , Effects.none
+                    )   -- homepage
                 ["recent"] ->
                     let (_, newEffects) =
                         Matches.update Matches.GetRecents model.matches
                     in ( model
                        , Effects.batch
                             [ Effects.map MatchAction newEffects
-                            , updateUrl "recent"
+                            -- , updateUrl "recent"
                             ]
                        )
                 ids ->
@@ -74,35 +75,37 @@ update action model =
                             let (newM, newE) = Entries.update (GetEntryFor id_) model
                             in  (newM, newE :: effects)
 
-                        (newEntriesModel, effects) = foldl go (model.entries, [ Entries.updateUrl [""] ]) ids
+                        (newEntriesModel, effects) =
+                            -- foldl go (model.entries, [ Entries.updateUrl [""] ]) ids   -- **** NEEDS RELOOKING
+                            foldl go (model.entries, [ Effects.none ]) ids
                     in
-                        ( { model | entries <- newEntriesModel }
+                        ( { model | entries = newEntriesModel }
                         , Effects.batch <| map (Effects.map EntryAction) effects
                         )
         FilterAction (GetMatch searchModel) ->              -- redirect on search
             let (newMatchesModel, newMatchesEffects) = Matches.update (GetMatchFor searchModel) model.matches
-            in  ( { model | matches <- newMatchesModel }
+            in  ( { model | matches = newMatchesModel }
                 , Effects.map MatchAction newMatchesEffects
                 )
         FilterAction filterAction ->
-                ( { model | filters <- Filters.update filterAction model.filters }
+                ( { model | filters = Filters.update filterAction model.filters }
                 , Effects.none
                 )
 
         MatchAction (GetEntry id) ->                        -- redirect click on a match
             let (newEntriesModel, newEntriesEffects) = Entries.update (GetEntryFor id) model.entries
-            in  ( { model | entries <- newEntriesModel }
+            in  ( { model | entries = newEntriesModel }
                 , Effects.map EntryAction newEntriesEffects
                 )
         MatchAction matchAction ->
             let (newMatchesModel, newMatchEffects) = Matches.update matchAction model.matches
-            in  ( { model | matches <- newMatchesModel }
+            in  ( { model | matches = newMatchesModel }
                 , Effects.map MatchAction newMatchEffects
                 )
 
         EntryAction entryAction ->
             let (newEntriesModel, newEntriesEffects) = Entries.update entryAction model.entries
-            in  ( { model | entries <- newEntriesModel }
+            in  ( { model | entries = newEntriesModel }
                 , Effects.map EntryAction newEntriesEffects
                 )
         NoOp _ -> ( model, Effects.none )
@@ -110,7 +113,7 @@ update action model =
         --     let (newModel, newEffects) =
         --         Matches.update Matches.GetRecents model.matches
         --     in ( { model |
-        --            matches <- newModel }
+        --            matches = newModel }
         --        , Effects.map MatchAction newEffects
         --        )
         -- UrlParam ids ->
@@ -122,7 +125,7 @@ update action model =
         --
         --         (newEntriesModel, effects) = foldl go (model.entries, [ Entries.updateUrl [""] ]) ids
         --     in
-        --         ( { model | entries <- newEntriesModel }
+        --         ( { model | entries = newEntriesModel }
         --         , Effects.batch <| map (Effects.map EntryAction) effects
         --         )
 
@@ -142,9 +145,9 @@ view address model =
 
 -- INPUTS / TASKS / EFFECTS
 
-updateUrl : String -> Effects Action
-updateUrl displayed =
-    History.replacePath displayed
-        |> Task.toMaybe
-        |> Task.map NoOp
-        |> Effects.task
+-- updateUrl : String -> Effects Action
+-- updateUrl displayed =
+--     History.replacePath displayed
+--         |> Task.toMaybe
+--         |> Task.map NoOp
+--         |> Effects.task

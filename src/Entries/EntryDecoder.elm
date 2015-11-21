@@ -1,4 +1,4 @@
-module Entries.EntryDecoder (Id, Model, init, entryDecoder) where
+module Entries.EntryDecoder (Id, Model, init, initEmpty, entryDecoder) where
 
 import Json.Decode exposing (..)
 
@@ -26,6 +26,8 @@ init i o h e c n m g =
     , memberships = m
     , goals = g
     }
+
+initEmpty = init "" "" "" "" "" 0 "" ""
 
 entryDecoder : Decoder Model
 entryDecoder =

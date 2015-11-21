@@ -10,7 +10,7 @@ var Promise = require("bluebird");
 var processor = require("./processor");
 
 /* *NEEDS TO BE VAR ***************************** */
-var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:2701/lobby"
+var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:27017/lobby"
 
 // Collection names
 const REGISTER = 'register';
@@ -146,6 +146,7 @@ function isDifferrent(existing, entry) {
 			if ((typeof entry[prop] !== 'object' && existing[prop] !== entry[prop])
 				|| (typeof entry[prop] == 'object' && !arraysEqual(existing[prop], entry[prop]))) {
 
+				// ideally want this logged to a temp file
 				console.log(`updated ${prop}: ${entry.orgName.substr(0,20)}: ${existing[prop]} -> ${entry[prop]}`);
 				return true;
 			}
@@ -179,8 +180,6 @@ function getChanges(existing, newData) {
 			return;
 		}
 	});
-	console.log('ingest: newEntryCount', newEntries.length);
-	console.log('ingest: newDataCount', updates.length);
 	return {
 		entries: newEntries,
 		updates: updates
@@ -205,7 +204,7 @@ function addEntryDate(entry) {
 	return entry;
 }
 
-function handleUpdate(fname, cb) {
+function handleUpdate(fname) {
 	var db;
 
 	return Promise.all([
@@ -228,15 +227,12 @@ function handleUpdate(fname, cb) {
 		let changesPromise =
 			db.collection(CHANGES)
 			.insertOne(newUpdated)
-			.then(res => ({changes: res.insertedCount}));
-
-		// New entries
-		// let newEntries = newUpdated.newEntries.map(addEntryDate);
-		// let entriesPromise =
-		// 	(newEntries.length) ? db.collection(REGISTER).insertMany(newEntries)
-		// 							.then(res => {newEntries: res.insertedCount}) : Promise.resolve("no new Entries");
-		// let entriesPromise = Promise.resolve();
-		// console.log('ingest: inserted new entries');
+			.then(res => ({
+				'newEntries': newUpdated.entries.length,
+				'updates': newUpdated.updates.length
+			}));
+			// console.log('ingest: newEntryCount', newEntries.length);
+			// console.log('ingest: newDataCount', updates.length);
 
 		// FOR ALL UPDATES, MAKE A COPY OF CURRENT DATA
 		// Updates to existing entries
@@ -265,14 +261,14 @@ function handleUpdate(fname, cb) {
 			db.collection(REGISTER)
 			.drop()
 			.then( () => db.collection(REGISTER).insertMany(newData) )
-			.then( result => ({'registerPromise': result.insertedCount}));
+			.then( result => ({'registerSize': result.insertedCount}));
 
 		return Promise.all([registerPromise, changesPromise].concat(historyPromises));
 	})
 	.then( res => {
 		// console.log(res);
 		db.close();
-		return [ res[0], res[1], {'historyPromises': (res.length-2)} ];
+		return [ res[0], res[1], {'updates': (res.length-2)} ];
 	})
 	.catch( err => {
 		console.error(err);
@@ -301,54 +297,5 @@ exports.index = function(req, res) {
 	.catch( err => res.status(500).send(err) );
 };
 
-/* ********************************** */
-
-function insertLocal(fname, cb) {
-	Promise.all([
-		mongoConnect(mongoUrl),
-		xls2Json(fname)
-	])
-	.then( results => {
-		let db = results[0];
-		let json = results[1];
-
-		// **** set default 'lastUpdate'
-		let defaultEntryDate = moment('28/10/2015', 'DD-MM-YYYY').format();
-
-		let newJson = json.map(entry => {
-			let newEntry = rawMapper(entry);
-			newEntry['lastUpdate'] = defaultEntryDate;
-			return newEntry;
-		});
-
-		let coll = db.collection(REGISTER);
-
-		coll.drop();
-		console.log('ingest: insertLocal - replacing DB');
-
-		coll.insertMany(newJson, (err, res) => {
-			if (err) throw err;
-
-			console.log(`ingest: Inserted ${res.insertedCount} entries into ${REGISTER}. Closing DB connection`);
-			db.close();
-            cb();
-		});
-	} );
-}
-
-/* MANUAL TEST
-*/
-let fname = './reg' + moment().format('DD-MM');
-// download new data
-// getXls('./reg' + moment().format('DD-MM'))
-// 	.then( () => console.log('done') )
-// 	.catch( err => console.error(err) );
-
-// run update from local file
-// handleUpdate(fname)
-// 	.then( ingestRes => Promise.all([Promise.resolve(ingestRes), processor.makeSummaryData()]) )
-// 	.then( console.log.bind(this) )
-// 	.catch( err => console.error(err) );
-
-// Re-initialise data from local file
-// insertLocal('./reg17-11', () => console.log("done"))
+exports.getXls = getXls;
+exports.handleUpdate = handleUpdate;

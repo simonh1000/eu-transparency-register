@@ -74,10 +74,34 @@ summaryItemDecoder item =
         case item of
             "sections" -> Json.map Sections sectionsDecoder
             "interests" -> Json.map Interests interestsDecoder
-            "countries" -> Json.map Countries countriesDecoder
+            otherwise -> Json.map Countries countriesDecoder
     in ("data" := dec)
 
 listSummaryDecoder : Decoder (List SummaryInfo)
 listSummaryDecoder =
     ("_id" := string) `Json.andThen` summaryItemDecoder
     |> list
+
+
+summaryDecoder : Decoder Summary
+summaryDecoder =
+    Json.map combine listSummaryDecoder
+
+emptySummary : Summary
+emptySummary =
+    { sections = []
+    , interests = []
+    , countries = []
+    }
+
+combine : List SummaryInfo -> Summary
+combine lst =
+    let
+        insert info sum =
+            case info of
+                Sections ss -> { sum | sections = ss }
+                Interests is -> { sum | interests = is }
+                Countries cs -> { sum | countries = cs }
+
+    in
+    List.foldl insert emptySummary lst

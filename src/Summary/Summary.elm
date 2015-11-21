@@ -11,12 +11,12 @@ import Http
 import Effects exposing (Effects)
 import Time exposing (Time)
 import Task
-import History
+-- import History
 
 import Chart exposing (hBar, pie, title, colours, toHtml, updateStyles, addValueToLabel)
 
 import Common exposing (errorHandler)
-import Summary.SummaryDecoder as Decoder exposing (SummaryInfo(..), Section, Interest, Country)
+import Summary.SummaryDecoder as Decoder exposing (Summary, Section, Interest, Country)
 
 -- MODEL
 type SectionMeasure
@@ -74,13 +74,13 @@ init =
 -- UPDATE
 type Action
     = Activate
-    | InterestData (Result Http.Error (List Interest))
-    | SectionsData (Result Http.Error (List Section))
-    | CountryData (Result Http.Error (List Country))
-    | SummaryData (Result Http.Error (List SummaryInfo))
+    -- | InterestData (Result Http.Error (List Interest))
+    -- | SectionsData (Result Http.Error (List Section))
+    -- | CountryData (Result Http.Error (List Country))
+    | SummaryData (Result Http.Error Summary)
     | NoOp (Maybe ())
     | Animate
-    | Tick Time
+    -- | Tick Time
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
@@ -91,33 +91,24 @@ update action model =
               then loadSummary
               else Effects.none
             )
-        -- InterestData (Result.Ok data) ->
-        --     ( { model | interests <- data }, updateUrl )
-        -- InterestData (Result.Err msg) ->
-        --     ( { model | msg <- errorHandler msg }, updateUrl )
-        -- CountryData (Result.Ok data) ->
-        --     ( { model | countries <- data }, updateUrl )
-        -- CountryData (Result.Err msg) ->
-        --     ( { model | msg <- "Country Decoder error: " ++ errorHandler msg }, updateUrl )
-        -- SectionsData (Result.Ok data) ->
-        --     ( { model | sections <- data, sectionsSimplified <- simplifySectionsData data }
-        --     , updateUrl )
-        -- SectionsData (Result.Err msg) ->
-        --     ( { model | msg <- errorHandler msg }, updateUrl )
-        SummaryData (Result.Ok [Countries cData, Interests iData, Sections sData]) ->
+        SummaryData (Result.Ok summary) ->
             ( { model
-                | sections <- sData
-                , sectionsSimplified <- simplifySectionsData sData
-                , countries <- simplifyCountiesData cData
-                , interests <- List.sortBy (negate << .count) iData
+                | sections = summary.sections
+                , sectionsSimplified = simplifySectionsData (summary.sections)
+                , countries = simplifyCountiesData summary.countries
+                , interests = List.sortBy (negate << .count) summary.interests
                }
-            , updateUrl )
+            , Effects.none )    -- History is not updated
+            -- , updateUrl )
         SummaryData (Result.Err msg) ->
-            ( { model | msg <- errorHandler msg }, updateUrl )
+            ( { model | msg = errorHandler msg }
+            -- , updateUrl
+            , Effects.none
+            )
         -- URL  U P D A T E S
         NoOp _ -> ( model, Effects.none )
         Animate ->
-            ( { model | sectionMeasure <- if model.sectionMeasure == Count then Budget else Count }
+            ( { model | sectionMeasure = if model.sectionMeasure == Count then Budget else Count }
             , Effects.none
             )
 
@@ -139,7 +130,7 @@ simplifySectionsData data =
                 else
                     ( othersBudg
                     , othersCnt
-                    , { elem | count <- normCount, budget <- normBudget } :: accS
+                    , { elem | count = normCount, budget = normBudget } :: accS
                     )
         (othersBudget, othersCount, sections) =
             foldl go (0, 0, []) data
@@ -162,7 +153,7 @@ simplifyCountiesData data =
                 then (othersCnt + normCount, accS)        -- add to others
                 else
                     ( othersCnt
-                    , { elem | count <- normCount } :: accS    -- keep, by coping into accumulatro directly
+                    , { elem | count = normCount } :: accS    -- keep, by coping into accumulatro directly
                     )
         (othersCount, accCountries) =
             foldl go (0, []) data
@@ -204,6 +195,7 @@ view address model =
                     [ "#5DA5DA", "#FAA43A", "#60BD68", "#F17CB0", "#B2912F", "#B276B2", "#DECF3F", "#F15854", "#BF69B1", "#4D4D4D"
                     --  "#BF69B1", "#96A65B", "#D9A679", "#593F27", "#A63D33"
                     ]
+                -- updateStyles String List Chart.Style Chart.Model
                 |> updateStyles "container" [("border","none")]
                 |> toHtml
             , div
@@ -234,62 +226,16 @@ view address model =
 
 -- TASKS
 
--- loadInterests : Effects Action
--- loadInterests =
---     Http.get issueDecoder ("/api/register/interests")
---         |> Task.toResult
---         |> Task.map InterestData
---         |> Effects.task
---
--- loadCountries : Effects Action
--- loadCountries =
---     Http.get countryDecoder ("/api/register/countries")
---         |> Task.toResult
---         |> Task.map CountryData
---         |> Effects.task
---
--- loadSections : Effects Action
--- loadSections =
---     Http.get sectionsDecoder ("/api/register/sections")
---         |> Task.toResult
---         |> Task.map SectionsData
---         |> Effects.task
-
 loadSummary : Effects Action
 loadSummary =
-    Http.get Decoder.listSummaryDecoder ("/api/register/summary")
+    Http.get Decoder.summaryDecoder ("/api/register/summary")
         |> Task.toResult
         |> Task.map SummaryData
         |> Effects.task
 
--- issueDecoder : Decoder (List Interest)
--- issueDecoder =
---     object2
---         initInterest
---         ("interest" := string)
---         ("count" := int)
---     |> list
---
--- countryDecoder : Decoder (List Country)
--- countryDecoder =
---     object2
---         initCountry
---         ("_id" := string)
---         ("count" := int)
---     |> list
---
--- sectionsDecoder : Decoder (List Section)
--- sectionsDecoder =
---     object3
---         initSection
---         ("_id" := string)
---         ("count" := float)
---         ("total" := float)
---     |> list
-
-updateUrl : Effects Action
-updateUrl =
-    History.replacePath "/summary"
-        |> Task.toMaybe
-        |> Task.map NoOp
-        |> Effects.task
+-- updateUrl : Effects Action
+-- updateUrl =
+--     History.replacePath "/summary"
+--         |> Task.toMaybe
+--         |> Task.map NoOp
+--         |> Effects.task

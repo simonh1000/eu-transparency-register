@@ -50,22 +50,22 @@ update : Action -> Model -> (Model, Effects Action)
 update action model =
     case action of
         SetRegister ->
-            ( { model | resultsType <- FilterMatches }
+            ( { model | resultsType = FilterMatches }
             , Effects.none
             )
         GetMatchFor searchModel ->
-            ( { model | matches <- [], message <- "Searching...." }
+            ( { model | matches = [], message = "Searching...." }
             , getMatches searchModel
             )
         MatchesData (Result.Ok ms) ->
             ( { model |
-                matches <- ms
-              , resultsType <- FilterMatches
-              , message <- if List.length ms == 0 then "No results found" else "" }
+                matches = ms
+              , resultsType = FilterMatches
+              , message = if List.length ms == 0 then "No results found" else "" }
             , Effects.none
             )
         MatchesData (Result.Err err) ->
-            ( { model | message <- errorHandler err }
+            ( { model | message = errorHandler err }
             , Effects.none
             )
         GetRecents ->
@@ -73,15 +73,16 @@ update action model =
             , getRecents )     -- if no data aslready in model then ....
         RecentsData (Result.Ok recs) ->
             ( { model |
-                resultsType <- Recents
-              , newstuff <- recs
+                resultsType = Recents
+              , newstuff = recs
               }
             , Effects.none
             )
         RecentsData (Result.Err err) ->
-            ( { model | message <- errorHandler err }
+            ( { model | message = errorHandler err }
             , Effects.none
             )
+        GetEntry _ -> ( model, Effects.none )
 
 errorHandler : Http.Error -> String
 errorHandler err =

@@ -37,10 +37,11 @@ type Action =
 update : Action -> Model -> Model
 update action model =
     case action of
-        Search s  -> { model | search <- s }
-        Section s -> { model | section <- s }
-        FTE s     -> { model | fte <- s }
-        Budget s  -> { model | budget <- s }
+        Search s  -> { model | search = s }
+        Section s -> { model | section = s }
+        FTE s     -> { model | fte = s }
+        Budget s  -> { model | budget = s }
+        GetMatch _ -> model
 
 -- VIEW
 

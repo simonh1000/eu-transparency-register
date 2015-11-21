@@ -33,10 +33,10 @@ type Action =
 update : Action -> Model -> Model
 update action model =
     case action of
-        GoSummary -> { model | page <- Summary }
-        GoRegister _ -> { model | page <- Register }
-        -- GoRecent -> { model | page <- Recent }
-        CountData c -> { model | regCount <- c }
+        GoSummary -> { model | page = Summary }
+        GoRegister _ -> { model | page = Register }
+        -- GoRecent -> { model | page = Recent }
+        CountData c -> { model | regCount = c }
         -- NoOp -> (Register, updateUrl Register)
 
 view : Signal.Address Action -> Model -> Html

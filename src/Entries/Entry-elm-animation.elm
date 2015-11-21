@@ -53,14 +53,14 @@ update action model =
                             elapsedTime + (clockTime - prevClockTime)
             in
                 if newElapsedTime > duration then     -- end of animation
-                    ( { model | animationState <- Nothing }
+                    ( { model | animationState = Nothing }
                     , Effects.none                    -- stop Ticks
                     )
                 else
-                    ( { model | animationState <- Just { prevClockTime = clockTime, elapsedTime = newElapsedTime } }
+                    ( { model | animationState = Just { prevClockTime = clockTime, elapsedTime = newElapsedTime } }
                     , Effects.tick Tick
                     )
-        Expand -> ( { model  | expand <- not model.expand }, Effects.none )
+        Expand -> ( { model  | expand = not model.expand }, Effects.none )
 
 
 -- V I E W

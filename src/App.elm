@@ -22,7 +22,6 @@ import Common
 type alias Model =
     { navbar : Nav.Model
     -- , page : Nav.Page
-    -- , regCount : String
     , register : Register.Model
     , summary : Summary.Model
     , help : Bool
@@ -33,7 +32,6 @@ init : (Model, Effects Action)
 init =
     ( { navbar = Nav.init Register ""
     --   , page = Register
-    --   , regCount = ""
       , register = fst Register.init
       , summary = Summary.init
       , help = False
@@ -60,7 +58,7 @@ update action model =
             let
                 navModel = Nav.update GoSummary model.navbar
                 (_, sumEffects) = Summary.update Summary.Activate model.summary
-            in  ( { model | navbar <- navModel }
+            in  ( { model | navbar = navModel }
                 , Effects.map SummaryAction sumEffects    -- download data, update url
                 )
         switchRegister params =
@@ -70,8 +68,8 @@ update action model =
                     Register.update (Register.Activate params) model.register
             in
                 ( { model
-                    | navbar <- navModel
-                    , register <- newModel }
+                    | navbar = navModel
+                    , register = newModel }
                 , Effects.map RegisterAction newEffects
                 )
     in
@@ -88,25 +86,26 @@ update action model =
                 --     let (newModel, newEffects) =
                 --         Register.update (Register.UrlParam urlElems) model.register
                 --     in  ( { model |
-                --               register <- newModel
-                --             , navbar <- Nav.update GoRegister model.navbar }
+                --               register = newModel
+                --             , navbar = Nav.update GoRegister model.navbar }
                 --         , Effects.map RegisterAction newEffects
                 --         )
                 -- Nothing ->
-                --     ( { model | navbar <- Nav.update GoRegister model.navbar }
+                --     ( { model | navbar = Nav.update GoRegister model.navbar }
                 --     , Effects.none
                 --     )
         -- update URL, download data (if necessary), switch view (change page model)
         NavAction navAction ->
-            -- let tmpModel = { model | navbar <- Nav.update navAction model.navbar }
+            -- let tmpModel = { model | navbar = Nav.update navAction model.navbar }
             -- in
             case navAction of
                 GoSummary -> switchSummary
                 GoRegister params -> switchRegister params
+                CountData _ -> (model, Effects.none)   -- ************
                 -- GoRecent ->
                 --     let (newModel, newEffects) =
                 --         Register.update (Register.UrlParam ["recent"]) model.register
-                --     in  ( { tmpModel | register <- newModel }
+                --     in  ( { tmpModel | register = newModel }
                 --         , Effects.batch
                 --             [ Effects.map RegisterAction newEffects
                 --             , updateUrl "recent"
@@ -115,34 +114,34 @@ update action model =
                 -- GoRegister ->
                 --     let (newModel, newEffects) =
                 --         Register.update (Register.UrlParam []) model.register
-                --     in  ( { tmpModel | register <- newModel }
+                --     in  ( { tmpModel | register = newModel }
                 --         , Effects.map RegisterAction newEffects
                 --         )
 
 
         RegisterAction regAction ->
             let (newModel, newEffects) = Register.update regAction model.register
-            in  ( { model | register <- newModel }
+            in  ( { model | register = newModel }
                 , Effects.map RegisterAction newEffects
                 )
 
         SummaryAction summaryAction ->
             let (newModel, newEffects) = Summary.update summaryAction model.summary
-            in  ( { model | summary <- newModel }
+            in  ( { model | summary = newModel }
                 , Effects.map SummaryAction newEffects
                 )
 
-        MetaReceived (Result.Ok val)->
-            ( { model | navbar <- Nav.update (Nav.CountData val) model.navbar }
+        MetaReceived (Result.Ok val)->     -- ***** this should be nav downloading this data
+            ( { model | navbar = Nav.update (Nav.CountData val) model.navbar }
             , Effects.none
             )
         MetaReceived (Result.Err err)->
-            ( { model | msg <- Common.errorHandler err }
+            ( { model | msg = Common.errorHandler err }
             , Effects.none
             )
 
         Help ->
-            ( { model | help <- not model.help }
+            ( { model | help = not model.help }
             , Effects.none
             )
 
