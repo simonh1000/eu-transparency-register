@@ -43,6 +43,13 @@ initCountry i c =
     , count = c
     }
 
+emptySummary : Summary
+emptySummary =
+    { sections = []
+    , interests = []
+    , countries = []
+    }
+
 interestsDecoder : Decoder (List Interest)
 interestsDecoder =
     object2
@@ -79,20 +86,8 @@ summaryItemDecoder item =
 
 listSummaryDecoder : Decoder (List SummaryInfo)
 listSummaryDecoder =
-    ("_id" := string) `Json.andThen` summaryItemDecoder
-    |> list
-
-
-summaryDecoder : Decoder Summary
-summaryDecoder =
-    Json.map combine listSummaryDecoder
-
-emptySummary : Summary
-emptySummary =
-    { sections = []
-    , interests = []
-    , countries = []
-    }
+    list <|
+        ("_id" := string) `Json.andThen` summaryItemDecoder
 
 combine : List SummaryInfo -> Summary
 combine lst =
@@ -105,3 +100,7 @@ combine lst =
 
     in
     List.foldl insert emptySummary lst
+
+summaryDecoder : Decoder Summary
+summaryDecoder =
+    Json.map combine listSummaryDecoder

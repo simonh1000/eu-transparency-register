@@ -5,7 +5,9 @@ import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick, onWithOptions)
 import Json.Decode as Json
 import Json.Encode as JsonE
--- import Debug
+
+import Http
+import Common
 
 -- MODEL
 
@@ -26,18 +28,32 @@ init p c = { page = p, regCount = c }
 type Action =
       GoRegister (List String)
     | GoSummary
-    -- | GoRecent
-    | CountData String
+    | CountData (Result Http.Error String)
     -- | NoOp (Maybe ())
 
 update : Action -> Model -> Model
 update action model =
     case action of
         GoSummary -> { model | page = Summary }
+
+        GoRegister ["recent"] -> { model | page = Recent }
         GoRegister _ -> { model | page = Register }
+
+        CountData (Result.Ok c) ->
+            { model | regCount = c }
+        CountData (Result.Err err)->
+            { model | regCount = Common.errorHandler err }
         -- GoRecent -> { model | page = Recent }
-        CountData c -> { model | regCount = c }
         -- NoOp -> (Register, updateUrl Register)
+                -- MetaReceived (Result.Ok val)->     -- ***** this should be nav downloading this data
+                --     ( { model | navbar = Nav.update (Nav.CountData val) model.navbar }
+                --     , Effects.none
+                --     )
+                -- MetaReceived (Result.Err err)->
+                --     ( { model | msg = Common.errorHandler err }
+                --     , Effects.none
+                --     )
+
 
 view : Signal.Address Action -> Model -> Html
 view address model =
@@ -73,9 +89,16 @@ view address model =
                 ]
             , div [ class "collapse navbar-collapse", id "navbar" ]
                 [ ul [ class "nav navbar-nav navbar-right" ]
-                    [ li [] [ a [ href "#", onNavClick (GoRegister []) ] [ text (toString Register) ] ]
-                    , li [] [ a [ href "#", onNavClick (GoRegister ["recent"]) ] [ text "Recent changes" ] ]
-                    , li [] [ a [ href "#", onNavClick GoSummary ]  [ text (toString Summary) ] ]
+                    [ li []
+                        [ a [ href "#", onNavClick (GoRegister []) ] [ text (toString Register) ] ]
+                    , li []
+                        [ a [ href "#", onNavClick (GoRegister ["recent"]) ] [ text "Recent changes" ] ]
+                    , li []
+                        [ a
+                            [ href "#", onNavClick GoSummary
+                            , class <| if model.page == Summary then "active" else "" ]
+                            [ text (toString Summary) ]
+                        ]
                     ]
                 ]
             ]

@@ -111,7 +111,7 @@ exports.newentries = (req, res) => {
 	// find all records with id < 14 days ago
 	// concat results
 	let minus7 = moment().subtract(7, 'days').format();
-cd
+
 	changes.find({_id: {$gte: minus7}})
 	.toArray( (err, data) => {
 		if (err) return res.sendStatus(500).end();

@@ -1,4 +1,4 @@
-module App (Action(UrlParam), init, update, view) where
+module App (Action(..), init, update, view) where
 
 import Html exposing (..)
 import Html.Attributes exposing (class)
@@ -44,12 +44,11 @@ init =
 
 type Action
     = UrlParam String
+    | Width Int
     | NavAction Nav.Action
     | SummaryAction Summary.Action
     | RegisterAction Register.Action
-    | MetaReceived (Result Http.Error String)
     | Help
-    -- | NoOp (Maybe ())
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
@@ -75,49 +74,26 @@ update action model =
     in
     case action of
          -- download data (if necessary), switch view
-        UrlParam str -> -- (model, Effects.none)
+        UrlParam str ->
             let
-                urlElems = filter ((/=) "") (split "/" str)
+                params = filter ((/=) "") (split "/" str)
             in
-            case head urlElems of
-                Just "summary" ->  switchSummary
-                otherwise -> switchRegister urlElems
-                -- Just _ ->
-                --     let (newModel, newEffects) =
-                --         Register.update (Register.UrlParam urlElems) model.register
-                --     in  ( { model |
-                --               register = newModel
-                --             , navbar = Nav.update GoRegister model.navbar }
-                --         , Effects.map RegisterAction newEffects
-                --         )
-                -- Nothing ->
-                --     ( { model | navbar = Nav.update GoRegister model.navbar }
-                --     , Effects.none
-                --     )
-        -- update URL, download data (if necessary), switch view (change page model)
+            case head params of
+                Just "summary" -> switchSummary
+                otherwise -> switchRegister params
+
+        Width w ->
+            ( { model | msg = toString w }
+            , Effects.none
+            )
         NavAction navAction ->
-            -- let tmpModel = { model | navbar = Nav.update navAction model.navbar }
-            -- in
             case navAction of
                 GoSummary -> switchSummary
                 GoRegister params -> switchRegister params
-                CountData _ -> (model, Effects.none)   -- ************
-                -- GoRecent ->
-                --     let (newModel, newEffects) =
-                --         Register.update (Register.UrlParam ["recent"]) model.register
-                --     in  ( { tmpModel | register = newModel }
-                --         , Effects.batch
-                --             [ Effects.map RegisterAction newEffects
-                --             , updateUrl "recent"
-                --             ]
-                --         )
-                -- GoRegister ->
-                --     let (newModel, newEffects) =
-                --         Register.update (Register.UrlParam []) model.register
-                --     in  ( { tmpModel | register = newModel }
-                --         , Effects.map RegisterAction newEffects
-                --         )
-
+                countData ->
+                    ( { model | navbar = Nav.update countData model.navbar }
+                    , Effects.none
+                    )
 
         RegisterAction regAction ->
             let (newModel, newEffects) = Register.update regAction model.register
@@ -131,21 +107,10 @@ update action model =
                 , Effects.map SummaryAction newEffects
                 )
 
-        MetaReceived (Result.Ok val)->     -- ***** this should be nav downloading this data
-            ( { model | navbar = Nav.update (Nav.CountData val) model.navbar }
-            , Effects.none
-            )
-        MetaReceived (Result.Err err)->
-            ( { model | msg = Common.errorHandler err }
-            , Effects.none
-            )
-
         Help ->
             ( { model | help = not model.help }
             , Effects.none
             )
-
-        -- NoOp _ -> ( model, Effects.none )
 
 -- VIEW
 
@@ -190,9 +155,10 @@ helpModal address model =
         else div [] []
 
 -- TASKS
+
 getMeta : Effects Action
 getMeta =
     Http.get (Json.map toString ("count" := Json.int)) ("/api/register/meta")
         |> Task.toResult
-        |> Task.map MetaReceived
+        |> Task.map (NavAction << Nav.CountData)
         |> Effects.task

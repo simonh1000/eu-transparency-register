@@ -1,4 +1,4 @@
-module Entries.Entries (Model, Action(..), init, update, view) where
+module Entries.Entries (Model, Action(..), init, update, view, updateUrl) where
 
 import Html exposing (..)
 import Html.Attributes exposing (class, id, type', href, style)
@@ -9,7 +9,7 @@ import Dict exposing (Dict, insert, get)
 import Http
 import Effects exposing (Effects)
 import Task exposing (..)
--- import History
+import History
 
 import Entries.EntryDecoder as EntryDecoder exposing (Id, Model, entryDecoder)
 import Entries.Entry as Entry exposing (Action(..))
@@ -20,7 +20,7 @@ type alias Cache = Dict Id (Entry.Model)
 
 type alias Model =
     { displayed : List Id
-    , cache : Cache       -- also contains info about whether an item is exapanded
+    , cache : Cache       -- also contains info about whether an item is expanded
     , message : String
     }
 
@@ -52,8 +52,8 @@ update action model =
             ( { model | displayed = newDisplayed }
             , Effects.batch
                 [ Effects.map (EntryAction id) (Effects.tick Entry.Tick)    -- Entry animation
-                -- , updateUrl newDisplayed   -- History
-                , Effects.none
+                , updateUrl newDisplayed   -- History
+                -- , Effects.none
                 ]
             )
     in
@@ -79,8 +79,8 @@ update action model =
         -- C L O S E
         CloseAll ->
             ( { model | displayed = [] }
-            -- , updateUrl []    -- History
-            , Effects.none
+            , updateUrl []    -- History
+            -- , Effects.none
             )
         EntryAction id Close ->
             let
@@ -90,8 +90,8 @@ update action model =
                 displayed = newDisplayed
               , cache = Dict.update id (Maybe.map (Entry.init << .data)) model.cache -- reset cache entry
               }
-            -- , updateUrl newDisplayed   -- History
-            , Effects.none
+            , updateUrl newDisplayed   -- History
+            -- , Effects.none
             )
 
         -- E X P A N D
@@ -142,13 +142,13 @@ loadEntry id =
         |> Task.map EntryReceived
         |> Effects.task
 
--- updateUrl : List String -> Effects Action
--- updateUrl displayed =
---     combineIds displayed
---         |> History.replacePath
---         |> Task.toMaybe
---         |> Task.map NoOp
---         |> Effects.task
+updateUrl : List String -> Effects Action
+updateUrl displayed =
+    combineIds displayed
+        |> History.replacePath
+        |> Task.toMaybe
+        |> Task.map NoOp
+        |> Effects.task
 
 -- [x,y,z] --> /x/y/z
 combineIds : List String -> String

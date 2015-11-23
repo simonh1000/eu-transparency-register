@@ -11,7 +11,7 @@ import Http
 import Effects exposing (Effects)
 import Time exposing (Time)
 import Task
--- import History
+import History
 
 import Chart exposing (hBar, pie, title, colours, toHtml, updateStyles, addValueToLabel)
 
@@ -98,12 +98,12 @@ update action model =
                 , countries = simplifyCountiesData summary.countries
                 , interests = List.sortBy (negate << .count) summary.interests
                }
-            , Effects.none )    -- History is not updated
-            -- , updateUrl )
+            -- , Effects.none )    -- History is not updated
+            , updateUrl )
         SummaryData (Result.Err msg) ->
             ( { model | msg = errorHandler msg }
-            -- , updateUrl
-            , Effects.none
+            , updateUrl
+            -- , Effects.none
             )
         -- URL  U P D A T E S
         NoOp _ -> ( model, Effects.none )
@@ -169,6 +169,7 @@ view address model =
         budgetModel = List.map .budget model.sectionsSimplified
         labels = List.map .section model.sectionsSimplified
     in
+    -- Country HQ
     div [ id "summary", class "row" ]
         [ div [ class "col-xs-12" ]
             [ pie
@@ -179,6 +180,8 @@ view address model =
                 |> colours
                     [ "#5DA5DA", "#FAA43A", "#60BD68", "#F17CB0", "#B2912F", "#DECF3F", "#9a9a9a", "#F15854", "#BF69B1", "#4D4D4D"
                     ]
+                |> updateStyles "chart-container" [("flex-wrap", "wrap")]
+                |> updateStyles "legend" [("max-width", "100%")]
                 |> updateStyles "container" [("border","none")]
                 |> toHtml
             ]
@@ -196,6 +199,8 @@ view address model =
                     --  "#BF69B1", "#96A65B", "#D9A679", "#593F27", "#A63D33"
                     ]
                 -- updateStyles String List Chart.Style Chart.Model
+                |> updateStyles "chart-container" [("flex-wrap", "wrap")]
+                |> updateStyles "legend" [("max-width", "100%")]
                 |> updateStyles "container" [("border","none")]
                 |> toHtml
             , div
@@ -233,9 +238,9 @@ loadSummary =
         |> Task.map SummaryData
         |> Effects.task
 
--- updateUrl : Effects Action
--- updateUrl =
---     History.replacePath "/summary"
---         |> Task.toMaybe
---         |> Task.map NoOp
---         |> Effects.task
+updateUrl : Effects Action
+updateUrl =
+    History.replacePath "/summary"
+        |> Task.toMaybe
+        |> Task.map NoOp
+        |> Effects.task

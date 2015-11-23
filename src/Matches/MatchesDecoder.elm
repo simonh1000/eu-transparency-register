@@ -22,7 +22,7 @@ type alias NewStuff =
 initNew : List Model -> List Model -> NewStuff
 initNew e u = { entries = e, updates = u }
 
--- **************
+-- ************
 matchDecoder : Decoder Model
 matchDecoder =
     object2

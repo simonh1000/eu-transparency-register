@@ -150,8 +150,3 @@ exports.makeSummaryData = function() {
 // 	.then( responses => res.send(responses) )
 // 	.catch( err => res.status(500).send(err) );
 // };
-
-/* MANUAL TEST */
-// exports.makeSummaryData()
-// .then( responses => console.log(responses) )
-// .catch( err => console.error(err) );
