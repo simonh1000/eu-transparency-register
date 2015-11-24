@@ -13,5 +13,4 @@ gulp
 ## ToDo
 
  - Switch to typescript
- - Improve navbar
- - add countries summary pie chart
+ - add countries to filters

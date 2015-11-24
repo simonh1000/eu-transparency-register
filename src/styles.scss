@@ -14,12 +14,6 @@ nav {
     &.navbar {
         margin-bottom: 0;
     }
-//     padding: 15px 0;
-//     h1 {
-//         font-size: 18px;
-//         float: left;
-//         margin: 0;
-//         color: rgb(193, 209, 240);
     .navbar-brand span {
         font-size: 14px;
     }
@@ -61,8 +55,11 @@ footer {
         height: 100%;
         background-image: url(flags.jpg);
         background-size: cover;
-        & > div, .App, .App .container {
+        & > div, .App, .App {
             height: 100%;
+        }
+        .container {
+            height: calc(100% - 52px);
         }
     }
 
@@ -71,14 +68,12 @@ footer {
         background-color: rgb(236, 236, 236);
         font-family: sans-serif;
     }
-    // nav {
-    //     h1 {
-    //         font-size: 28px;
-    //     }
-    // }
-
     #register {
-        height: calc(100% - 84px);    // 52 (filters) + 32 (footer)
+        height: calc(100% - 32px);    // 52 (filters) + 32 (footer)
+        .error {
+            color: red;
+            margin: 0;
+        }
         // flex: 2;
         // display: flex;
         // flex-direction: column;

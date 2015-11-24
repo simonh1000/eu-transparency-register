@@ -13734,6 +13734,102 @@ Elm.Filters.Section.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
+   var countries = _U.list(["All"
+                           ,"Germany"
+                           ,"United Kingdom"
+                           ,"Finland"
+                           ,"France"
+                           ,"Belgium"
+                           ,"Netherlands"
+                           ,"Italy"
+                           ,"Slovakia"
+                           ,"Ireland"
+                           ,"Austria"
+                           ,"United States"
+                           ,"Portugal"
+                           ,"Denmark"
+                           ,"Luxembourg"
+                           ,"Malaysia"
+                           ,"Sweden"
+                           ,"Spain"
+                           ,"Serbia"
+                           ,"Malta"
+                           ,"Switzerland"
+                           ,"Bulgaria"
+                           ,"Poland"
+                           ,"Singapore"
+                           ,"Croatia"
+                           ,"Czech Republic"
+                           ,"Japan"
+                           ,"Hungary"
+                           ,"Estonia"
+                           ,"Romania"
+                           ,"Greece"
+                           ,"Latvia"
+                           ,"China"
+                           ,"Lituania"
+                           ,"Korea, Republic Of"
+                           ,"Tunisia"
+                           ,"Norway"
+                           ,"Cyprus"
+                           ,"Canada"
+                           ,"Hong Kong"
+                           ,"South Africa"
+                           ,"Turkey"
+                           ,"India"
+                           ,"Brazil"
+                           ,"Slovenia"
+                           ,"Macedonia, Former Yugoslav Republic Of"
+                           ,"Barbados"
+                           ,"Bosnia-herzegovina"
+                           ,"Azerbaijan"
+                           ,"Israel"
+                           ,"Moldova, Republic Of"
+                           ,"Monaco"
+                           ,"Australia"
+                           ,"Mexico"
+                           ,"Iraq"
+                           ,"Paraguay"
+                           ,"Iceland"
+                           ,"Russia, Federation Of"
+                           ,"Benin"
+                           ,"Ukraine"
+                           ,"Jordan"
+                           ,"Nigeria"
+                           ,"Venezuela"
+                           ,"Netherlands Antilles"
+                           ,"Senegal"
+                           ,"Syria, Arab Republic"
+                           ,"Philippines"
+                           ,"Liechtenstein"
+                           ,"Pakistan"
+                           ,"Saint Marino"
+                           ,"United Arab Emirates"
+                           ,"Egypt"
+                           ,"Armenia"
+                           ,"Chile"
+                           ,"Morocco"
+                           ,"Albania"
+                           ,"Lebanon"
+                           ,"Qatar"
+                           ,"Argentina"
+                           ,"Gibraltar"
+                           ,"Kyrgyzstan"
+                           ,"Bermuda"
+                           ,"New Zealand"
+                           ,"Trinidad And Tobago"
+                           ,"Bahamas"
+                           ,"Cambodia"
+                           ,"Isle Of Man"
+                           ,"Indonesia"
+                           ,"Uganda"
+                           ,"Kenya"
+                           ,"Congo, Democratic Republic Of"
+                           ,"Cote D\'ivoire"
+                           ,"Ghana"
+                           ,"Dominican Republic"
+                           ,"Taiwan"
+                           ,"Belize"]);
    var subsections = _U.list(["All"
                              ,"Professional consultancies"
                              ,"Companies & groups"
@@ -13751,7 +13847,8 @@ Elm.Filters.Section.make = function (_elm) {
                              ,"Transnational associations and networks of public regional or other sub-national authorities"
                              ,"Regional structures"]);
    return _elm.Filters.Section.values = {_op: _op
-                                        ,subsections: subsections};
+                                        ,subsections: subsections
+                                        ,countries: countries};
 };
 Elm.Filters = Elm.Filters || {};
 Elm.Filters.Filters = Elm.Filters.Filters || {};
@@ -13790,6 +13887,7 @@ Elm.Filters.Filters.make = function (_elm) {
       switch (_p0.ctor)
       {case "Search": return _U.update(model,{search: _p0._0});
          case "Section": return _U.update(model,{section: _p0._0});
+         case "Country": return _U.update(model,{country: _p0._0});
          case "FTE": return _U.update(model,{fte: _p0._0});
          case "Budget": return _U.update(model,{budget: _p0._0});
          default: return model;}
@@ -13861,6 +13959,27 @@ Elm.Filters.Filters.make = function (_elm) {
                       $Signal.message(address))]),
               _U.list([]))]));
    });
+   var Country = function (a) {
+      return {ctor: "Country",_0: a};
+   };
+   var countryView = function (address) {
+      return A2($Html.div,
+      _U.list([]),
+      _U.list([A2($Html.h4,
+              _U.list([]),
+              _U.list([$Html.text("HQ Country")]))
+              ,A2($Html.select,
+              _U.list([$Html$Attributes.$class("form-control")
+                      ,A3($Html$Events.on,
+                      "change",
+                      A2($Json$Decode.map,Country,$Html$Events.targetValue),
+                      $Signal.message(address))]),
+              A2($List.map,
+              function (c) {
+                 return A2($Html.option,_U.list([]),_U.list([$Html.text(c)]));
+              },
+              $Filters$Section.countries))]));
+   };
    var Section = function (a) {
       return {ctor: "Section",_0: a};
    };
@@ -13901,9 +14020,17 @@ Elm.Filters.Filters.make = function (_elm) {
               _U.list([$Html.text(model.search)]))]));
    });
    var view = F2(function (address,model) {
-      return A2($Html.div,
+      var onSubmitSPA = F2(function (address$,act) {
+         return A4($Html$Events.onWithOptions,
+         "submit",
+         {stopPropagation: true,preventDefault: true},
+         $Json$Decode.succeed(act),
+         $Signal.message(address$));
+      });
+      return A2($Html.form,
       _U.list([$Html$Attributes.id("filters")
-              ,$Html$Attributes.$class("col-xs-12")]),
+              ,$Html$Attributes.$class("col-xs-12")
+              ,A2(onSubmitSPA,address,GetMatch(model))]),
       _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("row")]),
               _U.list([A2($Html.div,
@@ -13911,7 +14038,7 @@ Elm.Filters.Filters.make = function (_elm) {
                       _U.list([A2(searchView,address,model)]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.$class("col-xs-6 col-sm-3")]),
-                      _U.list([sectionView(address)]))
+                      _U.list([countryView(address)]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.$class("col-xs-6 col-sm-3")]),
                       _U.list([A2(fteView,address,model.fte)]))
@@ -13924,12 +14051,16 @@ Elm.Filters.Filters.make = function (_elm) {
               _U.list([$Html$Attributes.$class("col-xs-3 col-xs-offset-9")]),
               _U.list([A2($Html.button,
               _U.list([$Html$Attributes.$class("btn btn-primary")
-                      ,A2($Html$Events.onClick,address,GetMatch(model))]),
+                      ,$Html$Attributes.type$("submit")]),
               _U.list([$Html.text("Search!")]))]))]))]));
    });
-   var init = {search: "",section: "All",fte: "0",budget: "0"};
-   var Model = F4(function (a,b,c,d) {
-      return {search: a,section: b,fte: c,budget: d};
+   var init = {search: ""
+              ,section: "All"
+              ,country: "All"
+              ,fte: "0"
+              ,budget: "0"};
+   var Model = F5(function (a,b,c,d,e) {
+      return {search: a,section: b,country: c,fte: d,budget: e};
    });
    return _elm.Filters.Filters.values = {_op: _op
                                         ,init: init
@@ -13938,6 +14069,7 @@ Elm.Filters.Filters.make = function (_elm) {
                                         ,Model: Model
                                         ,Search: Search
                                         ,Section: Section
+                                        ,Country: Country
                                         ,FTE: FTE
                                         ,Budget: Budget
                                         ,GetMatch: GetMatch};
@@ -14081,14 +14213,19 @@ Elm.Matches.Matches.make = function (_elm) {
       return {ctor: "MatchesData",_0: a};
    };
    var getMatches = function (model) {
-      var searchTerms = A2($Basics._op["++"],
-      _U.list([{ctor: "_Tuple2",_0: "search",_1: model.search}
-              ,{ctor: "_Tuple2",_0: "fte",_1: model.fte}
-              ,{ctor: "_Tuple2",_0: "budget",_1: model.budget}]),
-      _U.eq(model.section,
+      var cntry = _U.eq(model.country,
+      "All") ? _U.list([]) : _U.list([{ctor: "_Tuple2"
+                                      ,_0: "country"
+                                      ,_1: model.country}]);
+      var sect = _U.eq(model.section,
       "All") ? _U.list([]) : _U.list([{ctor: "_Tuple2"
                                       ,_0: "section"
-                                      ,_1: model.section}]));
+                                      ,_1: model.section}]);
+      var searchTerms = A2($Basics._op["++"],
+      $List.concat(_U.list([sect,cntry])),
+      _U.list([{ctor: "_Tuple2",_0: "search",_1: model.search}
+              ,{ctor: "_Tuple2",_0: "fte",_1: model.fte}
+              ,{ctor: "_Tuple2",_0: "budget",_1: model.budget}]));
       return $Effects.task(A2($Task.map,
       MatchesData,
       $Task.toResult(A2($Http.get,
@@ -14657,7 +14794,10 @@ Elm.Register.make = function (_elm) {
    var view = F2(function (address,model) {
       return A2($Html.div,
       _U.list([$Html$Attributes.id("register")]),
-      _U.list([A2($Html.div,
+      _U.list([A2($Html.p,
+              _U.list([$Html$Attributes.$class("error")]),
+              _U.list([$Html.text(model.message)]))
+              ,A2($Html.div,
               _U.list([$Html$Attributes.$class("row")]),
               _U.list([A2($Filters$Filters.view,
               A2($Signal.forwardTo,address,FilterAction),
@@ -14669,10 +14809,7 @@ Elm.Register.make = function (_elm) {
                       model.matches)
                       ,A2($Entries$Entries.view,
                       A2($Signal.forwardTo,address,EntryAction),
-                      model.entries)]))
-              ,A2($Html.p,
-              _U.list([]),
-              _U.list([$Html.text(model.message)]))]));
+                      model.entries)]))]));
    });
    var Activate = function (a) {
       return {ctor: "Activate",_0: a};
@@ -14681,7 +14818,7 @@ Elm.Register.make = function (_elm) {
               ,_0: {filters: $Filters$Filters.init
                    ,matches: $Matches$Matches.init
                    ,entries: $Entries$Entries.init
-                   ,message: "Initialising"}
+                   ,message: ""}
               ,_1: $Effects.none};
    var Model = F4(function (a,b,c,d) {
       return {filters: a,matches: b,entries: c,message: d};
@@ -15315,7 +15452,7 @@ Elm.App.make = function (_elm) {
    $Task = Elm.Task.make(_elm);
    var _op = {};
    var Help = {ctor: "Help"};
-   var footerDiv = function (address) {
+   var footerDiv = F2(function (address,msg) {
       return A2($Html.footer,
       _U.list([$Html$Attributes.$class("row")]),
       _U.list([A2($Html.div,
@@ -15326,8 +15463,9 @@ Elm.App.make = function (_elm) {
               ,A2($Html.button,
               _U.list([$Html$Attributes.$class("btn btn-default btn-xs")
                       ,A2($Html$Events.onClick,address,Help)]),
-              _U.list([$Html.text("Notes, privacy, source code or report a problem")]))]))]));
-   };
+              _U.list([$Html.text("Notes, privacy, source code or report a problem")]))
+              ,A2($Html.span,_U.list([]),_U.list([$Html.text(msg)]))]))]));
+   });
    var helpModal = F2(function (address,model) {
       return model.help ? A2($Html.div,
       _U.list([$Html$Attributes.$class("help-modal")]),
@@ -15381,7 +15519,7 @@ Elm.App.make = function (_elm) {
                  return switchRegister(params);
               }
          case "Width": return {ctor: "_Tuple2"
-                              ,_0: _U.update(model,{msg: $Basics.toString(_p2._0)})
+                              ,_0: model
                               ,_1: $Effects.none};
          case "NavAction": var _p4 = _p2._0;
            switch (_p4.ctor)
@@ -15430,10 +15568,7 @@ Elm.App.make = function (_elm) {
                       model.summary) : A2($Register.view,
                       A2($Signal.forwardTo,address,RegisterAction),
                       model.register)
-                      ,footerDiv(address)
-                      ,A2($Html.div,
-                      _U.list([]),
-                      _U.list([$Html.text(model.msg)]))]))]));
+                      ,A2(footerDiv,address,model.msg)]))]));
    });
    var getMeta = $Effects.task(A2($Task.map,
    function (_p7) {

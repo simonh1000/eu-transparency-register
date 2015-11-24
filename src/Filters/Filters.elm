@@ -2,7 +2,7 @@ module Filters.Filters (Model, Action(..), init, update, view) where
 
 import Html exposing (..)
 import Html.Attributes as Attr exposing (class, id, type')
-import Html.Events exposing (onClick, on, targetValue)
+import Html.Events exposing (onClick, onSubmit, on, onWithOptions, targetValue)
 
 import Json.Decode as Json
 
@@ -13,6 +13,7 @@ import Filters.Section as Section
 type alias Model =
     { search : String
     , section : String
+    , country : String
     , fte: String
     , budget: String
     }
@@ -21,6 +22,7 @@ init : Model
 init =
     { search = ""
     , section = "All"
+    , country = "All"
     , fte = "0"
     , budget = "0"
     }
@@ -30,6 +32,7 @@ init =
 type Action =
       Search String
     | Section String
+    | Country String
     | FTE String
     | Budget String
     | GetMatch Model     -- caugth by App
@@ -39,6 +42,7 @@ update action model =
     case action of
         Search s  -> { model | search = s }
         Section s -> { model | section = s }
+        Country s -> { model | country = s }
         FTE s     -> { model | fte = s }
         Budget s  -> { model | budget = s }
         GetMatch _ -> model
@@ -47,12 +51,25 @@ update action model =
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-    div [ id "filters", class "col-xs-12" ]
+    let
+        onSubmitSPA address' act =
+            onWithOptions
+                "submit"
+                {stopPropagation=True, preventDefault=True}
+                (Json.succeed act)
+                (Signal.message address')
+    in
+    form
+        [ id "filters"
+        , class "col-xs-12"
+        , onSubmitSPA address (GetMatch model)
+        ]
         [ div [class "row" ]
             [ div [ class "col-xs-6 col-sm-3" ]
                 [ searchView address model ]
             , div [ class "col-xs-6 col-sm-3" ]
-                [ sectionView address ]
+                -- [ sectionView address ]
+                [ countryView address ]
             , div [ class "col-xs-6 col-sm-3" ]
                 [ fteView address model.fte ]
             , div [ class "col-xs-6 col-sm-3" ]
@@ -62,7 +79,8 @@ view address model =
             [ div [ class "col-xs-3 col-xs-offset-9" ]
                 [ button
                     [ class "btn btn-primary"
-                    , onClick address (GetMatch model)
+                    , type' "submit"
+                    -- , onClick address (GetMatch model)
                     ] [ text "Search!" ]
                 ]
             ]
@@ -89,6 +107,17 @@ sectionView address =
             , on "change" (Json.map Section targetValue) (Signal.message address)
             ]
             <| List.map (option [] << (List.repeat 1) << text) Section.subsections
+        ]
+
+countryView : Signal.Address Action -> Html
+countryView address =
+    div []
+        [ h4 [] [ text "HQ Country" ]
+        , select
+            [ class "form-control"
+            , on "change" (Json.map Country targetValue) (Signal.message address)
+            ]
+            <| List.map (\c -> option [] [ text c ]) Section.countries
         ]
 
 fteView : Signal.Address Action -> String -> Html

@@ -83,7 +83,8 @@ update action model =
                 otherwise -> switchRegister params
 
         Width w ->
-            ( { model | msg = toString w }
+            ( model
+            -- ( { model | msg = toString w }
             , Effects.none
             )
         NavAction navAction ->
@@ -123,13 +124,12 @@ view address model =
             , if model.navbar.page == Summary
                 then Summary.view (Signal.forwardTo address SummaryAction) model.summary
                 else Register.view (Signal.forwardTo address RegisterAction) model.register
-            , footerDiv address
-            , div [] [ text model.msg ]
+            , footerDiv address model.msg
             ]
         ]
 
-footerDiv : Signal.Address Action -> Html
-footerDiv address =
+footerDiv : Signal.Address Action -> String -> Html
+footerDiv address msg =
     footer [ class "row" ]
         [ div [ class "col-xs-12" ]
             [ span
@@ -139,6 +139,7 @@ footerDiv address =
                 , onClick address Help
                 ]
                 [ text "Notes, privacy, source code or report a problem" ]
+            , span [] [ text msg ]
             ]
         ]
 

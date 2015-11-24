@@ -40,6 +40,8 @@ exports.search = (req, res) => {
 		queryObj.orgName = {'$regex': query.search, $options: 'i'};
 	if (query.section)
 		queryObj.subsection = query.section;
+	if (query.country)
+		queryObj.hqCountry = query.country;
 	if (query.fte > 0)
 		queryObj.noFTEs = { $gt : parseInt(query.fte) };
 	if (query.budget > 0)

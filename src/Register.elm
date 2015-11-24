@@ -32,7 +32,7 @@ init =
     ( { filters = Filters.init
       , matches = Matches.init
       , entries = Entries.init
-      , message = "Initialising"
+      , message = ""
       }
     , Effects.none
     )
@@ -116,13 +116,13 @@ update action model =
 view : Signal.Address Action -> Model -> Html
 view address model =
     div [ id "register" ]
-        [ div [ class "row" ]
+        [ p [ class "error" ] [ text model.message ]
+        , div [ class "row" ]
             [ Filters.view (Signal.forwardTo address FilterAction) model.filters ]
         , div [ class "main row" ]
             [ Matches.view (Signal.forwardTo address MatchAction) model.matches
             , Entries.view (Signal.forwardTo address EntryAction) model.entries
             ]
-        , p [] [ text model.message ]
         ]
 
 -- INPUTS / TASKS / EFFECTS

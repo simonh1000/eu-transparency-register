@@ -129,14 +129,21 @@ viewMatch address match =
 getMatches : Filters.Model -> Effects Action
 getMatches model =
     let
+        sect =
+            if model.section == "All"
+            then []
+            else [("section", model.section)]
+        cntry =
+            if model.country == "All"
+            then []
+            else [("country", model.country)]
         searchTerms =
+            List.concat [ sect, cntry ] ++
             [ ("search", model.search)
             , ("fte", model.fte)
             , ("budget", model.budget)
-            ] ++
-                if model.section == "All"
-                then []
-                else [("section", model.section)]
+            ]
+
     in
     Http.get matchesDecoder (Http.url "/api/register/search/" searchTerms)
         |> Task.toResult
