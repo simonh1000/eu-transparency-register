@@ -28,9 +28,9 @@ var reqoptions = {
 };
 
 /*
- * XLS download and pre-process
+ * XLS download and read
+ * Downloads file to drive
  */
-// Downloads file to drive
 function getXls(fname) {
 	return new Promise(function(resolve, reject) {
 		request(reqoptions)
@@ -61,7 +61,10 @@ function xls2Json(fname) {
 	});
 }
 
-// Takes output from xls2json and converts to DB
+/*
+ * Pure processing functions
+ * Takes output from xls2json and converts to DB
+ */
 function rawMapper(entry) {
 
 	function avg(str) {
@@ -83,6 +86,8 @@ function rawMapper(entry) {
 				return parseInt(val);
 			case 'costsAbsolute':
 				return parseInt(val);
+			case 'noEP':
+				return parseInt(val);
 			case 'noFTEs':
 				return parseFloat(val);
 			default: return val
@@ -100,27 +105,6 @@ function rawMapper(entry) {
 	if (isNaN(newEntry.budget)) console.log("NaN", newEntry._id);
 
 	return newEntry;
-}
-
-// Function that returns a Promise of a database connection
-var mongoConnect = Promise.promisify(mongoClient.connect);
-
-// Get existing data and return {db:db, data:json}
-function getExistingData(db) {
-	console.log('ingest: getExistingData starting');
-	return db.collection(REGISTER)
-	.find({})
-	.toArray()
-	.then( data => {
-		let keyedData = {};
-		data.forEach( entry => keyedData[entry._id] = entry );
-		console.log('ingest: getExistingData returning keyedData');
-		return {
-			db: db,
-			data: keyedData
-		};
-	}, err => console.error(err)
- 	)
 }
 
 // Helper: arraysEqual
@@ -146,8 +130,8 @@ function isDifferrent(existing, entry) {
 			if ((typeof entry[prop] !== 'object' && existing[prop] !== entry[prop])
 				|| (typeof entry[prop] == 'object' && !arraysEqual(existing[prop], entry[prop]))) {
 
-				// ideally want this logged to a temp file
-				console.log(`updated ${prop}: ${entry.orgName.substr(0,20)}: ${existing[prop]} -> ${entry[prop]}`);
+				// ****ideally want this logged to a temp file
+				// console.log(`updated ${prop}: ${entry.orgName.substr(0,20)}: ${existing[prop]} -> ${entry[prop]}`);
 				return true;
 			}
 		} else {
@@ -204,26 +188,56 @@ function addEntryDate(entry) {
 	return entry;
 }
 
+/* ****************************************************************
+ * Database functions
+ * Function that returns a Promise of a database connection
+ */
+var mongoConnect = Promise.promisify(mongoClient.connect);
+
+// Get existing data and returns as an object with key = _id
+function getExistingData(db) {
+	console.log('ingest: getExistingData starting');
+	return db.collection(REGISTER)
+		.find({})
+		.toArray()
+		.then( data => {
+			let keyedData = {};
+			data.forEach( entry => keyedData[entry._id] = entry );
+			console.log('ingest: getExistingData returning keyedData');
+			return keyedData;
+			// return {
+			// 	db: db,
+			// 	data: keyedData
+			// };
+		}, err => console.error(err)
+	);
+}
+
 function handleUpdate(fname) {
 	var db;
 
 	return Promise.all([
-		mongoConnect(mongoUrl).then(getExistingData),       // database data
-		xls2Json(fname) 									// new data
+		mongoConnect(mongoUrl)
+			.then(_db => {
+				db = _db;
+				return getExistingData(db);
+			}), 					    // database data
+		xls2Json(fname) 				// new data
 	])
 	.then( results => {
-		db = results[0].db;
-		let existingKeyedData = results[0].data;
-		// clean up newData
+		// db = results[0].db;
+		// let existingKeyedData = results[0].data;
+		let existingKeyedData = results;
+		// convert numbers to Int/Float ....
 		let newData = results[1].map(rawMapper);
 
 		// RECORD SUMMARY LIST OF ENTRIES / UPDATES
 		let newUpdated = getChanges(existingKeyedData, newData);
 		// add date as _id
 		newUpdated._id = moment().format();
-		// ********
-		// only add non-empty lists
-		// ***********************
+		/* *******
+		 * !!!!!!!!!!!!!!!!!!!!only add non-empty lists
+		 */
 		let changesPromise =
 			db.collection(CHANGES)
 			.insertOne(newUpdated)
@@ -254,7 +268,8 @@ function handleUpdate(fname) {
 				// return Promise.all([p1, p2]);
 				// return Promise.resolve();
 			});
-			console.log('ingest: Created update history promises');
+
+		console.log('ingest: Created update history promises');
 
 		// REPLACE MAIN REGISTER DATABASE
 		let registerPromise =
@@ -268,6 +283,7 @@ function handleUpdate(fname) {
 	.then( res => {
 		// console.log(res);
 		db.close();
+		// return [ ...res, {'updates': (res.length-2)} ];
 		return [ res[0], res[1], {'updates': (res.length-2)} ];
 	})
 	.catch( err => {
@@ -282,20 +298,20 @@ function handleUpdate(fname) {
  * Read file AND get existing data
  * then compare, and upload differences
  */
-exports.index = function(req, res) {
-	let fname = './server/api/register/reg'+moment().format('DD-MM');
-
-	getXls(fname)
-    .then( () => {
-		return handleUpdate(fname)
-	})
-	// then use processor.js
-	.then( ingestRes => Promise.all([Promise.resolve(ingestRes), processor.makeSummaryData()]) )
-	.then( results => {
-		res.status(200).send(results);
-	})
-	.catch( err => res.status(500).send(err) );
-};
+// exports.index = function(req, res) {
+// 	let fname = './server/api/register/reg'+moment().format('DD-MM');
+//
+// 	getXls(fname)
+//     .then( () => {
+// 		return handleUpdate(fname)
+// 	})
+// 	// then use processor.js
+// 	.then( ingestRes => Promise.all([Promise.resolve(ingestRes), processor.makeSummaryData()]) )
+// 	.then( results => {
+// 		res.status(200).send(results);
+// 	})
+// 	.catch( err => res.status(500).send(err) );
+// };
 
 exports.getXls = getXls;
 exports.handleUpdate = handleUpdate;

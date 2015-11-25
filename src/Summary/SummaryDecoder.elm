@@ -21,6 +21,7 @@ type alias Section =
 type alias Country =
     { country : String
     , count: Float
+    , eppass: Float
     }
 
 type alias Summary =
@@ -38,9 +39,10 @@ initSection i c b =
     , count = c
     , budget = b
     }
-initCountry i c =
+initCountry i c e =
     { country = i
     , count = c
+    , eppass = e
     }
 
 emptySummary : Summary
@@ -69,10 +71,11 @@ sectionsDecoder =
 
 countriesDecoder : Decoder (List Country)
 countriesDecoder =
-    object2
+    object3
         initCountry
         ("_id" := string)
         ("count" := float)
+        ("eppass" := float)
     |> list
 
 summaryItemDecoder : String -> Decoder SummaryInfo

@@ -19,55 +19,29 @@ import Common exposing (errorHandler)
 import Summary.SummaryDecoder as Decoder exposing (Summary, Section, Interest, Country)
 
 -- MODEL
-type SectionMeasure
-    = Count
-    | Budget
+type Chart
+    = Sections
+    | Countries
 
--- type alias Interest =
---     { interest: String
---     , count: Int
---     }
---
--- type alias Country =
---     { country: String
---     , count: Float
---     }
---
--- type alias Section =
---     { section : String
---     , count : Float
---     , budget: Float
---     }
+type ChartType
+    = Simple
+    | Complex
 
 type alias Model =
     { interests : List Interest
     , sections : List Section
-    , sectionsSimplified : List Section
     , countries : List Country
-    , sectionMeasure : SectionMeasure
+    , sectionChart : ChartType
+    , countryChart : ChartType
     , msg : String
-    }
-
-initInterest i c =
-    { interest = i
-    , count = c
-    }
-initCountry i c =
-    { country = i
-    , count = c
-    }
-initSection i c b =
-    { section = i
-    , count = c
-    , budget = b
     }
 
 init =
     { interests = []
     , sections = []
     , countries = []
-    , sectionsSimplified = []
-    , sectionMeasure = Count
+    , sectionChart = Simple
+    , countryChart = Simple
     , msg = ""
     }
 
@@ -79,7 +53,7 @@ type Action
     -- | CountryData (Result Http.Error (List Country))
     | SummaryData (Result Http.Error Summary)
     | NoOp (Maybe ())
-    | Animate
+    | Animate Chart
     -- | Tick Time
 
 update : Action -> Model -> (Model, Effects Action)
@@ -93,8 +67,7 @@ update action model =
             )
         SummaryData (Result.Ok summary) ->
             ( { model
-                | sections = summary.sections
-                , sectionsSimplified = simplifySectionsData (summary.sections)
+                | sections = simplifySectionsData (summary.sections)
                 , countries = simplifyCountiesData summary.countries
                 , interests = List.sortBy (negate << .count) summary.interests
                }
@@ -107,10 +80,16 @@ update action model =
             )
         -- URL  U P D A T E S
         NoOp _ -> ( model, Effects.none )
-        Animate ->
-            ( { model | sectionMeasure = if model.sectionMeasure == Count then Budget else Count }
-            , Effects.none
-            )
+        Animate chart ->
+            let
+                toggle x = if x == Simple then Complex else Simple
+
+                newModel =
+                    case chart of
+                        Sections -> { model | sectionChart = toggle model.sectionChart }
+                        Countries -> { model | countryChart = toggle model.countryChart }
+            in
+                ( newModel , Effects.none )
 
 simplifySectionsData : List Section -> List Section
 simplifySectionsData data =
@@ -144,38 +123,38 @@ simplifyCountiesData data =
         total = List.sum (List.map .count data)
 
         -- if budget is significant fraction of total include as is, otherwise add to 'others'
-        go : Country -> (Float, List Country) -> (Float, List Country)
-        go elem (othersCnt, accS) =
-            let
-                normCount = (toFloat << round) <| elem.count / total * 100
-            in
-            if normCount < 4
-                then (othersCnt + normCount, accS)        -- add to others
-                else
-                    ( othersCnt
-                    , { elem | count = normCount } :: accS    -- keep, by coping into accumulatro directly
-                    )
-        (othersCount, accCountries) =
-            foldl go (0, []) data
+        -- go : Country -> (Float, List Country) -> (Float, List Country)
+        go elem (othersCnt, othersPass, accS) =
+            if (elem.count / total * 100) < 4
+                then ( othersCnt + elem.count, othersPass + elem.eppass, accS )        -- add to others
+                else ( othersCnt, othersPass, elem :: accS )   -- keep, by coping into accumulatro directly
+        (othersCount, othersEPPass, accCountries) =
+            foldl go (0, 0, []) data
     in
-        (List.sortBy (negate << .count) accCountries) ++ [{country = "RoW", count = othersCount }]
+        (List.sortBy (negate << .count) accCountries) ++
+        [{country = "RoW", count = othersCount, eppass = othersEPPass }]
 
 -- VIEW
 
 view : Signal.Address Action -> Model -> Html
 view address model =
     let
-        countModel = List.map .count model.sectionsSimplified
-        budgetModel = List.map .budget model.sectionsSimplified
-        labels = List.map .section model.sectionsSimplified
+        countModel = List.map .count model.sections
+        budgetModel = List.map .budget model.sections
+        labels = List.map .section model.sections
     in
     -- Country HQ
     div [ id "summary", class "row" ]
         [ div [ class "col-xs-12" ]
             [ pie
-                (List.map .count model.countries)
+                (if model.countryChart == Simple
+                    then List.map .count model.countries
+                    else List.map .eppass model.countries)
                 (List.map .country model.countries)
-                |> title "Corporate registrees by HQ Country"
+                |> title
+                    (if model.countryChart == Simple
+                        then "No. corporate registrees by HQ Country"
+                        else "No. corporate EP accreditations by HQ Country")
                 |> addValueToLabel
                 |> colours
                     [ "#5DA5DA", "#FAA43A", "#60BD68", "#F17CB0", "#B2912F", "#DECF3F", "#9a9a9a", "#F15854", "#BF69B1", "#4D4D4D"
@@ -185,12 +164,21 @@ view address model =
                 |> updateStyles "container" [("border","none")]
                 |> toHtml
             ]
+            , div
+                [ class "toggleContainer" ]
+                [ button
+                    [ onClick address (Animate Countries) ]
+                    [ text <| if model.countryChart == Simple
+                        then "Switch to EP accreditations"
+                        else "Switch to no. registrees"
+                    ]
+                ]
         , div [ class "col-xs-12" ]
             [ pie
-                (if model.sectionMeasure == Count then countModel else budgetModel)
+                (if model.sectionChart == Simple then countModel else budgetModel)
                 labels
                 |> title
-                    (if model.sectionMeasure == Count
+                    (if model.sectionChart == Simple
                      then "Number of registrees per sub-section"
                      else "Lobby spend per sub-section"
                     )
@@ -206,8 +194,8 @@ view address model =
             , div
                 [ class "toggleContainer" ]
                 [ button
-                    [ onClick address Animate ]
-                    [ text <| if model.sectionMeasure == Count
+                    [ onClick address (Animate Sections) ]
+                    [ text <| if model.sectionChart == Simple
                         then "Switch to lobby spend"
                         else "Switch to no. registrees"
                     ]

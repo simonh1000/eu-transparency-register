@@ -1,11 +1,17 @@
 'use strict';
 
+var mongoClient = require('mongodb');
+var Promise = require("bluebird");
 var moment = require("moment");
 
 var ingester = require('./ingester');
 var processor = require('./processor');
 
 let fname = './reg' + moment().format('DD-MM');
+
+// Function that returns a Promise of a database connection
+var mongoConnect = Promise.promisify(mongoClient.connect);
+
 
 // DOWNLOAD NEW FILE
 // ingester.getXls('./reg' + moment().format('DD-MM'))
