@@ -68,7 +68,7 @@ update action model =
                             in  (newM, newE :: effects)
 
                         (newEntriesModel, effects) =
-                            foldl go (model.entries, [ Entries.updateUrl ["/"] ]) ids   -- **** NEEDS RELOOKING
+                            foldl go (model.entries, [ Entries.updateUrl [] ]) ids   -- **** NEEDS RELOOKING
                             -- foldl go (model.entries, []) ids
                     in
                         ( { model | entries = newEntriesModel }

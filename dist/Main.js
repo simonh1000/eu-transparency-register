@@ -12601,7 +12601,7 @@ Elm.Filters.Filters.make = function (_elm) {
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("row searchInit")]),
               _U.list([A2($Html.div,
-              _U.list([$Html$Attributes.$class("col-xs-6 col-xs-offset-6 xol-sm-3 col-sm-offset-9")]),
+              _U.list([$Html$Attributes.$class("col-xs-6 col-xs-offset-6 col-sm-3 col-sm-offset-9")]),
               _U.list([A2($Html.button,
               _U.list([$Html$Attributes.$class("btn btn-primary"),$Html$Attributes.type$("submit")]),
               _U.list([$Html.text("Search!")]))]))]))]));
@@ -13047,7 +13047,7 @@ Elm.Register.make = function (_elm) {
                           var newE = _p5._1;
                           return {ctor: "_Tuple2",_0: newM,_1: A2($List._op["::"],newE,_p4._1)};
                        });
-                       var _p6 = A3($List.foldl,go,{ctor: "_Tuple2",_0: model.entries,_1: _U.list([$Entries$Entries.updateUrl(_U.list(["/"]))])},_p1);
+                       var _p6 = A3($List.foldl,go,{ctor: "_Tuple2",_0: model.entries,_1: _U.list([$Entries$Entries.updateUrl(_U.list([]))])},_p1);
                        var newEntriesModel = _p6._0;
                        var effects = _p6._1;
                        return {ctor: "_Tuple2"

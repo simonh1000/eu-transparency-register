@@ -76,7 +76,7 @@ view address model =
                 [ budgetView address model.budget ]
             ]
         , div [class "row searchInit" ]
-            [ div [ class "col-xs-6 col-xs-offset-6 xol-sm-3 col-sm-offset-9" ]
+            [ div [ class "col-xs-6 col-xs-offset-6 col-sm-3 col-sm-offset-9" ]
                 [ button
                     [ class "btn btn-primary"
                     , type' "submit"
