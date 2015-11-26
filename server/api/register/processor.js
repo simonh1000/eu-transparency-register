@@ -44,7 +44,7 @@ function countInterests(db) {
 
 	return Promise.all(promises)
 	.then( results => {
-		console.log(`${results.length} Interest promises returned`);
+		console.log(`processor: ${results.length} Interest promises returned`);
 		// interests.drop();
 		return db.collection(SUMMARY).replaceOne({_id:INTERESTS}, {_id:INTERESTS, data: results}, {upsert:true});
 	} )
@@ -74,7 +74,7 @@ function countSections(db) {
 	// return Promise.all([simpleCount.toArray(), budgetCount.toArray()])
 	return simpleCount.toArray()
 	.then(results => {
-		console.log(`${results.length} Sections promises resolved`);
+		console.log(`processor: ${results.length} Sections promises resolved`);
 		let base = results; 			// count data
 		// let base = results[0]; 			// count data
 		// let merge = results[1]; 		// spend data
@@ -92,7 +92,7 @@ function countSections(db) {
 					{_id: SECTIONS},
 					{_id: SECTIONS, 'data': mergedResults},
 					{upsert: true}
-				);
+				).then(res => ({'sections': results.length}));
 	})
 	// .catch( err => Promise.reject(err) );
 }
@@ -114,7 +114,7 @@ function countCountries(db) {
 
 	return countries.toArray()
 		.then( results => {
-			console.log(`Countries Promise returned ${results.length} countries in DB`);
+			console.log(`processor: ${results.length} countries`);
 			return db.collection(SUMMARY).replaceOne(
 					{_id: COUNTRIES},
 					{_id: COUNTRIES, 'data': results},
@@ -123,35 +123,37 @@ function countCountries(db) {
 		} );
 }
 
-// exports.makeSummaryData = function(db) {
-// 	return Promise.all([
-// 		countSections(db).then( res => ({"sections": !!res.result.ok}) ),
-// 		countInterests(db).then( res => ({"interests": !!res.result.ok}) ),
-// 		countCountries(db).then( res => ({"countries": !!res.result.ok}) )
-// 	]);
-// };
-exports.makeSummaryData = function() {
-	var db;
-	return mongoConnect(mongoUrl)
-	.then( _db => {
-		db = _db;
-		return Promise.all([
-			countSections(db).then( res => ({"sections": !!res.result.ok}) ),
-			countInterests(db).then( res => ({"interests": !!res.result.ok}) ),
-			countCountries(db).then( res => ({"countries": !!res.result.ok}) )
-		  ]);
-	})
-	.then( results => {
-		console.log('makeSummaryData success');
-		db.close();    // db.close
-		return results; //.map( r => r.result );
-	} )
-	.catch ( err => {
-		db.close();    // db.close
-		// Promise.reject(err);
-		return err
-	} );
-}
+exports.makeSummaryData = function(db) {
+	console.log("makeSummaryData starting");
+	return Promise.all([
+		// countSections(db).then( res => ({"sections": !!res.result.ok}) ),
+		countSections(db),
+		countInterests(db).then( res => ({"interests": !!res.result.ok}) ),
+		countCountries(db).then( res => ({"countries": !!res.result.ok}) )
+	]);
+};
+// exports.makeSummaryData = function() {
+// 	var db;
+// 	return mongoConnect(mongoUrl)
+// 	.then( _db => {
+// 		db = _db;
+// 		return Promise.all([
+// 			countSections(db).then( res => ({"sections": !!res.result.ok}) ),
+// 			countInterests(db).then( res => ({"interests": !!res.result.ok}) ),
+// 			countCountries(db).then( res => ({"countries": !!res.result.ok}) )
+// 		  ]);
+// 	})
+// 	.then( results => {
+// 		console.log('makeSummaryData success');
+// 		db.close();    // db.close
+// 		return results; //.map( r => r.result );
+// 	} )
+// 	.catch ( err => {
+// 		db.close();    // db.close
+// 		// Promise.reject(err);
+// 		return err
+// 	} );
+// }
 
 /* A P I */
 // exports.index = (req, res) => {

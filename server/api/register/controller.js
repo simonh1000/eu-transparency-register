@@ -47,8 +47,8 @@ exports.search = (req, res) => {
 	if (query.budget > 0)
 		queryObj.budget = { $gt : parseInt(query.budget) };
 
-	console.log("Query:", query);
-	console.log("QueryObj:", queryObj);
+	// console.log("Query:", query);
+	// console.log("QueryObj:", queryObj);
 
 	register.find(queryObj, {'orgName': 1})
 	.sort({'orgName' : 1 })

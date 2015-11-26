@@ -163,18 +163,19 @@ view address model =
                 |> updateStyles "legend" [("max-width", "100%")]
                 |> updateStyles "container" [("border","none")]
                 |> toHtml
-            ]
             , div
                 [ class "toggleContainer" ]
                 [ button
-                    [ onClick address (Animate Countries) ]
+                    [ onClick address (Animate Countries)
+                    , class "btn btn-default"
+                    ]
                     [ text <| if model.countryChart == Simple
                         then "Switch to EP accreditations"
                         else "Switch to no. registrees"
                     ]
                 ]
-        , div [ class "col-xs-12" ]
-            [ pie
+            -- SECTIONS PIE CHART
+            , pie
                 (if model.sectionChart == Simple then countModel else budgetModel)
                 labels
                 |> title
@@ -194,12 +195,15 @@ view address model =
             , div
                 [ class "toggleContainer" ]
                 [ button
-                    [ onClick address (Animate Sections) ]
+                    [ onClick address (Animate Sections)
+                    , class "btn btn-default"
+                    ]
                     [ text <| if model.sectionChart == Simple
                         then "Switch to lobby spend"
                         else "Switch to no. registrees"
                     ]
                 ]
+            -- INTERESTS
             , div
                 [ class "interests" ]
                 [ hBar                      -- Interests

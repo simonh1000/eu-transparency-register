@@ -129,7 +129,7 @@ view address model =
             ]
         -- , p [] [ text <| toString model.message ]
         -- , p [] [ text <| toString model.displayed ]
-        , div [ class "eContainer" ]
+        , div [ class "mainContainer" ]
             <| List.map viewMapper model.displayed
         ]
 

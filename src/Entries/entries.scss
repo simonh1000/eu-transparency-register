@@ -1,11 +1,4 @@
 #entries {
-    // flex: 2;
-    // overflow-y: scroll;
-    // min-height: 200px;
-    // max-height: 500px;
-
-    // border: 1px solid #bbb;
-    // padding: 10px 5px;
     padding-bottom: 10px;
     position: relative;
     z-index: 10;
@@ -21,9 +14,6 @@
         }
     }
 
-    eContainer {
-        // z-index: 5;
-    }
     .entry {
         position: relative;
 
@@ -86,15 +76,10 @@
     #entries {
         height: 100%;
         overflow-y: hidden;
-        // max-height: none;
         header {
             button.closeAll {
                 top: 0;
             }
-        }
-        .eContainer {
-            max-height: calc(100% - 24px);
-            overflow-y: scroll;
         }
     }
 }

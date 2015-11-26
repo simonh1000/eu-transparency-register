@@ -165,6 +165,7 @@ function getChanges(existing, newData) {
 		}
 	});
 	return {
+		_id: moment().format(),
 		entries: newEntries,
 		updates: updates
 	}
@@ -213,31 +214,17 @@ function getExistingData(db) {
 	);
 }
 
-function handleUpdate(fname) {
-	var db;
-
-	return Promise.all([
-		mongoConnect(mongoUrl)
-			.then(_db => {
-				db = _db;
-				return getExistingData(db);
-			}), 					    // database data
-		xls2Json(fname) 				// new data
-	])
+function handleUpdate(fname, db) {
+	return Promise.all([getExistingData(db), xls2Json(fname)])
 	.then( results => {
-		// db = results[0].db;
-		// let existingKeyedData = results[0].data;
-		let existingKeyedData = results;
-		// convert numbers to Int/Float ....
+		let existingKeyedData = results[0];
+
+		// convert numbers in newData
 		let newData = results[1].map(rawMapper);
 
 		// RECORD SUMMARY LIST OF ENTRIES / UPDATES
 		let newUpdated = getChanges(existingKeyedData, newData);
-		// add date as _id
-		newUpdated._id = moment().format();
-		/* *******
-		 * !!!!!!!!!!!!!!!!!!!!only add non-empty lists
-		 */
+		//  * !!!!!!!!!!!!!!!!!!!!only add non-empty lists
 		let changesPromise =
 			db.collection(CHANGES)
 			.insertOne(newUpdated)
@@ -245,16 +232,8 @@ function handleUpdate(fname) {
 				'newEntries': newUpdated.entries.length,
 				'updates': newUpdated.updates.length
 			}));
-			// console.log('ingest: newEntryCount', newEntries.length);
-			// console.log('ingest: newDataCount', updates.length);
 
 		// FOR ALL UPDATES, MAKE A COPY OF CURRENT DATA
-		// Updates to existing entries
-			// for each new entry
-				// get previous entry from REGISTER, & tidy up
-				// p1 = push to HISTORY
-				// p2 = update REGISTER with new Information
-				// return Promise.all[p1, p2]
 		let historyPromises =
 			newUpdated.updates
 			.map(update => {
@@ -264,12 +243,7 @@ function handleUpdate(fname) {
 
 				return db.collection(HISTORY)
 						.updateOne({_id: update._id}, {$push: {history: previous}}, {upsert: true});
-				// let p2 = db.collection(REGISTER).replaceOne( {_id: update._id}, addEntryDate(update) );
-				// return Promise.all([p1, p2]);
-				// return Promise.resolve();
 			});
-
-		console.log('ingest: Created update history promises');
 
 		// REPLACE MAIN REGISTER DATABASE
 		let registerPromise =
@@ -278,22 +252,89 @@ function handleUpdate(fname) {
 			.then( () => db.collection(REGISTER).insertMany(newData) )
 			.then( result => ({'registerSize': result.insertedCount}));
 
-		return Promise.all([registerPromise, changesPromise].concat(historyPromises));
-	})
-	.then( res => {
-		// console.log(res);
-		db.close();
-		// return [ ...res, {'updates': (res.length-2)} ];
-		return [ res[0], res[1], {'updates': (res.length-2)} ];
-	})
-	.catch( err => {
-		console.error(err);
-		if (db.close)
-			db.close();
-
-		return Promise.reject(err);
-	} );
+		return Promise.all([registerPromise, changesPromise].concat(historyPromises))
+			.then( res => [res[0], res[1], {'updates': (res.length-2)}] );
+	});
 }
+
+// function handleUpdate(fname) {
+// 	var db;
+//
+// 	return Promise.all([
+// 		mongoConnect(mongoUrl)
+// 			.then(_db => {
+// 				db = _db;
+// 				return getExistingData(db);
+// 			}), 					    // database data
+// 		xls2Json(fname) 				// new data
+// 	])
+// 	.then( results => {
+// 		// let existingKeyedData = results[0].data;
+// 		let existingKeyedData = results[0];
+// 		// convert numbers to Int/Float ....
+// 		let newData = results[1].map(rawMapper);
+//
+// 		// RECORD SUMMARY LIST OF ENTRIES / UPDATES
+// 		let newUpdated = getChanges(existingKeyedData, newData);
+// 		/* *******
+// 		 * !!!!!!!!!!!!!!!!!!!!only add non-empty lists
+// 		 */
+// 		let changesPromise =
+// 			db.collection(CHANGES)
+// 			.insertOne(newUpdated)
+// 			.then(res => ({
+// 				'newEntries': newUpdated.entries.length,
+// 				'updates': newUpdated.updates.length
+// 			}));
+// 			// console.log('ingest: newEntryCount', newEntries.length);
+// 			// console.log('ingest: newDataCount', updates.length);
+//
+// 		// FOR ALL UPDATES, MAKE A COPY OF CURRENT DATA
+// 		// Updates to existing entries
+// 			// for each new entry
+// 				// get previous entry from REGISTER, & tidy up
+// 				// p1 = push to HISTORY
+// 				// p2 = update REGISTER with new Information
+// 				// return Promise.all[p1, p2]
+// 		let historyPromises =
+// 			newUpdated.updates
+// 			.map(update => {
+// 				// get and clean up existing entry
+// 				let previous =
+// 					addEntryDate( removeUnwantedFields( existingKeyedData[update._id] ) );
+//
+// 				return db.collection(HISTORY)
+// 						.updateOne({_id: update._id}, {$push: {history: previous}}, {upsert: true});
+// 				// let p2 = db.collection(REGISTER).replaceOne( {_id: update._id}, addEntryDate(update) );
+// 				// return Promise.all([p1, p2]);
+// 				// return Promise.resolve();
+// 			});
+//
+// 		console.log('ingest: Created update history promises');
+//
+// 		// REPLACE MAIN REGISTER DATABASE
+// 		let registerPromise =
+// 			db.collection(REGISTER)
+// 			.drop()
+// 			.then( () => db.collection(REGISTER).insertMany(newData) )
+// 			.then( result => ({'registerSize': result.insertedCount}));
+//
+// 		return Promise.all([registerPromise, changesPromise].concat(historyPromises));
+// 	})
+// 	.then( res => {
+// 		// console.log(res);
+// 		db.close();
+// 		// return [ ...res, {'updates': (res.length-2)} ];
+// 		return [ res[0], res[1], {'updates': (res.length-2)} ];
+// 	})
+// 	.catch( err => {
+// 		console.error(err);
+// 		if (db.close)
+// 			db.close();
+//
+// 		return Promise.reject(err);
+// 	} );
+// }
 /*
  * Read file AND get existing data
  * then compare, and upload differences

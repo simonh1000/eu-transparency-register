@@ -34,10 +34,12 @@ type Action =
 update : Action -> Model -> Model
 update action model =
     case action of
-        GoSummary -> { model | page = Summary }
-
-        GoRegister ["recent"] -> { model | page = Recent }
-        GoRegister _ -> { model | page = Register }
+        GoSummary ->
+            { model | page = Summary }
+        GoRegister ["recent"] ->
+            { model | page = Recent }
+        GoRegister _ ->
+            { model | page = Register }
 
         CountData (Result.Ok c) ->
             { model | regCount = c }

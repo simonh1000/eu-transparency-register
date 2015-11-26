@@ -12522,7 +12522,9 @@ Elm.Filters.Filters.make = function (_elm) {
       _U.list([A2($Html.h4,
               _U.list([]),
               _U.list([$Html.text("Budget")
-                      ,A2($Html.span,_U.list([]),_U.list([$Html.text(A2($Basics._op["++"]," (at least €",A2($Basics._op["++"],val,")")))]))]))
+                      ,A2($Html.span,
+                      _U.list([$Html$Attributes.$class("small")]),
+                      _U.list([$Html.text(A2($Basics._op["++"]," (at least €",A2($Basics._op["++"],val,")")))]))]))
               ,A2($Html.input,
               _U.list([$Html$Attributes.type$("range")
                       ,$Html$Attributes.min("0")
@@ -12539,7 +12541,9 @@ Elm.Filters.Filters.make = function (_elm) {
       _U.list([A2($Html.h4,
               _U.list([]),
               _U.list([$Html.text("Staff")
-                      ,A2($Html.span,_U.list([]),_U.list([$Html.text(A2($Basics._op["++"]," (at least ",A2($Basics._op["++"],val," FTEs)")))]))]))
+                      ,A2($Html.span,
+                      _U.list([$Html$Attributes.$class("small")]),
+                      _U.list([$Html.text(A2($Basics._op["++"]," (at least ",A2($Basics._op["++"],val," FTEs)")))]))]))
               ,A2($Html.input,
               _U.list([$Html$Attributes.type$("range")
                       ,$Html$Attributes.min("0")
@@ -12573,7 +12577,9 @@ Elm.Filters.Filters.make = function (_elm) {
    var searchView = F2(function (address,model) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("box")]),
-      _U.list([A2($Html.h4,_U.list([]),_U.list([$Html.text("Search by name")]))
+      _U.list([A2($Html.h4,
+              _U.list([]),
+              _U.list([$Html.text("Search"),A2($Html.span,_U.list([$Html$Attributes.$class("hidden-xs")]),_U.list([$Html.text(" by name")]))]))
               ,A2($Html.input,
               _U.list([$Html$Attributes.type$("text")
                       ,$Html$Attributes.$class("form-control")
@@ -12595,7 +12601,7 @@ Elm.Filters.Filters.make = function (_elm) {
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("row searchInit")]),
               _U.list([A2($Html.div,
-              _U.list([$Html$Attributes.$class("col-xs-3 col-xs-offset-9")]),
+              _U.list([$Html$Attributes.$class("col-xs-6 col-xs-offset-6 xol-sm-3 col-sm-offset-9")]),
               _U.list([A2($Html.button,
               _U.list([$Html$Attributes.$class("btn btn-primary"),$Html$Attributes.type$("submit")]),
               _U.list([$Html.text("Search!")]))]))]))]));
@@ -12683,7 +12689,7 @@ Elm.Matches.Matches.make = function (_elm) {
       _U.list([$Html$Attributes.id("matches"),$Html$Attributes.$class("col-xs-12 col-sm-4")]),
       _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text("Search results")]))
               ,A2($Html.p,_U.list([]),_U.list([$Html.text(model.message)]))
-              ,A2($Html.div,_U.list([$Html$Attributes.$class("mContainer")]),A2($List.map,viewMatch(address),model.matches))]));
+              ,A2($Html.div,_U.list([$Html$Attributes.$class("mainContainer")]),A2($List.map,viewMatch(address),model.matches))]));
    });
    var viewRecents = F2(function (address,model) {
       return A2($Html.div,
@@ -12693,17 +12699,17 @@ Elm.Matches.Matches.make = function (_elm) {
               _U.list([A2($Html.h2,
                       _U.list([]),
                       _U.list([$Html.text(A2($Basics._op["++"],$Basics.toString($List.length(model.newstuff.entries))," Recent new entries"))]))
-                      ,A2($Html.div,_U.list([$Html$Attributes.$class("mContainer")]),A2($List.map,viewMatch(address),model.newstuff.entries))]))
+                      ,A2($Html.div,_U.list([$Html$Attributes.$class("mainContainer")]),A2($List.map,viewMatch(address),model.newstuff.entries))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("recent entries")]),
               _U.list([A2($Html.h2,
                       _U.list([]),
                       _U.list([$Html.text(A2($Basics._op["++"],$Basics.toString($List.length(model.newstuff.updates))," Recent updates"))]))
-                      ,A2($Html.div,_U.list([$Html$Attributes.$class("mContainer")]),A2($List.map,viewMatch(address),model.newstuff.updates))]))]));
+                      ,A2($Html.div,_U.list([$Html$Attributes.$class("mainContainer")]),A2($List.map,viewMatch(address),model.newstuff.updates))]))]));
    });
    var view = F2(function (address,model) {
       var _p1 = model.resultsType;
-      if (_p1.ctor === "FilterMatches") {
+      if (_p1.ctor === "Filtered") {
             return A2(viewFilterResults,address,model);
          } else {
             return A2(viewRecents,address,model);
@@ -12727,28 +12733,28 @@ Elm.Matches.Matches.make = function (_elm) {
    var SetRegister = {ctor: "SetRegister"};
    var Model = F5(function (a,b,c,d,e) {    return {matches: a,newstuff: b,searching: c,resultsType: d,message: e};});
    var Recents = {ctor: "Recents"};
-   var FilterMatches = {ctor: "FilterMatches"};
+   var Filtered = {ctor: "Filtered"};
    var init = {matches: _U.list([])
               ,newstuff: A2($Matches$MatchesDecoder.initNew,_U.list([]),_U.list([]))
               ,searching: false
-              ,resultsType: FilterMatches
+              ,resultsType: Filtered
               ,message: "Use the filters above to find some registrees"};
    var update = F2(function (action,model) {
       var _p2 = action;
       switch (_p2.ctor)
-      {case "SetRegister": return {ctor: "_Tuple2",_0: _U.update(model,{resultsType: FilterMatches}),_1: $Effects.none};
-         case "GetMatchFor": return {ctor: "_Tuple2",_0: _U.update(model,{matches: _U.list([]),message: "Searching...."}),_1: getMatches(_p2._0)};
+      {case "SetRegister": return {ctor: "_Tuple2",_0: _U.update(model,{resultsType: Filtered}),_1: $Effects.none};
+         case "GetMatchFor": return {ctor: "_Tuple2"
+                                    ,_0: _U.update(model,{matches: _U.list([]),message: "Searching....",resultsType: Filtered})
+                                    ,_1: getMatches(_p2._0)};
          case "MatchesData": if (_p2._0.ctor === "Ok") {
                  var _p3 = _p2._0._0;
-                 return {ctor: "_Tuple2"
-                        ,_0: _U.update(model,{matches: _p3,resultsType: FilterMatches,message: _U.eq($List.length(_p3),0) ? "No results found" : ""})
-                        ,_1: $Effects.none};
+                 return {ctor: "_Tuple2",_0: _U.update(model,{matches: _p3,message: _U.eq($List.length(_p3),0) ? "No results found" : ""}),_1: $Effects.none};
               } else {
                  return {ctor: "_Tuple2",_0: _U.update(model,{message: errorHandler(_p2._0._0)}),_1: $Effects.none};
               }
-         case "GetRecents": return {ctor: "_Tuple2",_0: model,_1: getRecents};
+         case "GetRecents": return {ctor: "_Tuple2",_0: _U.update(model,{message: "Getting data...",resultsType: Filtered}),_1: getRecents};
          case "RecentsData": if (_p2._0.ctor === "Ok") {
-                 return {ctor: "_Tuple2",_0: _U.update(model,{resultsType: Recents,newstuff: _p2._0._0}),_1: $Effects.none};
+                 return {ctor: "_Tuple2",_0: _U.update(model,{resultsType: Recents,message: "",newstuff: _p2._0._0}),_1: $Effects.none};
               } else {
                  return {ctor: "_Tuple2",_0: _U.update(model,{message: errorHandler(_p2._0._0)}),_1: $Effects.none};
               }
@@ -12926,7 +12932,7 @@ Elm.Entries.Entries.make = function (_elm) {
                       ,A2($Html.button,
                       _U.list([A2($Html$Events.onClick,address,CloseAll),$Html$Attributes.$class("btn btn-default btn-xs closeAll")]),
                       _U.list([$Html.text("Close All")]))]))
-              ,A2($Html.div,_U.list([$Html$Attributes.$class("eContainer")]),A2($List.map,viewMapper,model.displayed))]));
+              ,A2($Html.div,_U.list([$Html$Attributes.$class("mainContainer")]),A2($List.map,viewMapper,model.displayed))]));
    });
    var EntryReceived = function (a) {    return {ctor: "EntryReceived",_0: a};};
    var loadEntry = function (id) {
@@ -13028,8 +13034,11 @@ Elm.Register.make = function (_elm) {
               } else {
                  if (_p1._0 === "recent" && _p1._1.ctor === "[]") {
                        var _p2 = A2($Matches$Matches.update,$Matches$Matches.GetRecents,model.matches);
+                       var newModel = _p2._0;
                        var newEffects = _p2._1;
-                       return {ctor: "_Tuple2",_0: model,_1: $Effects.batch(_U.list([A2($Effects.map,MatchAction,newEffects),updateUrl("recent")]))};
+                       return {ctor: "_Tuple2"
+                              ,_0: _U.update(model,{matches: newModel})
+                              ,_1: $Effects.batch(_U.list([A2($Effects.map,MatchAction,newEffects),updateUrl("recent")]))};
                     } else {
                        var go = F2(function (id_,_p3) {
                           var _p4 = _p3;
@@ -13410,8 +13419,8 @@ Elm.Summary.Summary.make = function (_elm) {
       return A2($Html.div,
       _U.list([$Html$Attributes.id("summary"),$Html$Attributes.$class("row")]),
       _U.list([A2($Html.div,
-              _U.list([$Html$Attributes.$class("col-xs-12")]),
-              _U.list([$Chart.toHtml(A3($Chart.updateStyles,
+      _U.list([$Html$Attributes.$class("col-xs-12")]),
+      _U.list([$Chart.toHtml(A3($Chart.updateStyles,
               "container",
               _U.list([{ctor: "_Tuple2",_0: "border",_1: "none"}]),
               A3($Chart.updateStyles,
@@ -13430,44 +13439,42 @@ Elm.Summary.Summary.make = function (_elm) {
                  return _.eppass;
               },
               model.countries),
-              A2($List.map,function (_) {    return _.country;},model.countries)))))))))]))
+              A2($List.map,function (_) {    return _.country;},model.countries)))))))))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("toggleContainer")]),
               _U.list([A2($Html.button,
-              _U.list([A2($Html$Events.onClick,address,Animate(Countries))]),
+              _U.list([A2($Html$Events.onClick,address,Animate(Countries)),$Html$Attributes.$class("btn btn-default")]),
               _U.list([$Html.text(_U.eq(model.countryChart,Simple) ? "Switch to EP accreditations" : "Switch to no. registrees")]))]))
+              ,$Chart.toHtml(A3($Chart.updateStyles,
+              "container",
+              _U.list([{ctor: "_Tuple2",_0: "border",_1: "none"}]),
+              A3($Chart.updateStyles,
+              "legend",
+              _U.list([{ctor: "_Tuple2",_0: "max-width",_1: "100%"}]),
+              A3($Chart.updateStyles,
+              "chart-container",
+              _U.list([{ctor: "_Tuple2",_0: "flex-wrap",_1: "wrap"}]),
+              A2($Chart.colours,
+              _U.list(["#5DA5DA","#FAA43A","#60BD68","#F17CB0","#B2912F","#B276B2","#DECF3F","#F15854","#BF69B1","#4D4D4D"]),
+              A2($Chart.title,
+              _U.eq(model.sectionChart,Simple) ? "Number of registrees per sub-section" : "Lobby spend per sub-section",
+              A2($Chart.pie,_U.eq(model.sectionChart,Simple) ? countModel : budgetModel,labels)))))))
               ,A2($Html.div,
-              _U.list([$Html$Attributes.$class("col-xs-12")]),
+              _U.list([$Html$Attributes.$class("toggleContainer")]),
+              _U.list([A2($Html.button,
+              _U.list([A2($Html$Events.onClick,address,Animate(Sections)),$Html$Attributes.$class("btn btn-default")]),
+              _U.list([$Html.text(_U.eq(model.sectionChart,Simple) ? "Switch to lobby spend" : "Switch to no. registrees")]))]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.$class("interests")]),
               _U.list([$Chart.toHtml(A3($Chart.updateStyles,
-                      "container",
-                      _U.list([{ctor: "_Tuple2",_0: "border",_1: "none"}]),
-                      A3($Chart.updateStyles,
-                      "legend",
-                      _U.list([{ctor: "_Tuple2",_0: "max-width",_1: "100%"}]),
-                      A3($Chart.updateStyles,
-                      "chart-container",
-                      _U.list([{ctor: "_Tuple2",_0: "flex-wrap",_1: "wrap"}]),
-                      A2($Chart.colours,
-                      _U.list(["#5DA5DA","#FAA43A","#60BD68","#F17CB0","#B2912F","#B276B2","#DECF3F","#F15854","#BF69B1","#4D4D4D"]),
-                      A2($Chart.title,
-                      _U.eq(model.sectionChart,Simple) ? "Number of registrees per sub-section" : "Lobby spend per sub-section",
-                      A2($Chart.pie,_U.eq(model.sectionChart,Simple) ? countModel : budgetModel,labels)))))))
-                      ,A2($Html.div,
-                      _U.list([$Html$Attributes.$class("toggleContainer")]),
-                      _U.list([A2($Html.button,
-                      _U.list([A2($Html$Events.onClick,address,Animate(Sections))]),
-                      _U.list([$Html.text(_U.eq(model.sectionChart,Simple) ? "Switch to lobby spend" : "Switch to no. registrees")]))]))
-                      ,A2($Html.div,
-                      _U.list([$Html$Attributes.$class("interests")]),
-                      _U.list([$Chart.toHtml(A3($Chart.updateStyles,
-                      "container",
-                      _U.list([{ctor: "_Tuple2",_0: "border",_1: "none"},{ctor: "_Tuple2",_0: "border-top",_1: "3px solid black"}]),
-                      A2($Chart.title,
-                      "Number of registrants expressing interest in subject",
-                      A2($Chart.hBar,
-                      A2($List.map,function (_p18) {    return $Basics.toFloat(function (_) {    return _.count;}(_p18));},model.interests),
-                      A2($List.map,function (_) {    return _.interest;},model.interests)))))]))
-                      ,A2($Html.p,_U.list([]),_U.list([$Html.text(model.msg)]))]))]));
+              "container",
+              _U.list([{ctor: "_Tuple2",_0: "border",_1: "none"},{ctor: "_Tuple2",_0: "border-top",_1: "3px solid black"}]),
+              A2($Chart.title,
+              "Number of registrants expressing interest in subject",
+              A2($Chart.hBar,
+              A2($List.map,function (_p18) {    return $Basics.toFloat(function (_) {    return _.count;}(_p18));},model.interests),
+              A2($List.map,function (_) {    return _.interest;},model.interests)))))]))
+              ,A2($Html.p,_U.list([]),_U.list([$Html.text(model.msg)]))]))]));
    });
    return _elm.Summary.Summary.values = {_op: _op
                                         ,init: init

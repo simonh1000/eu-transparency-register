@@ -1,3 +1,15 @@
+/*
+10 largest trade Associations
+
+db.register.aggregate([
+	{$match: {'subsection': 'Trade and business associations', 'hqCountry':'Belgium'}},
+	{$sort: {'noFTEs': -1}},
+	{$project: {'orgName':1, 'noFTEs':1}}
+]).map(function(r) {return r._id}).slice(0,10).join('/')
+
+
+*/
+
 exports.headers = [ "_id"
 	, "regDate"
 	, "section"

@@ -7,11 +7,12 @@ var moment = require("moment");
 var ingester = require('./ingester');
 var processor = require('./processor');
 
+var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:27017/lobby"
 let fname = './reg' + moment().format('DD-MM');
+var db;
 
 // Function that returns a Promise of a database connection
 var mongoConnect = Promise.promisify(mongoClient.connect);
-
 
 // DOWNLOAD NEW FILE
 // ingester.getXls('./reg' + moment().format('DD-MM'))
@@ -19,12 +20,34 @@ var mongoConnect = Promise.promisify(mongoClient.connect);
 // 	.catch( err => console.error(err) );
 
 // RUN COMPLETE UPDATE
-ingester.handleUpdate(fname)
-	.then( ingestRes => Promise.all([Promise.resolve(ingestRes), processor.makeSummaryData()]) )
-	.then( console.log.bind(this) )
-	.catch( err => console.error(err) );
+// 1) Download data
+// ingester.getXls('./reg' + moment().format('DD-MM'))
+// 2) get a mongoConnection
+// .then( () => mongoConnect(mongoUrl) )
+mongoConnect(mongoUrl)
+// ingest data
+.then( _db => {
+	db = _db;
+	return ingester.handleUpdate(fname, db);
+})
+// make summary data
+.then( ingestRes => Promise.all([Promise.resolve(ingestRes), processor.makeSummaryData(db)]) )
+// close connection
+.then( res => {
+	console.log(res);
+	db.close()
+})
+.catch( err => {
+	console.error(err);
+	if (db.close)
+		db.close();
+});
 
-//
+// ingester.handleUpdate(fname, db)
+// 	.then( ingestRes => Promise.all([Promise.resolve(ingestRes), processor.makeSummaryData()]) )
+// 	.then( console.log.bind(this) )
+// 	.catch( err => console.error(err) );
+
 // MONGO_URI=mongodb://hotbelgo:ber3la6mo6nT@ds047114.mongolab.com:47114/euregister node manual
 // MONGO_URI=mongodb://localhost:27017/lobby node manual
 

@@ -4,7 +4,7 @@
     overflow-y: hidden;
     // padding: 10px 5px;
 
-    .mContainer {
+    .mainContainer {
         max-height: 350px;
         min-height: 150px;
         overflow-y: scroll;
@@ -29,17 +29,14 @@
 
 @media (min-width: $screen-sm) {
     #matches {
-        border: none;
-        // height: calc(100% - 32px);
-        height: 100%;
         .recent {
             height: calc(50% - 15px);
         }
-        .mContainer {
-            min-height: 0;
-            max-height: calc(100% - 24px);
-            // height: calc(100% - 20px);
-        }
+        // .mContainer {
+        //     min-height: 0;
+        //     max-height: calc(100% - 24px);
+        //     // height: calc(100% - 20px);
+        // }
         .entries {
             // border-top: 1px solid #eee;
         }

@@ -31,6 +31,11 @@ nav {
     border-radius: 10px;
     border: 2px solid #aaa;
 }
+#register {
+    p.error {
+        margin: 0;
+    }
+}
 h2 {
     font-size: 22px;
 }
@@ -79,19 +84,15 @@ footer {
         // flex-direction: column;
         .main {
             height: calc(100% - 126px);
-            // flex: 10;
-            // display: flex;
-            // overflow: hidden;
-            // justify-content: space-between;
-            // margin-left: 0;
-            // margin-right: 0;
-            // padding: 15px 0;
             background: rgba(255, 255, 255, 0.97);
-            & > div {
-                // margin: 15px;
-                // overflow-y: scroll;
-                // height: 100%;
-                // align-items: stretch;
+            & > div {  // #matches, #entries
+                height: 100%;
+                overflow-y: hidden;
+                .mainContainer {
+                    max-height: calc(100% - 54px);   // 24px for H1 + 30 for margins
+                    overflow-y: scroll;
+                }
+
             }
         }
     }

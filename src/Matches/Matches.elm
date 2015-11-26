@@ -17,7 +17,7 @@ type alias Match = MatchesDecoder.Model
 type alias NewStuff = MatchesDecoder.NewStuff
 
 type ResultsType
-    = FilterMatches
+    = Filtered
     | Recents
 
 type alias Model =
@@ -33,7 +33,7 @@ init =
     { matches = []
     , newstuff = MatchesDecoder.initNew [] []
     , searching = False
-    , resultsType = FilterMatches
+    , resultsType = Filtered
     , message = "Use the filters above to find some registrees" }
 
 -- UPDATE
@@ -50,17 +50,20 @@ update : Action -> Model -> (Model, Effects Action)
 update action model =
     case action of
         SetRegister ->
-            ( { model | resultsType = FilterMatches }
+            ( { model | resultsType = Filtered }
             , Effects.none
             )
         GetMatchFor searchModel ->
-            ( { model | matches = [], message = "Searching...." }
+            ( { model
+                | matches = []
+                , message = "Searching...."
+                , resultsType = Filtered
+                }
             , getMatches searchModel
             )
         MatchesData (Result.Ok ms) ->
             ( { model |
                 matches = ms
-              , resultsType = FilterMatches
               , message = if List.length ms == 0 then "No results found" else "" }
             , Effects.none
             )
@@ -69,11 +72,15 @@ update action model =
             , Effects.none
             )
         GetRecents ->
-            ( model
-            , getRecents )     -- if no data aslready in model then ....
+            ( { model
+                | message = "Getting data..."
+                , resultsType = Filtered
+              }
+            , getRecents )     -- if no data already in model then ....
         RecentsData (Result.Ok recs) ->
             ( { model |
                 resultsType = Recents
+              , message = ""
               , newstuff = recs
               }
             , Effects.none
@@ -82,6 +89,7 @@ update action model =
             ( { model | message = errorHandler err }
             , Effects.none
             )
+        -- caught by parent in practise
         GetEntry _ -> ( model, Effects.none )
 
 errorHandler : Http.Error -> String
@@ -95,7 +103,7 @@ errorHandler err =
 view : Signal.Address Action -> Model -> Html
 view address model =
     case model.resultsType of
-        FilterMatches -> viewFilterResults address model
+        Filtered -> viewFilterResults address model
         Recents -> viewRecents address model
 
 viewFilterResults : Signal.Address Action -> Model -> Html
@@ -103,22 +111,22 @@ viewFilterResults address model =
     div [ id "matches", class "col-xs-12 col-sm-4" ]
         [ h2 [] [ text "Search results" ]
         , p [] [ text model.message ]
-        , div [ class "mContainer" ] <| List.map (viewMatch address) model.matches
+        , div [ class "mainContainer" ] <| List.map (viewMatch address) model.matches
         ]
 
 viewRecents : Signal.Address Action -> Model -> Html
 viewRecents address model =
     div [ id "matches", class "col-xs-12 col-sm-4" ]
+        -- , p [] [ text model.message ]
         [ div [ class "recent entries" ]
             [ h2 [] [ text <| (toString <| List.length model.newstuff.entries) ++ " Recent new entries" ]
-            , div [ class "mContainer" ] <| List.map (viewMatch address) model.newstuff.entries
+            , div [ class "mainContainer" ] <| List.map (viewMatch address) model.newstuff.entries
             ]
         , div [ class "recent entries" ]
             [ h2 [] [ text <| (toString <| List.length model.newstuff.updates) ++ " Recent updates" ]
-            , div [ class "mContainer" ] <| List.map (viewMatch address) model.newstuff.updates
+            , div [ class "mainContainer" ] <| List.map (viewMatch address) model.newstuff.updates
             ]
         ]
-        -- , p [] [ text model.message ]
 
 viewMatch : Signal.Address Action -> Match -> Html
 viewMatch address match =
@@ -143,13 +151,11 @@ getMatches model =
             , ("fte", model.fte)
             , ("budget", model.budget)
             ]
-
     in
     Http.get matchesDecoder (Http.url "/api/register/search/" searchTerms)
         |> Task.toResult
         |> Task.map MatchesData
         |> Effects.task
-
 
 getRecents : Effects Action
 getRecents =

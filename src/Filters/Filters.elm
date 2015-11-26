@@ -76,7 +76,7 @@ view address model =
                 [ budgetView address model.budget ]
             ]
         , div [class "row searchInit" ]
-            [ div [ class "col-xs-3 col-xs-offset-9" ]
+            [ div [ class "col-xs-6 col-xs-offset-6 xol-sm-3 col-sm-offset-9" ]
                 [ button
                     [ class "btn btn-primary"
                     , type' "submit"
@@ -89,7 +89,10 @@ view address model =
 searchView : Signal.Address Action -> Model -> Html
 searchView address model =
     div [ class "box" ]
-        [ h4 [] [ text "Search by name" ]
+        [ h4 []
+            [ text "Search"
+            , span [ class "hidden-xs" ] [ text " by name" ]
+            ]
         , input
             [ type' "text"
             , class "form-control"
@@ -125,7 +128,7 @@ fteView address val =
     div []
         [ h4 []
             [ text "Staff"
-            , span [] [ text <| " (at least " ++ val ++ " FTEs)" ]
+            , span [ class "small" ] [ text <| " (at least " ++ val ++ " FTEs)" ]
             ]
         , input
             [ type' "range"
@@ -142,7 +145,7 @@ budgetView address val =
     div []
         [ h4 []
             [ text "Budget"
-            , span [] [ text <| " (at least €" ++ val ++ ")" ]
+            , span [ class "small" ] [ text <| " (at least €" ++ val ++ ")" ]
             ]
         , input
             [ type' "range"

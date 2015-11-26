@@ -15,15 +15,11 @@ import Matches.Matches as Matches exposing (Action(..))
 import Entries.Entries as Entries exposing (Action(..))
 
 -- MODEL
--- type Display
---     = Filtered
---     | Recent
---
+
 type alias Model =
     { filters : Filters.Model
     , matches : Matches.Model
     , entries : Entries.Model
-    -- , display : Display
     , message : String
     }
 
@@ -40,9 +36,6 @@ init =
 -- UPDATE
 
 type Action
-    -- = GoRecent
-    -- | GoRegister (List String)
-    -- | UrlParam (List String)     -- duplicative
     = Activate (List String)
     | FilterAction Filters.Action
     | MatchAction Matches.Action
@@ -54,15 +47,14 @@ update action model =
     case action of
         Activate params ->
             case params of
-                [] ->
+                [] ->   -- homepage
                     ( { model | matches = fst <| Matches.update Matches.SetRegister model.matches }
-                    , updateUrl "/"   -- homepage
-                    -- , Effects.none
-                    )   -- homepage
+                    , updateUrl "/"
+                    )
                 ["recent"] ->
-                    let (_, newEffects) =
+                    let (newModel, newEffects) =
                         Matches.update Matches.GetRecents model.matches
-                    in ( model
+                    in ( { model | matches = newModel }
                        , Effects.batch
                             [ Effects.map MatchAction newEffects
                             , updateUrl "recent"
