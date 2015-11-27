@@ -143,7 +143,7 @@ function isDifferrent(existing, entry) {
 }
 
 // iterate over newData to identify new entries or updates
-// return { newEntries: [{_id: , orgName}], updates: ...}
+// return { _id: date,  newEntries: [{_id: , orgName}], updates: ...}
 function getChanges(existing, newData) {
 	function idAndName(e) {
 		// store using _id to match search results
@@ -237,10 +237,14 @@ function handleUpdate(fname, db) {
 		let historyPromises =
 			newUpdated.updates
 			.map(update => {
-				// get and clean up existing entry
+				// for each _id that is changed
+					// use data from existingKeyedData
+					// remove unwanted fields
+					// add the date
 				let previous =
 					addEntryDate( removeUnwantedFields( existingKeyedData[update._id] ) );
 
+				// add this information to the hitory about this _id
 				return db.collection(HISTORY)
 						.updateOne({_id: update._id}, {$push: {history: previous}}, {upsert: true});
 			});
@@ -253,7 +257,7 @@ function handleUpdate(fname, db) {
 			.then( result => ({'registerSize': result.insertedCount}));
 
 		return Promise.all([registerPromise, changesPromise].concat(historyPromises))
-			.then( res => [res[0], res[1], {'updates': (res.length-2)}] );
+			.then( res => [res[0], res[1], {'historyUpdates': (res.length-2)}] );
 	});
 }
 
