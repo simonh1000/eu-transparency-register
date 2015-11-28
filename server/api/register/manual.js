@@ -25,10 +25,10 @@ let remote = config.REMOTE;
 
 // RUN COMPLETE UPDATE
 // 1) Download data and // Read data file
-// ingester.getXls(fname)
-// .then( () => xls.xls2Json(fname) )
-xls.xls2Json(fname)
-// // 2) update DB
+ingester.downloadXls(fname)
+.then( () => xls.xls2Json(fname) )
+// xls.xls2Json(fname)
+// 2) update DB
 .then( newJson => {
 	let promises =
 		[local]
@@ -37,9 +37,7 @@ xls.xls2Json(fname)
 
 	return Promise.all(promises);
 })
-// updateOneDb(remote)
 .then( res => {
-	console.log(res);
 	res.forEach(r => {
 		console.log(`Database ${r.mongoUrl} returned`);
 		console.log(r.results);
@@ -52,16 +50,15 @@ function updateOneDb(uri, newJson) {
 	console.log("updateOneDb", uri);
 
 	return mongoConnect(uri)
-	// ingest data
 	.then( _db => {
 		db = _db;
+		// ingest data
 		return ingester.handleUpdate(fname, newJson, db);
 	})
 	// make summary data
 	.then( ingestRes => Promise.all([Promise.resolve(ingestRes), processor.makeSummaryData(db)]) )
-	// close connection
 	.then( res => {
-		console.log("updateOneDb, final then", res);
+		// close connection
 		db.close();
 		return {
 			mongoUrl: uri,

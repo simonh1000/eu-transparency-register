@@ -103,16 +103,17 @@ function countCountries(db) {
 					{_id: COUNTRIES},
 					{_id: COUNTRIES, 'data': results},
 					{upsert: true}
-				);
+				)
+				.then(res => ({'countries': results.length}));
 		} );
 }
 
 exports.makeSummaryData = function(db) {
-	console.log("makeSummaryData starting");
+	// console.log("makeSummaryData starting");
 	return Promise.all([
 		// countSections(db).then( res => ({"sections": !!res.result.ok}) ),
 		countSections(db),
-		countInterests(db).then( res => ({"interests": !!res.result.ok}) ),
+		countInterests(db),
 		countCountries(db).then( res => ({"countries": !!res.result.ok}) )
 	]);
 };

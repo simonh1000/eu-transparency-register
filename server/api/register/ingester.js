@@ -199,5 +199,5 @@ function handleUpdate(fname, newData, db) {
 	});
 }
 
-exports.getXls = getXls;
+exports.downloadXls = downloadXls;
 exports.handleUpdate = handleUpdate;
