@@ -46,7 +46,9 @@ function countInterests(db) {
 	.then( results => {
 		console.log(`processor: ${results.length} Interest promises returned`);
 		// interests.drop();
-		return db.collection(SUMMARY).replaceOne({_id:INTERESTS}, {_id:INTERESTS, data: results}, {upsert:true});
+		return db.collection(SUMMARY)
+			.replaceOne({_id: INTERESTS}, {_id: INTERESTS, data: results}, {upsert: true})
+			.then( res => ({'interests': results.length}) );
 	} )
 	.catch( err => {
 		console.error(err);
@@ -63,34 +65,16 @@ function countSections(db) {
 	let register = db.collection(REGISTER);
 
 	let simpleCount = register.aggregate([
-		// { "$group" : {_id : "$subsection", count: {$sum: 1} } }
 		{ "$group" : {_id : "$subsection", count: {$sum: 1}, total: {$sum: "$budget"} } }
 	]);
 
-	// let budgetCount = register.aggregate([
-	// 	{ "$group" : {_id : "$subsection", total: {$sum: "$budget"} } }
-	// ]);
-
-	// return Promise.all([simpleCount.toArray(), budgetCount.toArray()])
 	return simpleCount.toArray()
 	.then(results => {
-		console.log(`processor: ${results.length} Sections promises resolved`);
-		let base = results; 			// count data
-		// let base = results[0]; 			// count data
-		// let merge = results[1]; 		// spend data
+		// console.log(`processor: ${results.length} Sections promises resolved`);
 
-		// for each element in base (count) add the spend figure
-		let mergedResults = base;
-		// let mergedResults = base.map( elem => {
-		// 	let mergeVal = merge.find( e => e._id === elem._id );
-		// 	elem.total = mergeVal.total;
-		// 	return elem;
-		// })
-
-		// db.collection(SECTIONS).drop();
 		return db.collection(SUMMARY).replaceOne(
 					{_id: SECTIONS},
-					{_id: SECTIONS, 'data': mergedResults},
+					{_id: SECTIONS, 'data': results},
 					{upsert: true}
 				).then(res => ({'sections': results.length}));
 	})
