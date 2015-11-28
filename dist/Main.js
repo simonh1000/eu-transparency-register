@@ -12914,7 +12914,14 @@ Elm.Entries.Entries.make = function (_elm) {
    var combineIds = function (lst) {
       return A3($List.foldl,F2(function (l,acc) {    return A2($Basics._op["++"],acc,l);}),"/",A2($List.intersperse,"/",lst));
    };
-   var errorHandler = function (err) {    var _p0 = err;if (_p0.ctor === "UnexpectedPayload") {    return _p0._0;} else {    return "http error";}};
+   var errorHandler = function (err) {
+      var _p0 = err;
+      if (_p0.ctor === "UnexpectedPayload") {
+            return A2($Basics._op["++"],"Apologies, cannot display this entry: ",_p0._0);
+         } else {
+            return "http error";
+         }
+   };
    var NoOp = function (a) {    return {ctor: "NoOp",_0: a};};
    var updateUrl = function (displayed) {    return $Effects.task(A2($Task.map,NoOp,$Task.toMaybe($History.replacePath(combineIds(displayed)))));};
    var EntryAction = F2(function (a,b) {    return {ctor: "EntryAction",_0: a,_1: b};});
@@ -12932,6 +12939,14 @@ Elm.Entries.Entries.make = function (_elm) {
                       ,A2($Html.button,
                       _U.list([A2($Html$Events.onClick,address,CloseAll),$Html$Attributes.$class("btn btn-default btn-xs closeAll")]),
                       _U.list([$Html.text("Close All")]))]))
+              ,function () {
+                 var _p1 = model.message;
+                 if (_p1.ctor === "Just") {
+                       return A2($Html.p,_U.list([]),_U.list([$Html.text(_p1._0)]));
+                    } else {
+                       return A2($Html.p,_U.list([]),_U.list([]));
+                    }
+              }()
               ,A2($Html.div,_U.list([$Html$Attributes.$class("mainContainer")]),A2($List.map,viewMapper,model.displayed))]));
    });
    var EntryReceived = function (a) {    return {ctor: "EntryReceived",_0: a};};
@@ -12947,44 +12962,42 @@ Elm.Entries.Entries.make = function (_elm) {
                 ,_0: _U.update(model,{displayed: newDisplayed})
                 ,_1: $Effects.batch(_U.list([A2($Effects.map,EntryAction(id),$Effects.tick($Entries$Entry.Tick)),updateUrl(newDisplayed)]))};
       };
-      var _p1 = action;
-      switch (_p1.ctor)
-      {case "GetEntryFor": var _p2 = _p1._0;
-           return A2($List.member,_p2,model.displayed) ? {ctor: "_Tuple2",_0: model,_1: $Effects.none} : A2($Dict.member,
-           _p2,
-           model.cache) ? insertEntry(_p2) : {ctor: "_Tuple2",_0: model,_1: loadEntry(_p2)};
-         case "EntryReceived": if (_p1._0.ctor === "Ok") {
-                 var _p4 = _p1._0._0;
-                 var _p3 = insertEntry(_p4.id);
-                 var newModel = _p3._0;
-                 var newEffects = _p3._1;
-                 return {ctor: "_Tuple2"
-                        ,_0: _U.update(newModel,{cache: A3($Dict.insert,_p4.id,$Entries$Entry.init(_p4),newModel.cache),message: _p4.id})
-                        ,_1: newEffects};
+      var _p2 = action;
+      switch (_p2.ctor)
+      {case "GetEntryFor": var _p3 = _p2._0;
+           return A2($List.member,_p3,model.displayed) ? {ctor: "_Tuple2",_0: model,_1: $Effects.none} : A2($Dict.member,
+           _p3,
+           model.cache) ? insertEntry(_p3) : {ctor: "_Tuple2",_0: model,_1: loadEntry(_p3)};
+         case "EntryReceived": if (_p2._0.ctor === "Ok") {
+                 var _p5 = _p2._0._0;
+                 var _p4 = insertEntry(_p5.id);
+                 var newModel = _p4._0;
+                 var newEffects = _p4._1;
+                 return {ctor: "_Tuple2",_0: _U.update(newModel,{cache: A3($Dict.insert,_p5.id,$Entries$Entry.init(_p5),newModel.cache)}),_1: newEffects};
               } else {
-                 return {ctor: "_Tuple2",_0: _U.update(model,{message: errorHandler(_p1._0._0)}),_1: $Effects.none};
+                 return {ctor: "_Tuple2",_0: _U.update(model,{message: $Maybe.Just(errorHandler(_p2._0._0))}),_1: $Effects.none};
               }
-         case "CloseAll": return {ctor: "_Tuple2",_0: _U.update(model,{displayed: _U.list([])}),_1: updateUrl(_U.list([]))};
-         case "EntryAction": if (_p1._1.ctor === "Close") {
-                 var _p6 = _p1._0;
-                 var newDisplayed = A2($List.filter,function (d) {    return !_U.eq(d,_p6);},model.displayed);
+         case "CloseAll": return {ctor: "_Tuple2",_0: _U.update(model,{displayed: _U.list([]),message: $Maybe.Nothing}),_1: updateUrl(_U.list([]))};
+         case "EntryAction": if (_p2._1.ctor === "Close") {
+                 var _p7 = _p2._0;
+                 var newDisplayed = A2($List.filter,function (d) {    return !_U.eq(d,_p7);},model.displayed);
                  return {ctor: "_Tuple2"
                         ,_0: _U.update(model,
                         {displayed: newDisplayed
                         ,cache: A3($Dict.update,
-                        _p6,
-                        $Maybe.map(function (_p5) {    return $Entries$Entry.init(function (_) {    return _.data;}(_p5));}),
+                        _p7,
+                        $Maybe.map(function (_p6) {    return $Entries$Entry.init(function (_) {    return _.data;}(_p6));}),
                         model.cache)})
                         ,_1: updateUrl(newDisplayed)};
               } else {
                  return {ctor: "_Tuple2"
-                        ,_0: _U.update(model,{cache: A3($Dict.update,_p1._0,$Maybe.map($Entries$Entry.update(_p1._1)),model.cache)})
+                        ,_0: _U.update(model,{cache: A3($Dict.update,_p2._0,$Maybe.map($Entries$Entry.update(_p2._1)),model.cache)})
                         ,_1: $Effects.none};
               }
          default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
    });
    var GetEntryFor = function (a) {    return {ctor: "GetEntryFor",_0: a};};
-   var init = {displayed: _U.list([]),cache: $Dict.empty,message: ""};
+   var init = {displayed: _U.list([]),cache: $Dict.empty,message: $Maybe.Nothing};
    var Model = F3(function (a,b,c) {    return {displayed: a,cache: b,message: c};});
    return _elm.Entries.Entries.values = {_op: _op
                                         ,init: init
@@ -13501,7 +13514,7 @@ Elm.Help.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var content = $Markdown.toHtml("\n\n# Notes\n\nThis project uses information from the [European Union Transparency Register](http://ec.europa.eu/transparencyregister/public/homePage.do), which is made freely available to third parties under the EU\'s open data policy. The data on this site is updated frequently with the latest information made avaialble by the Commission.\n\nI have sought to focus on key pieces of information in the Register and to provide a better ability to compare registrees.\n\nIn order to provide the budget comparisons, I use the costs data provided by registrees or, if that is not provided, the mid-point of the budget range that was selected.\n\nPlease provide feedback via the [blog](https://digitalusers.wordpress.com/2015/10/29/making-the-eu-transparency-register-more-functional/) announcing this service.\n\n## Privacy\n\nThis site uses the Google Analytics cookie.\n\n## Open source\n\nThe code for this site is freely available on [Github](https://github.com/simonh1000/eu-transparency-register).\n\n");
+   var content = $Markdown.toHtml("\n\n# Notes\n\nThis project uses information from the [European Union Transparency Register](http://ec.europa.eu/transparencyregister/public/homePage.do), which is made freely available to third parties under the EU\'s open data policy. The data is updated frequently with the latest source from the Commission but cannot guarantee to contain all the latest changes.\n\nI have sought to focus on key pieces of information in the Register and to provide a better ability to compare registrants.\n\nIn order to provide the budget comparisons, I use the costs data provided by registrants or, if that is not provided, the mid-point of the budget range selected.\n\nPlease provide feedback via the [blog](https://digitalusers.wordpress.com/2015/10/29/making-the-eu-transparency-register-more-functional/) announcing this service.\n\n## Privacy\n\nThis site uses the Google Analytics cookie.\n\n## Open source\n\nThe source code is available under an open source licence on [Github](https://github.com/simonh1000/eu-transparency-register).\n\n");
    return _elm.Help.values = {_op: _op,content: content};
 };
 Elm.App = Elm.App || {};

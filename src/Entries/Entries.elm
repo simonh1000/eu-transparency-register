@@ -21,14 +21,14 @@ type alias Cache = Dict Id (Entry.Model)
 type alias Model =
     { displayed : List Id
     , cache : Cache       -- also contains info about whether an item is expanded
-    , message : String
+    , message : Maybe String
     }
 
 init : Model
 init =
     { displayed = []
     , cache = Dict.empty
-    , message = ""
+    , message = Nothing
     }
 
 -- UPDATE
@@ -68,17 +68,20 @@ update action model =
         EntryReceived (Result.Ok entry) ->
             let (newModel, newEffects) = insertEntry entry.id
             in
-            ( { newModel | cache = insert entry.id (Entry.init entry) newModel.cache, message = entry.id }
+            ( { newModel
+                | cache = insert entry.id (Entry.init entry) newModel.cache
+                -- , message = entry.id
+               }
             , newEffects
             )
         EntryReceived (Result.Err msg) ->
-            ( { model | message = errorHandler msg }
+            ( { model | message = Just (errorHandler msg) }
             , Effects.none
             )
 
         -- C L O S E
         CloseAll ->
-            ( { model | displayed = [] }
+            ( { model | displayed = [], message = Nothing }
             , updateUrl []    -- History
             -- , Effects.none
             )
@@ -106,7 +109,7 @@ update action model =
 errorHandler : Http.Error -> String
 errorHandler err =
     case err of
-        Http.UnexpectedPayload s -> s
+        Http.UnexpectedPayload s -> "Apologies, cannot display this entry: " ++ s
         otherwise -> "http error"
 
 -- VIEW
@@ -127,8 +130,9 @@ view address model =
                 , class "btn btn-default btn-xs closeAll" ]
                 [ text "Close All" ]
             ]
-        -- , p [] [ text <| toString model.message ]
-        -- , p [] [ text <| toString model.displayed ]
+        , case model.message of
+            Just m -> p [] [ text m ]
+            Nothing -> p [] []
         , div [ class "mainContainer" ]
             <| List.map viewMapper model.displayed
         ]
