@@ -1,0 +1,86 @@
+@import "../node_modules/bootstrap-sass/assets/stylesheets/bootstrap"
+@import "Summary/summary.scss"
+@import "Matches/matches.scss"
+@import "Filters/filters.scss"
+@import "Entries/entries.scss"
+
+footer
+    display: block
+    height: 80px
+    background-color: #222
+
+nav
+    &.navbar
+        margin-bottom: 0
+
+    .navbar-brand span
+        font-size: 14px
+
+.help-modal
+    position: absolute
+    top: 10px
+    left: 10px
+    right: 10px
+    // bottom: 10px
+    background-color: rgba(197, 218, 222, 0.9)
+    z-index: 100
+    padding: 10px
+    border-radius: 10px
+    border: 2px solid #aaa
+
+#register
+    p.error
+        margin: 0
+
+h2
+    font-size: 22px
+
+footer
+    height: 32px
+    padding: 5px 15px
+    span
+        color: white
+        padding-right: 30px
+
+/* SM styling */
+@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max)
+  .container
+    width: inherit
+
+@media (min-width: $screen-sm)
+    html, body
+        height: 100%
+        background-image: url(flags.jpg)
+        background-size: cover
+        & > div, .App, .App
+            height: 100%
+
+        .container
+            height: calc(100% - 52px)
+
+    body
+        background-color: rgb(236, 236, 236)
+        font-family: sans-serif
+
+    #register
+        height: calc(100% - 32px)    // 52 (filters) + 32 (footer)
+        .error
+            color: red
+            margin: 0
+
+        .main
+            height: calc(100% - 126px)
+            background: rgba(255, 255, 255, 0.97)
+            & > div   // #matches, #entries
+                height: 100%
+                overflow-y: hidden
+                .mainContainer
+                    max-height: calc(100% - 54px)   // 24px for H1 + 30 for margins
+                    overflow-y: scroll
+
+    .help-modal
+        top: 10%
+        left: 10%
+        right: 10%
+        bottom: 10%
+        padding: 50px
