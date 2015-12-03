@@ -1,21 +1,21 @@
 #summary {
-    background-color: #eee;
     & > div {
         padding: 0;
+    }
+    .toggleContainer {
+        background-color: #eee;
+        padding-left: 15px;
     }
 }
 
 @media (min-width: $screen-sm) {
     #summary {
-        .toggleContainer {
-            background-color: #eee;
-            margin-top: -10px;
-            padding-bottom: 10px;
-            padding-left: 15px;
-        }
         & > div {
             background-color: white;
-            // padding: 0 15px;
+        }
+        .toggleContainer {
+            margin-top: -10px;
+            padding-bottom: 5px;
         }
     }
 

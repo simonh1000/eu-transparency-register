@@ -1,4 +1,4 @@
-module Entries.Entries (Model, Action(..), init, update, view, updateUrl) where
+module Entries.Entries (Model, Action(..), init, update, view) where
 
 import Html exposing (..)
 import Html.Attributes exposing (class, id, type', href, style)
@@ -37,8 +37,7 @@ type Action =
       GetEntryFor Id
     | EntryReceived (Result Http.Error EntryDecoder.Model)  -- Decoder brings in raw data
     | CloseAll
-    | EntryAction Id Entry.Action
-    | NoOp (Maybe ())
+    | EntriesAction Id Entry.Action
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
@@ -51,8 +50,8 @@ update action model =
             in
             ( { model | displayed = newDisplayed }
             , Effects.batch
-                [ Effects.map (EntryAction id) (Effects.tick Entry.Tick)    -- Entry animation
-                , updateUrl newDisplayed   -- History
+                [ Effects.map (EntriesAction id) (Effects.tick Entry.Tick)    -- Entry animation
+                -- , updateUrl newDisplayed   -- History
                 -- , Effects.none
                 ]
             )
@@ -82,10 +81,11 @@ update action model =
         -- C L O S E
         CloseAll ->
             ( { model | displayed = [], message = Nothing }
-            , updateUrl []    -- History
-            -- , Effects.none
+            , Effects.none
+            -- , updateUrl []    -- History
             )
-        EntryAction id Close ->
+
+        EntriesAction id Close ->
             let
                 newDisplayed = List.filter (\d -> d /= id) model.displayed
             in
@@ -93,18 +93,18 @@ update action model =
                 displayed = newDisplayed
               , cache = Dict.update id (Maybe.map (Entry.init << .data)) model.cache -- reset cache entry
               }
-            , updateUrl newDisplayed   -- History
-            -- , Effects.none
+            , Effects.none
+            -- , updateUrl newDisplayed   -- History
             )
 
         -- E X P A N D
-        EntryAction id entryAction ->    -- i.e. Expand
+        EntriesAction id entryAction ->    -- i.e. Expand
             ( { model | cache = Dict.update id (Entry.update entryAction |> Maybe.map) model.cache }
             , Effects.none
             )
 
         -- URL  U P D A T E S
-        NoOp _ -> ( model, Effects.none )
+        -- NoOp _ -> ( model, Effects.none )
 
 errorHandler : Http.Error -> String
 errorHandler err =
@@ -120,7 +120,7 @@ view address model =
         viewMapper : Id -> Html
         viewMapper id =
             let entry = Maybe.withDefault Entry.initEmpty (get id model.cache)
-            in Entry.view (Signal.forwardTo address (EntryAction id)) entry
+            in Entry.view (Signal.forwardTo address (EntriesAction id)) entry
     in
     div [ id "entries", class "col-xs-12 col-sm-8" ]
         [ header []
@@ -146,15 +146,15 @@ loadEntry id =
         |> Task.map EntryReceived
         |> Effects.task
 
-updateUrl : List String -> Effects Action
-updateUrl displayed =
-    combineIds displayed
-        |> History.replacePath
-        |> Task.toMaybe
-        |> Task.map NoOp
-        |> Effects.task
-
--- [x,y,z] --> /x/y/z
-combineIds : List String -> String
-combineIds lst =
-    List.foldl (\l acc -> acc ++ l) "/" (List.intersperse "/" lst)
+-- updateUrl : List String -> Effects Action
+-- updateUrl displayed =
+--     combineIds displayed
+--         |> History.replacePath
+--         |> Task.toMaybe
+--         |> Task.map NoOp
+--         |> Effects.task
+--
+-- -- [x,y,z] --> /x/y/z
+-- combineIds : List String -> String
+-- combineIds lst =
+--     List.foldl (\l acc -> acc ++ l) "/" (List.intersperse "/" lst)

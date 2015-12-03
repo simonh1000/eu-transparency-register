@@ -1,29 +1,25 @@
 #filters {
-    // display: flex;
-    // flex-direction: column;
-
-    background-color: #aaa;
-    // padding: 15px;
+    background-color: #BACDDA;
 
     .searchInit {
-        // height: 60px;
         text-align: right;
         padding: 10px 15px;
     }
     span.small {
         font-size: 14px;
+        color: #333;
     }
 }
 
-@media (min-width: $screen-sm) {
-    #filters {
-        .row {
-            // display: flex;
-            // flex: 1;
-        }
-        .row > div {
-            // flex: 1;
-            // padding: 0 15px;
-        }
-    }
-}
+// @media (min-width: $screen-sm) {
+//     #filters {
+//         .row {
+//             // display: flex;
+//             // flex: 1;
+//         }
+//         .row > div {
+//             // flex: 1;
+//             // padding: 0 15px;
+//         }
+//     }
+// }
