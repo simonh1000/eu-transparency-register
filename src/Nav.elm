@@ -1,73 +1,49 @@
-module Nav (Model, Page(..), Action(..), init, update, view) where
+module Nav (Model, Action(..), init, update, view) where
 
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick, onWithOptions)
-import Json.Decode as Json
-import Json.Encode as JsonE
 
 import Http
-import Common
+import Json.Decode as Json exposing ( (:=) )
+import Task exposing (Task)
+import Effects exposing (Effects)
+
+import Common exposing (onLinkClick)
+import Router exposing (Page(..))
 
 -- MODEL
 
-type Page
-    = Register
-    | Summary
-    | Recent
-
 type alias Model =
-    { page : Page
-    , regCount: String
+    { regCount: Int
+    , errorMessage : Maybe String
     }
 
-init p c = { page = p, regCount = c }
+-- init p c = { page = p, regCount = c }
+init =
+    ( { regCount = 0, errorMessage = Nothing }
+    , getMeta
+    )
 
 -- UPDATE
 
-type Action =
-      GoRegister (List String)
-    | GoSummary
-    | CountData (Result Http.Error String)
-    -- | NoOp (Maybe ())
+type Action
+    = GoPage Page
+    | CountData (Result Http.Error Int)
 
 update : Action -> Model -> Model
 update action model =
     case action of
-        GoSummary ->
-            { model | page = Summary }
-        GoRegister ["recent"] ->
-            { model | page = Recent }
-        GoRegister _ ->
-            { model | page = Register }
+        GoPage _ ->
+            model
 
         CountData (Result.Ok c) ->
             { model | regCount = c }
         CountData (Result.Err err)->
-            { model | regCount = Common.errorHandler err }
-        -- GoRecent -> { model | page = Recent }
-        -- NoOp -> (Register, updateUrl Register)
-                -- MetaReceived (Result.Ok val)->     -- ***** this should be nav downloading this data
-                --     ( { model | navbar = Nav.update (Nav.CountData val) model.navbar }
-                --     , Effects.none
-                --     )
-                -- MetaReceived (Result.Err err)->
-                --     ( { model | msg = Common.errorHandler err }
-                --     , Effects.none
-                --     )
-
+            { model | errorMessage = Just <| Common.errorHandler err }
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-    let
-        -- onWithOptions : String -> Options -> Decoder a -> (a -> Message) -> Attribute
-        onNavClick act =
-            onWithOptions
-                "click"
-                {stopPropagation=True, preventDefault=True}
-                (Json.succeed act)
-                (Signal.message address)
-    in
     nav [ class "navbar navbar-inverse" ]
         [ div
             [ class "container" ]
@@ -84,24 +60,36 @@ view address model =
                     , span [ class "icon-bar" ] []
                     , span [ class "icon-bar" ] []
                     ]
-                , a [ class "navbar-brand", href "/" ]
+                , a [ class "navbar-brand", href "#", onLinkClick address (GoPage (Register Nothing)) ]
                     [ text "EU Lobby Register "
-                    , span [ class "hidden-xs" ] [ text <| "(" ++ model.regCount ++ " entries)"]
+                    , span
+                        [ class "hidden-xs" ]
+                        [ text <| "(" ++ toString model.regCount ++ " entries)"]  -- should include error message
                     ]
                 ]
             , div [ class "collapse navbar-collapse", id "navbar" ]
                 [ ul [ class "nav navbar-nav navbar-right" ]
                     [ li []
-                        [ a [ href "#", onNavClick (GoRegister []) ] [ text (toString Register) ] ]
+                        [ a [ href "#", onLinkClick address (GoPage (Register Nothing)) ] [ text "Register" ] ]
                     , li []
-                        [ a [ href "#", onNavClick (GoRegister ["recent"]) ] [ text "Recent changes" ] ]
+                        [ a [ href "#", onLinkClick address (GoPage <| Register (Just ["recent"])) ] [ text "Recent changes" ] ]
                     , li []
                         [ a
-                            [ href "#", onNavClick GoSummary
-                            , class <| if model.page == Summary then "active" else "" ]
+                            [ href "#", onLinkClick address (GoPage Summary)
+                            -- , class <| if model.page == Summary then "active" else ""
+                            ]
                             [ text (toString Summary) ]
                         ]
                     ]
                 ]
             ]
         ]
+
+-- TASKS
+
+getMeta : Effects Action
+getMeta =
+    Http.get ("count" := Json.int) ("/api/register/meta")
+        |> Task.toResult
+        |> Task.map CountData
+        |> Effects.task

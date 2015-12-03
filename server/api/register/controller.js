@@ -70,9 +70,7 @@ exports.id = (req, res) => {
 	);
 
 	register.findOne(id)
-		.then( data => {
-			console.log(data);
-			res.send(data) });
+		.then( data => res.send(data) );
 };
 
 exports.summary = (req, res) => {

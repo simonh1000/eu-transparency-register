@@ -52,7 +52,7 @@ type Action
     -- | SectionsData (Result Http.Error (List Section))
     -- | CountryData (Result Http.Error (List Country))
     | SummaryData (Result Http.Error Summary)
-    | NoOp (Maybe ())
+    -- | NoOp (Maybe ())
     | Animate Chart
     -- | Tick Time
 
@@ -71,15 +71,15 @@ update action model =
                 , countries = simplifyCountiesData summary.countries
                 , interests = List.sortBy (negate << .count) summary.interests
                }
-            -- , Effects.none )    -- History is not updated
-            , updateUrl )
+            , Effects.none )    -- History is not updated
+            -- , updateUrl )
         SummaryData (Result.Err msg) ->
             ( { model | msg = errorHandler msg }
-            , updateUrl
-            -- , Effects.none
+            -- , updateUrl
+            , Effects.none
             )
         -- URL  U P D A T E S
-        NoOp _ -> ( model, Effects.none )
+        -- NoOp _ -> ( model, Effects.none )
         Animate chart ->
             let
                 toggle x = if x == Simple then Complex else Simple
@@ -230,9 +230,9 @@ loadSummary =
         |> Task.map SummaryData
         |> Effects.task
 
-updateUrl : Effects Action
-updateUrl =
-    History.replacePath "/summary"
-        |> Task.toMaybe
-        |> Task.map NoOp
-        |> Effects.task
+-- updateUrl : Effects Action
+-- updateUrl =
+--     History.replacePath "/summary"
+--         |> Task.toMaybe
+--         |> Task.map NoOp
+--         |> Effects.task
