@@ -44,7 +44,7 @@ function countInterests(db) {
 
 	return Promise.all(promises)
 	.then( results => {
-		console.log(`processor: ${results.length} Interest promises returned`);
+		// console.log(`processor: ${results.length} Interest promises returned`);
 		// interests.drop();
 		return db.collection(SUMMARY)
 			.replaceOne({_id: INTERESTS}, {_id: INTERESTS, data: results}, {upsert: true})
@@ -98,7 +98,7 @@ function countCountries(db) {
 
 	return countries.toArray()
 		.then( results => {
-			console.log(`processor: ${results.length} countries`);
+			// console.log(`processor: ${results.length} countries`);
 			return db.collection(SUMMARY).replaceOne(
 					{_id: COUNTRIES},
 					{_id: COUNTRIES, 'data': results},
@@ -114,7 +114,7 @@ exports.makeSummaryData = function(db) {
 		// countSections(db).then( res => ({"sections": !!res.result.ok}) ),
 		countSections(db),
 		countInterests(db),
-		countCountries(db).then( res => ({"countries": !!res.result.ok}) )
+		countCountries(db)
 	]);
 };
 // exports.makeSummaryData = function() {

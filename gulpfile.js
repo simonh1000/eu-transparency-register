@@ -15,7 +15,7 @@ var paths = {
 	compileDestination: "dist",
 	server  : './server',
 	home    : ['src/index.jade'],
-	scss    : ['src/**/*.scss'],
+	scss    : ['src/**/*.{sass,scss}'],
 	elm     : "src/**/*.elm",
 	elmMain : "src/Main.elm",
 	copy    : "src/Summary/d3.js"
@@ -58,7 +58,7 @@ gulp.task('home', function() {
 });
 
 gulp.task('sass', function() {
-	return gulp.src('src/styles.scss')
+	return gulp.src('src/styles.sass')
 	.pipe(sass().on('error', sass.logError))
 	.pipe(concat('styles.css'))
 	.pipe(uglify())

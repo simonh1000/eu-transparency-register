@@ -9,7 +9,6 @@ var ingester = require('./ingester');
 var processor = require('./processor');
 var config = require('../../../ignore/settings.js');
 
-// var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:27017/lobby"
 let fname = './reg' + moment().format('DD-MM');
 
 // Function that returns a Promise of a database connection
@@ -17,11 +16,6 @@ var mongoConnect = Promise.promisify(mongoClient.connect);
 
 let local = config.LOCAL;
 let remote = config.REMOTE;
-
-// DOWNLOAD NEW FILE
-// ingester.getXls(fname)
-// 	.then( () => console.log('done') )
-// 	.catch( err => console.error(err) );
 
 // RUN COMPLETE UPDATE
 // 1) Download data and // Read data file
@@ -31,8 +25,8 @@ ingester.downloadXls(fname)
 // 2) update DB
 .then( newJson => {
 	let promises =
-		[local]
-		// [local, remote]
+		// [local]
+		[local, remote]
 		.map( uri => updateOneDb(uri, newJson) );
 
 	return Promise.all(promises);
@@ -59,6 +53,7 @@ function updateOneDb(uri, newJson) {
 	.then( ingestRes => Promise.all([Promise.resolve(ingestRes), processor.makeSummaryData(db)]) )
 	.then( res => {
 		// close connection
+		console.log(`Ingesting for ${uri} complete`);
 		db.close();
 		return {
 			mongoUrl: uri,
@@ -68,11 +63,33 @@ function updateOneDb(uri, newJson) {
 	.catch( err => {
 		if (db.close)
 			db.close();
-		Promise.reject(err);
+		return Promise.reject(err);
 	});
 }
 
-/* MANUAL TEST */
+// REPLACE DATABASE
+// Promise.all([
+// 	mongoConnect(remote),     // remote
+// 	xls.xls2Json(fname)     // reads and parses
+// ])
+// .then( results => {
+// 	let db = results[0];
+// 	let newData = results[1];
+//
+// 	ingester.replaceDb(newData, db)
+// 	.then( res => {
+// 		db.close();
+// 		console.log(res)
+// 	})
+// 	.catch( console.error.bind(this) );
+// })
+
+// DOWNLOAD NEW FILE
+// ingester.getXls(fname)
+// 	.then( () => console.log('done') )
+// 	.catch( err => console.error(err) );
+
+/* PROCESSOR MANUAL TEST */
 // exports.makeSummaryData()
 // .then( responses => console.log(responses) )
 // .catch( err => console.error(err) );

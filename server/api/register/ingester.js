@@ -130,11 +130,11 @@ function addEntryDate(entry) {
  * Database functions
  * Function that returns a Promise of a database connection
  */
-var mongoConnect = Promise.promisify(mongoClient.connect);
+// var mongoConnect = Promise.promisify(mongoClient.connect);
 
 // Get existing data and returns as an object with key = _id
 function getExistingData(db) {
-	console.log('ingest: getExistingData starting');
+	// console.log('ingest: getExistingData starting');
 	return db.collection(REGISTER)
 		.find({})
 		.toArray()
@@ -199,5 +199,13 @@ function handleUpdate(fname, newData, db) {
 	});
 }
 
+function replaceDb(newData, db) {
+	return db.collection(REGISTER)
+		.drop()
+		.then( () => db.collection(REGISTER).insertMany(newData) )
+		.then( result => ({'registerSize': result.insertedCount}));
+}
+
 exports.downloadXls = downloadXls;
 exports.handleUpdate = handleUpdate;
+exports.replaceDb = replaceDb;

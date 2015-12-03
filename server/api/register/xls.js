@@ -38,6 +38,10 @@ function rawMapper(entry) {
 		switch (prop) {
 			case 'entryDate':  	// convert date into Mongo usable format
 				return moment(val, 'D-M-YYYY').format();
+			case 'Financial Start':
+				return val.replace(/\//g,'-');
+			case 'Financial End':
+				return val.replace(/\//g,'-');
 			case 'interests':
 				return val.split(', ');
 			case 'noPersons':
