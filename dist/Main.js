@@ -12386,37 +12386,33 @@ Elm.Filters.Section.make = function (_elm) {
                            ,"United Kingdom"
                            ,"Albania"
                            ,"Australia"
-                           ,"Benin"
-                           ,"Egypt"
                            ,"Armenia"
                            ,"Argentina"
+                           ,"Azerbaijan"
+                           ,"Barbados"
+                           ,"Bosnia-herzegovina"
                            ,"Bahamas"
+                           ,"Belize"
+                           ,"Bermuda"
+                           ,"Brazil"
+                           ,"Benin"
+                           ,"Egypt"
+                           ,"Canada"
                            ,"Cambodia"
                            ,"Chile"
-                           ,"Belize"
-                           ,"Brazil"
                            ,"China"
                            ,"Congo, Democratic Republic Of"
                            ,"Cote D\'ivoire"
                            ,"Dominican Republic"
                            ,"Malaysia"
-                           ,"Serbia"
-                           ,"Switzerland"
-                           ,"Singapore"
                            ,"Japan"
                            ,"Korea, Republic Of"
                            ,"Tunisia"
                            ,"Norway"
-                           ,"Canada"
                            ,"Hong Kong"
-                           ,"South Africa"
-                           ,"Turkey"
                            ,"India"
                            ,"United States"
                            ,"Macedonia, Former Yugoslav Republic Of"
-                           ,"Barbados"
-                           ,"Bosnia-herzegovina"
-                           ,"Azerbaijan"
                            ,"Israel"
                            ,"Moldova, Republic Of"
                            ,"Monaco"
@@ -12428,13 +12424,17 @@ Elm.Filters.Section.make = function (_elm) {
                            ,"Ukraine"
                            ,"Jordan"
                            ,"Nigeria"
-                           ,"Venezuela"
+                           ,"Pakistan"
+                           ,"Philippines"
                            ,"Netherlands Antilles"
                            ,"Senegal"
                            ,"Syria, Arab Republic"
-                           ,"Philippines"
+                           ,"Serbia"
+                           ,"Switzerland"
+                           ,"Singapore"
+                           ,"South Africa"
+                           ,"Turkey"
                            ,"Liechtenstein"
-                           ,"Pakistan"
                            ,"Saint Marino"
                            ,"United Arab Emirates"
                            ,"Morocco"
@@ -12442,15 +12442,15 @@ Elm.Filters.Section.make = function (_elm) {
                            ,"Qatar"
                            ,"Gibraltar"
                            ,"Kyrgyzstan"
-                           ,"Bermuda"
                            ,"New Zealand"
                            ,"Trinidad And Tobago"
                            ,"Isle Of Man"
                            ,"Indonesia"
-                           ,"Uganda"
                            ,"Kenya"
                            ,"Ghana"
-                           ,"Taiwan"]);
+                           ,"Taiwan"
+                           ,"Uganda"
+                           ,"Venezuela"]);
    var subsections = _U.list(["All"
                              ,"Professional consultancies"
                              ,"Companies & groups"
@@ -12694,7 +12694,8 @@ Elm.Matches.Matches.make = function (_elm) {
    var viewRecents = F2(function (address,model) {
       return A2($Html.div,
       _U.list([$Html$Attributes.id("matches"),$Html$Attributes.$class("col-xs-12 col-sm-4")]),
-      _U.list([A2($Html.div,
+      _U.list([A2($Html.p,_U.list([]),_U.list([$Html.text(model.message)]))
+              ,A2($Html.div,
               _U.list([$Html$Attributes.$class("recent entries")]),
               _U.list([A2($Html.h2,
                       _U.list([]),
@@ -12708,7 +12709,7 @@ Elm.Matches.Matches.make = function (_elm) {
                       ,A2($Html.div,_U.list([$Html$Attributes.$class("mainContainer")]),A2($List.map,viewMatch(address),model.newstuff.updates))]))]));
    });
    var view = F2(function (address,model) {
-      var _p1 = model.resultsType;
+      var _p1 = model.display;
       if (_p1.ctor === "Filtered") {
             return A2(viewFilterResults,address,model);
          } else {
@@ -12730,21 +12731,18 @@ Elm.Matches.Matches.make = function (_elm) {
       $Task.toResult(A2($Http.get,$Matches$MatchesDecoder.matchesDecoder,A2($Http.url,"/api/register/search/",searchTerms)))));
    };
    var GetMatchFor = function (a) {    return {ctor: "GetMatchFor",_0: a};};
-   var SetRegister = {ctor: "SetRegister"};
-   var Model = F5(function (a,b,c,d,e) {    return {matches: a,newstuff: b,searching: c,resultsType: d,message: e};});
+   var SetFilters = {ctor: "SetFilters"};
+   var Model = F4(function (a,b,c,d) {    return {matches: a,newstuff: b,display: c,message: d};});
+   var defaultMessage = "Use the filters above to find some registrees";
    var Recents = {ctor: "Recents"};
    var Filtered = {ctor: "Filtered"};
-   var init = {matches: _U.list([])
-              ,newstuff: A2($Matches$MatchesDecoder.initNew,_U.list([]),_U.list([]))
-              ,searching: false
-              ,resultsType: Filtered
-              ,message: "Use the filters above to find some registrees"};
+   var init = {matches: _U.list([]),newstuff: A2($Matches$MatchesDecoder.initNew,_U.list([]),_U.list([])),display: Filtered,message: defaultMessage};
    var update = F2(function (action,model) {
       var _p2 = action;
       switch (_p2.ctor)
-      {case "SetRegister": return {ctor: "_Tuple2",_0: _U.update(model,{resultsType: Filtered}),_1: $Effects.none};
+      {case "SetFilters": return {ctor: "_Tuple2",_0: _U.update(model,{display: Filtered,message: defaultMessage}),_1: $Effects.none};
          case "GetMatchFor": return {ctor: "_Tuple2"
-                                    ,_0: _U.update(model,{matches: _U.list([]),message: "Searching....",resultsType: Filtered})
+                                    ,_0: _U.update(model,{matches: _U.list([]),message: "Searching....",display: Filtered})
                                     ,_1: getMatches(_p2._0)};
          case "MatchesData": if (_p2._0.ctor === "Ok") {
                  var _p3 = _p2._0._0;
@@ -12752,9 +12750,12 @@ Elm.Matches.Matches.make = function (_elm) {
               } else {
                  return {ctor: "_Tuple2",_0: _U.update(model,{message: errorHandler(_p2._0._0)}),_1: $Effects.none};
               }
-         case "GetRecents": return {ctor: "_Tuple2",_0: _U.update(model,{message: "Getting data...",resultsType: Filtered}),_1: getRecents};
+         case "GetRecents": var newModel = _U.update(model,{display: Recents});
+           return _U.eq($List.length(model.newstuff.entries),0) ? {ctor: "_Tuple2"
+                                                                  ,_0: _U.update(newModel,{message: "Getting data..."})
+                                                                  ,_1: getRecents} : {ctor: "_Tuple2",_0: _U.update(newModel,{message: ""}),_1: $Effects.none};
          case "RecentsData": if (_p2._0.ctor === "Ok") {
-                 return {ctor: "_Tuple2",_0: _U.update(model,{resultsType: Recents,message: "",newstuff: _p2._0._0}),_1: $Effects.none};
+                 return {ctor: "_Tuple2",_0: _U.update(model,{message: "",newstuff: _p2._0._0}),_1: $Effects.none};
               } else {
                  return {ctor: "_Tuple2",_0: _U.update(model,{message: errorHandler(_p2._0._0)}),_1: $Effects.none};
               }
@@ -12765,7 +12766,7 @@ Elm.Matches.Matches.make = function (_elm) {
                                         ,update: update
                                         ,view: view
                                         ,Model: Model
-                                        ,SetRegister: SetRegister
+                                        ,SetFilters: SetFilters
                                         ,GetMatchFor: GetMatchFor
                                         ,MatchesData: MatchesData
                                         ,GetRecents: GetRecents
@@ -12900,7 +12901,6 @@ Elm.Entries.Entries.make = function (_elm) {
    $Effects = Elm.Effects.make(_elm),
    $Entries$Entry = Elm.Entries.Entry.make(_elm),
    $Entries$EntryDecoder = Elm.Entries.EntryDecoder.make(_elm),
-   $History = Elm.History.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $Html$Events = Elm.Html.Events.make(_elm),
@@ -12911,9 +12911,6 @@ Elm.Entries.Entries.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
-   var combineIds = function (lst) {
-      return A3($List.foldl,F2(function (l,acc) {    return A2($Basics._op["++"],acc,l);}),"/",A2($List.intersperse,"/",lst));
-   };
    var errorHandler = function (err) {
       var _p0 = err;
       if (_p0.ctor === "UnexpectedPayload") {
@@ -12922,14 +12919,12 @@ Elm.Entries.Entries.make = function (_elm) {
             return "http error";
          }
    };
-   var NoOp = function (a) {    return {ctor: "NoOp",_0: a};};
-   var updateUrl = function (displayed) {    return $Effects.task(A2($Task.map,NoOp,$Task.toMaybe($History.replacePath(combineIds(displayed)))));};
-   var EntryAction = F2(function (a,b) {    return {ctor: "EntryAction",_0: a,_1: b};});
+   var EntriesAction = F2(function (a,b) {    return {ctor: "EntriesAction",_0: a,_1: b};});
    var CloseAll = {ctor: "CloseAll"};
    var view = F2(function (address,model) {
       var viewMapper = function (id) {
          var entry = A2($Maybe.withDefault,$Entries$Entry.initEmpty,A2($Dict.get,id,model.cache));
-         return A2($Entries$Entry.view,A2($Signal.forwardTo,address,EntryAction(id)),entry);
+         return A2($Entries$Entry.view,A2($Signal.forwardTo,address,EntriesAction(id)),entry);
       };
       return A2($Html.div,
       _U.list([$Html$Attributes.id("entries"),$Html$Attributes.$class("col-xs-12 col-sm-8")]),
@@ -12960,7 +12955,7 @@ Elm.Entries.Entries.make = function (_elm) {
          var newDisplayed = A2($List._op["::"],id,model.displayed);
          return {ctor: "_Tuple2"
                 ,_0: _U.update(model,{displayed: newDisplayed})
-                ,_1: $Effects.batch(_U.list([A2($Effects.map,EntryAction(id),$Effects.tick($Entries$Entry.Tick)),updateUrl(newDisplayed)]))};
+                ,_1: $Effects.batch(_U.list([A2($Effects.map,EntriesAction(id),$Effects.tick($Entries$Entry.Tick))]))};
       };
       var _p2 = action;
       switch (_p2.ctor)
@@ -12977,8 +12972,8 @@ Elm.Entries.Entries.make = function (_elm) {
               } else {
                  return {ctor: "_Tuple2",_0: _U.update(model,{message: $Maybe.Just(errorHandler(_p2._0._0))}),_1: $Effects.none};
               }
-         case "CloseAll": return {ctor: "_Tuple2",_0: _U.update(model,{displayed: _U.list([]),message: $Maybe.Nothing}),_1: updateUrl(_U.list([]))};
-         case "EntryAction": if (_p2._1.ctor === "Close") {
+         case "CloseAll": return {ctor: "_Tuple2",_0: _U.update(model,{displayed: _U.list([]),message: $Maybe.Nothing}),_1: $Effects.none};
+         default: if (_p2._1.ctor === "Close") {
                  var _p7 = _p2._0;
                  var newDisplayed = A2($List.filter,function (d) {    return !_U.eq(d,_p7);},model.displayed);
                  return {ctor: "_Tuple2"
@@ -12988,13 +12983,12 @@ Elm.Entries.Entries.make = function (_elm) {
                         _p7,
                         $Maybe.map(function (_p6) {    return $Entries$Entry.init(function (_) {    return _.data;}(_p6));}),
                         model.cache)})
-                        ,_1: updateUrl(newDisplayed)};
+                        ,_1: $Effects.none};
               } else {
                  return {ctor: "_Tuple2"
                         ,_0: _U.update(model,{cache: A3($Dict.update,_p2._0,$Maybe.map($Entries$Entry.update(_p2._1)),model.cache)})
                         ,_1: $Effects.none};
-              }
-         default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
+              }}
    });
    var GetEntryFor = function (a) {    return {ctor: "GetEntryFor",_0: a};};
    var init = {displayed: _U.list([]),cache: $Dict.empty,message: $Maybe.Nothing};
@@ -13003,13 +12997,84 @@ Elm.Entries.Entries.make = function (_elm) {
                                         ,init: init
                                         ,update: update
                                         ,view: view
-                                        ,updateUrl: updateUrl
                                         ,Model: Model
                                         ,GetEntryFor: GetEntryFor
                                         ,EntryReceived: EntryReceived
                                         ,CloseAll: CloseAll
-                                        ,EntryAction: EntryAction
-                                        ,NoOp: NoOp};
+                                        ,EntriesAction: EntriesAction};
+};
+Elm.Router = Elm.Router || {};
+Elm.Router.make = function (_elm) {
+   "use strict";
+   _elm.Router = _elm.Router || {};
+   if (_elm.Router.values) return _elm.Router.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Effects = Elm.Effects.make(_elm),
+   $History = Elm.History.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm),
+   $Task = Elm.Task.make(_elm);
+   var _op = {};
+   var combineIds = function (lst) {
+      return A3($List.foldl,F2(function (l,acc) {    return A2($Basics._op["++"],acc,l);}),"/",A2($List.intersperse,"/",lst));
+   };
+   var NoOp = function (a) {    return {ctor: "NoOp",_0: a};};
+   var updateUrl = function (displayed) {    return $Effects.task(A2($Task.map,NoOp,$Task.toMaybe($History.replacePath(displayed))));};
+   var NavAction = function (a) {    return {ctor: "NavAction",_0: a};};
+   var UrlParams = function (a) {    return {ctor: "UrlParams",_0: a};};
+   var toString = function (p) {    var _p0 = p;if (_p0.ctor === "Register") {    return "register";} else {    return "summary";}};
+   var Summary = {ctor: "Summary"};
+   var Register = function (a) {    return {ctor: "Register",_0: a};};
+   var update = function (action) {
+      var _p1 = action;
+      switch (_p1.ctor)
+      {case "UrlParams": var params = A2($List.filter,F2(function (x,y) {    return !_U.eq(x,y);})(""),A2($String.split,"/",_p1._0));
+           var page = function () {
+              var _p2 = $List.head(params);
+              if (_p2.ctor === "Just") {
+                    switch (_p2._0)
+                    {case "summary": return Summary;
+                       case "recent": return Register($Maybe.Just(_U.list(["recent"])));
+                       default: return Register($Maybe.Just(params));}
+                 } else {
+                    return Register($Maybe.Nothing);
+                 }
+           }();
+           return {ctor: "_Tuple2",_0: page,_1: $Effects.none};
+         case "NavAction": var _p3 = _p1._0;
+           if (_p3.ctor === "Summary") {
+                 return {ctor: "_Tuple2",_0: Summary,_1: updateUrl("/summary")};
+              } else {
+                 var _p5 = _p3._0;
+                 var newUrl = function () {
+                    var _p4 = _p5;
+                    if (_p4.ctor === "Just") {
+                          if (_p4._0.ctor === "::" && _p4._0._0 === "recent" && _p4._0._1.ctor === "[]") {
+                                return "/recent";
+                             } else {
+                                return combineIds(_p4._0);
+                             }
+                       } else {
+                          return "/";
+                       }
+                 }();
+                 return {ctor: "_Tuple2",_0: Register(_p5),_1: updateUrl(newUrl)};
+              }
+         default: return {ctor: "_Tuple2",_0: Register($Maybe.Nothing),_1: $Effects.none};}
+   };
+   return _elm.Router.values = {_op: _op
+                               ,update: update
+                               ,toString: toString
+                               ,Register: Register
+                               ,Summary: Summary
+                               ,UrlParams: UrlParams
+                               ,NavAction: NavAction
+                               ,NoOp: NoOp};
 };
 Elm.Register = Elm.Register || {};
 Elm.Register.make = function (_elm) {
@@ -13022,37 +13087,29 @@ Elm.Register.make = function (_elm) {
    $Effects = Elm.Effects.make(_elm),
    $Entries$Entries = Elm.Entries.Entries.make(_elm),
    $Filters$Filters = Elm.Filters.Filters.make(_elm),
-   $History = Elm.History.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $List = Elm.List.make(_elm),
    $Matches$Matches = Elm.Matches.Matches.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm),
-   $Task = Elm.Task.make(_elm);
+   $Router = Elm.Router.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var NoOp = function (a) {    return {ctor: "NoOp",_0: a};};
-   var updateUrl = function (displayed) {    return $Effects.task(A2($Task.map,NoOp,$Task.toMaybe($History.replacePath(displayed))));};
-   var EntryAction = function (a) {    return {ctor: "EntryAction",_0: a};};
+   var EntriesAction = function (a) {    return {ctor: "EntriesAction",_0: a};};
    var MatchAction = function (a) {    return {ctor: "MatchAction",_0: a};};
    var update = F2(function (action,model) {
       var _p0 = action;
       switch (_p0.ctor)
       {case "Activate": var _p1 = _p0._0;
-           if (_p1.ctor === "[]") {
-                 return {ctor: "_Tuple2"
-                        ,_0: _U.update(model,{matches: $Basics.fst(A2($Matches$Matches.update,$Matches$Matches.SetRegister,model.matches))})
-                        ,_1: updateUrl("/")};
-              } else {
-                 if (_p1._0 === "recent" && _p1._1.ctor === "[]") {
+           if (_p1.ctor === "Just") {
+                 if (_p1._0.ctor === "::" && _p1._0._0 === "recent" && _p1._0._1.ctor === "[]") {
                        var _p2 = A2($Matches$Matches.update,$Matches$Matches.GetRecents,model.matches);
                        var newModel = _p2._0;
                        var newEffects = _p2._1;
-                       return {ctor: "_Tuple2"
-                              ,_0: _U.update(model,{matches: newModel})
-                              ,_1: $Effects.batch(_U.list([A2($Effects.map,MatchAction,newEffects),updateUrl("recent")]))};
+                       return {ctor: "_Tuple2",_0: _U.update(model,{matches: newModel}),_1: A2($Effects.map,MatchAction,newEffects)};
                     } else {
+                       var matches = $Basics.fst(A2($Matches$Matches.update,$Matches$Matches.SetFilters,model.matches));
                        var go = F2(function (id_,_p3) {
                           var _p4 = _p3;
                           var _p5 = A2($Entries$Entries.update,$Entries$Entries.GetEntryFor(id_),_p4._0);
@@ -13060,13 +13117,17 @@ Elm.Register.make = function (_elm) {
                           var newE = _p5._1;
                           return {ctor: "_Tuple2",_0: newM,_1: A2($List._op["::"],newE,_p4._1)};
                        });
-                       var _p6 = A3($List.foldl,go,{ctor: "_Tuple2",_0: model.entries,_1: _U.list([$Entries$Entries.updateUrl(_U.list([]))])},_p1);
+                       var _p6 = A3($List.foldl,go,{ctor: "_Tuple2",_0: model.entries,_1: _U.list([])},_p1._0);
                        var newEntriesModel = _p6._0;
                        var effects = _p6._1;
                        return {ctor: "_Tuple2"
-                              ,_0: _U.update(model,{entries: newEntriesModel})
-                              ,_1: $Effects.batch(A2($List.map,$Effects.map(EntryAction),effects))};
+                              ,_0: _U.update(model,{entries: newEntriesModel,matches: matches})
+                              ,_1: $Effects.batch(A2($List.map,$Effects.map(EntriesAction),effects))};
                     }
+              } else {
+                 return {ctor: "_Tuple2"
+                        ,_0: _U.update(model,{matches: $Basics.fst(A2($Matches$Matches.update,$Matches$Matches.SetFilters,model.matches))})
+                        ,_1: $Effects.none};
               }
          case "FilterAction": if (_p0._0.ctor === "GetMatch") {
                  var _p7 = A2($Matches$Matches.update,$Matches$Matches.GetMatchFor(_p0._0._0),model.matches);
@@ -13080,18 +13141,17 @@ Elm.Register.make = function (_elm) {
                  var _p8 = A2($Entries$Entries.update,$Entries$Entries.GetEntryFor(_p0._0._0),model.entries);
                  var newEntriesModel = _p8._0;
                  var newEntriesEffects = _p8._1;
-                 return {ctor: "_Tuple2",_0: _U.update(model,{entries: newEntriesModel}),_1: A2($Effects.map,EntryAction,newEntriesEffects)};
+                 return {ctor: "_Tuple2",_0: _U.update(model,{entries: newEntriesModel}),_1: A2($Effects.map,EntriesAction,newEntriesEffects)};
               } else {
                  var _p9 = A2($Matches$Matches.update,_p0._0,model.matches);
                  var newMatchesModel = _p9._0;
                  var newMatchEffects = _p9._1;
                  return {ctor: "_Tuple2",_0: _U.update(model,{matches: newMatchesModel}),_1: A2($Effects.map,MatchAction,newMatchEffects)};
               }
-         case "EntryAction": var _p10 = A2($Entries$Entries.update,_p0._0,model.entries);
+         default: var _p10 = A2($Entries$Entries.update,_p0._0,model.entries);
            var newEntriesModel = _p10._0;
            var newEntriesEffects = _p10._1;
-           return {ctor: "_Tuple2",_0: _U.update(model,{entries: newEntriesModel}),_1: A2($Effects.map,EntryAction,newEntriesEffects)};
-         default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
+           return {ctor: "_Tuple2",_0: _U.update(model,{entries: newEntriesModel}),_1: A2($Effects.map,EntriesAction,newEntriesEffects)};}
    });
    var FilterAction = function (a) {    return {ctor: "FilterAction",_0: a};};
    var view = F2(function (address,model) {
@@ -13104,14 +13164,14 @@ Elm.Register.make = function (_elm) {
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("main row")]),
               _U.list([A2($Matches$Matches.view,A2($Signal.forwardTo,address,MatchAction),model.matches)
-                      ,A2($Entries$Entries.view,A2($Signal.forwardTo,address,EntryAction),model.entries)]))]));
+                      ,A2($Entries$Entries.view,A2($Signal.forwardTo,address,EntriesAction),model.entries)]))]));
    });
    var Activate = function (a) {    return {ctor: "Activate",_0: a};};
    var init = {ctor: "_Tuple2"
               ,_0: {filters: $Filters$Filters.init,matches: $Matches$Matches.init,entries: $Entries$Entries.init,message: ""}
               ,_1: $Effects.none};
    var Model = F4(function (a,b,c,d) {    return {filters: a,matches: b,entries: c,message: d};});
-   return _elm.Register.values = {_op: _op,init: init,update: update,view: view,Model: Model,Activate: Activate};
+   return _elm.Register.values = {_op: _op,init: init,update: update,view: view,Model: Model,Activate: Activate,EntriesAction: EntriesAction};
 };
 Elm.Common = Elm.Common || {};
 Elm.Common.make = function (_elm) {
@@ -13121,14 +13181,19 @@ Elm.Common.make = function (_elm) {
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Debug = Elm.Debug.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
    $Http = Elm.Http.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
+   var onLinkClick = F2(function (address,act) {
+      return A4($Html$Events.onWithOptions,"click",{stopPropagation: true,preventDefault: true},$Json$Decode.succeed(act),$Signal.message(address));
+   });
    var errorHandler = function (err) {    var _p0 = err;if (_p0.ctor === "UnexpectedPayload") {    return _p0._0;} else {    return "http error";}};
-   return _elm.Common.values = {_op: _op,errorHandler: errorHandler};
+   return _elm.Common.values = {_op: _op,errorHandler: errorHandler,onLinkClick: onLinkClick};
 };
 Elm.Nav = Elm.Nav || {};
 Elm.Nav.make = function (_elm) {
@@ -13139,43 +13204,34 @@ Elm.Nav.make = function (_elm) {
    $Basics = Elm.Basics.make(_elm),
    $Common = Elm.Common.make(_elm),
    $Debug = Elm.Debug.make(_elm),
+   $Effects = Elm.Effects.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
-   $Html$Events = Elm.Html.Events.make(_elm),
    $Http = Elm.Http.make(_elm),
    $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm);
+   $Router = Elm.Router.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Task = Elm.Task.make(_elm);
    var _op = {};
-   var CountData = function (a) {    return {ctor: "CountData",_0: a};};
-   var GoSummary = {ctor: "GoSummary"};
-   var GoRegister = function (a) {    return {ctor: "GoRegister",_0: a};};
-   var init = F2(function (p,c) {    return {page: p,regCount: c};});
-   var Model = F2(function (a,b) {    return {page: a,regCount: b};});
-   var Recent = {ctor: "Recent"};
-   var Summary = {ctor: "Summary"};
-   var Register = {ctor: "Register"};
    var update = F2(function (action,model) {
       var _p0 = action;
-      switch (_p0.ctor)
-      {case "GoSummary": return _U.update(model,{page: Summary});
-         case "GoRegister": if (_p0._0.ctor === "::" && _p0._0._0 === "recent" && _p0._0._1.ctor === "[]") {
-                 return _U.update(model,{page: Recent});
-              } else {
-                 return _U.update(model,{page: Register});
-              }
-         default: if (_p0._0.ctor === "Ok") {
-                 return _U.update(model,{regCount: _p0._0._0});
-              } else {
-                 return _U.update(model,{regCount: $Common.errorHandler(_p0._0._0)});
-              }}
+      if (_p0.ctor === "GoPage") {
+            return model;
+         } else {
+            if (_p0._0.ctor === "Ok") {
+                  return _U.update(model,{regCount: _p0._0._0});
+               } else {
+                  return _U.update(model,{errorMessage: $Maybe.Just($Common.errorHandler(_p0._0._0))});
+               }
+         }
    });
+   var CountData = function (a) {    return {ctor: "CountData",_0: a};};
+   var getMeta = $Effects.task(A2($Task.map,CountData,$Task.toResult(A2($Http.get,A2($Json$Decode._op[":="],"count",$Json$Decode.$int),"/api/register/meta"))));
+   var GoPage = function (a) {    return {ctor: "GoPage",_0: a};};
    var view = F2(function (address,model) {
-      var onNavClick = function (act) {
-         return A4($Html$Events.onWithOptions,"click",{stopPropagation: true,preventDefault: true},$Json$Decode.succeed(act),$Signal.message(address));
-      };
       return A2($Html.nav,
       _U.list([$Html$Attributes.$class("navbar navbar-inverse")]),
       _U.list([A2($Html.div,
@@ -13193,11 +13249,13 @@ Elm.Nav.make = function (_elm) {
                               ,A2($Html.span,_U.list([$Html$Attributes.$class("icon-bar")]),_U.list([]))
                               ,A2($Html.span,_U.list([$Html$Attributes.$class("icon-bar")]),_U.list([]))]))
                       ,A2($Html.a,
-                      _U.list([$Html$Attributes.$class("navbar-brand"),$Html$Attributes.href("/")]),
+                      _U.list([$Html$Attributes.$class("navbar-brand")
+                              ,$Html$Attributes.href("#")
+                              ,A2($Common.onLinkClick,address,GoPage($Router.Register($Maybe.Nothing)))]),
                       _U.list([$Html.text("EU Lobby Register ")
                               ,A2($Html.span,
                               _U.list([$Html$Attributes.$class("hidden-xs")]),
-                              _U.list([$Html.text(A2($Basics._op["++"],"(",A2($Basics._op["++"],model.regCount," entries)")))]))]))]))
+                              _U.list([$Html.text(A2($Basics._op["++"],"(",A2($Basics._op["++"],$Basics.toString(model.regCount)," entries)")))]))]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("collapse navbar-collapse"),$Html$Attributes.id("navbar")]),
               _U.list([A2($Html.ul,
@@ -13205,30 +13263,22 @@ Elm.Nav.make = function (_elm) {
               _U.list([A2($Html.li,
                       _U.list([]),
                       _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.href("#"),onNavClick(GoRegister(_U.list([])))]),
-                      _U.list([$Html.text($Basics.toString(Register))]))]))
+                      _U.list([$Html$Attributes.href("#"),A2($Common.onLinkClick,address,GoPage($Router.Register($Maybe.Nothing)))]),
+                      _U.list([$Html.text("Register")]))]))
                       ,A2($Html.li,
                       _U.list([]),
                       _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.href("#"),onNavClick(GoRegister(_U.list(["recent"])))]),
+                      _U.list([$Html$Attributes.href("#"),A2($Common.onLinkClick,address,GoPage($Router.Register($Maybe.Just(_U.list(["recent"])))))]),
                       _U.list([$Html.text("Recent changes")]))]))
                       ,A2($Html.li,
                       _U.list([]),
                       _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.href("#"),onNavClick(GoSummary),$Html$Attributes.$class(_U.eq(model.page,Summary) ? "active" : "")]),
-                      _U.list([$Html.text($Basics.toString(Summary))]))]))]))]))]))]));
+                      _U.list([$Html$Attributes.href("#"),A2($Common.onLinkClick,address,GoPage($Router.Summary))]),
+                      _U.list([$Html.text($Basics.toString($Router.Summary))]))]))]))]))]))]));
    });
-   return _elm.Nav.values = {_op: _op
-                            ,init: init
-                            ,update: update
-                            ,view: view
-                            ,Model: Model
-                            ,Register: Register
-                            ,Summary: Summary
-                            ,Recent: Recent
-                            ,GoRegister: GoRegister
-                            ,GoSummary: GoSummary
-                            ,CountData: CountData};
+   var init = {ctor: "_Tuple2",_0: {regCount: 0,errorMessage: $Maybe.Nothing},_1: getMeta};
+   var Model = F2(function (a,b) {    return {regCount: a,errorMessage: b};});
+   return _elm.Nav.values = {_op: _op,init: init,update: update,view: view,Model: Model,GoPage: GoPage,CountData: CountData};
 };
 Elm.Summary = Elm.Summary || {};
 Elm.Summary.SummaryDecoder = Elm.Summary.SummaryDecoder || {};
@@ -13326,7 +13376,6 @@ Elm.Summary.Summary.make = function (_elm) {
    $Common = Elm.Common.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
-   $History = Elm.History.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $Html$Events = Elm.Html.Events.make(_elm),
@@ -13387,8 +13436,6 @@ Elm.Summary.Summary.make = function (_elm) {
       _U.list([{section: "Others",count: othersCount,budget: othersBudget}]));
    };
    var Animate = function (a) {    return {ctor: "Animate",_0: a};};
-   var NoOp = function (a) {    return {ctor: "NoOp",_0: a};};
-   var updateUrl = $Effects.task(A2($Task.map,NoOp,$Task.toMaybe($History.replacePath("/summary"))));
    var SummaryData = function (a) {    return {ctor: "SummaryData",_0: a};};
    var loadSummary = $Effects.task(A2($Task.map,SummaryData,$Task.toResult(A2($Http.get,$Summary$SummaryDecoder.summaryDecoder,"/api/register/summary"))));
    var Activate = {ctor: "Activate"};
@@ -13407,11 +13454,10 @@ Elm.Summary.Summary.make = function (_elm) {
                         {sections: simplifySectionsData(_p16.sections)
                         ,countries: simplifyCountiesData(_p16.countries)
                         ,interests: A2($List.sortBy,function (_p15) {    return $Basics.negate(function (_) {    return _.count;}(_p15));},_p16.interests)})
-                        ,_1: updateUrl};
+                        ,_1: $Effects.none};
               } else {
-                 return {ctor: "_Tuple2",_0: _U.update(model,{msg: $Common.errorHandler(_p14._0._0)}),_1: updateUrl};
+                 return {ctor: "_Tuple2",_0: _U.update(model,{msg: $Common.errorHandler(_p14._0._0)}),_1: $Effects.none};
               }
-         case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
          default: var toggle = function (x) {    return _U.eq(x,Simple) ? Complex : Simple;};
            var newModel = function () {
               var _p17 = _p14._0;
@@ -13496,7 +13542,6 @@ Elm.Summary.Summary.make = function (_elm) {
                                         ,Model: Model
                                         ,Activate: Activate
                                         ,SummaryData: SummaryData
-                                        ,NoOp: NoOp
                                         ,Animate: Animate};
 };
 Elm.Help = Elm.Help || {};
@@ -13524,23 +13569,21 @@ Elm.App.make = function (_elm) {
    if (_elm.App.values) return _elm.App.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
+   $Common = Elm.Common.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $Help = Elm.Help.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $Html$Events = Elm.Html.Events.make(_elm),
-   $Http = Elm.Http.make(_elm),
-   $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Nav = Elm.Nav.make(_elm),
    $Register = Elm.Register.make(_elm),
    $Result = Elm.Result.make(_elm),
+   $Router = Elm.Router.make(_elm),
    $Signal = Elm.Signal.make(_elm),
-   $String = Elm.String.make(_elm),
-   $Summary$Summary = Elm.Summary.Summary.make(_elm),
-   $Task = Elm.Task.make(_elm);
+   $Summary$Summary = Elm.Summary.Summary.make(_elm);
    var _op = {};
    var Help = {ctor: "Help"};
    var footerDiv = F2(function (address,msg) {
@@ -13549,8 +13592,8 @@ Elm.App.make = function (_elm) {
       _U.list([A2($Html.div,
       _U.list([$Html$Attributes.$class("col-xs-12")]),
       _U.list([A2($Html.span,_U.list([]),_U.list([$Html.text("Simon Hampton, 2015")]))
-              ,A2($Html.button,
-              _U.list([$Html$Attributes.$class("btn btn-default btn-xs"),A2($Html$Events.onClick,address,Help)]),
+              ,A2($Html.a,
+              _U.list([A2($Common.onLinkClick,address,Help),$Html$Attributes.$class("hidden-xs")]),
               _U.list([$Html.text("Notes, privacy, source code or report a problem")]))
               ,A2($Html.span,_U.list([]),_U.list([$Html.text(msg)]))]))]));
    });
@@ -13564,75 +13607,98 @@ Elm.App.make = function (_elm) {
    });
    var RegisterAction = function (a) {    return {ctor: "RegisterAction",_0: a};};
    var SummaryAction = function (a) {    return {ctor: "SummaryAction",_0: a};};
-   var update = F2(function (action,model) {
-      var switchRegister = function (params) {
-         var _p0 = A2($Register.update,$Register.Activate(params),model.register);
-         var newModel = _p0._0;
-         var newEffects = _p0._1;
-         var navModel = A2($Nav.update,$Nav.GoRegister(params),model.navbar);
-         return {ctor: "_Tuple2",_0: _U.update(model,{navbar: navModel,register: newModel}),_1: A2($Effects.map,RegisterAction,newEffects)};
-      };
-      var switchSummary = function () {
-         var _p1 = A2($Summary$Summary.update,$Summary$Summary.Activate,model.summary);
-         var sumEffects = _p1._1;
-         var navModel = A2($Nav.update,$Nav.GoSummary,model.navbar);
-         return {ctor: "_Tuple2",_0: _U.update(model,{navbar: navModel}),_1: A2($Effects.map,SummaryAction,sumEffects)};
-      }();
-      var _p2 = action;
-      switch (_p2.ctor)
-      {case "UrlParam": var params = A2($List.filter,F2(function (x,y) {    return !_U.eq(x,y);})(""),A2($String.split,"/",_p2._0));
-           var _p3 = $List.head(params);
-           if (_p3.ctor === "Just" && _p3._0 === "summary") {
-                 return switchSummary;
-              } else {
-                 return switchRegister(params);
-              }
-         case "Width": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-         case "NavAction": var _p4 = _p2._0;
-           switch (_p4.ctor)
-           {case "GoSummary": return switchSummary;
-              case "GoRegister": return switchRegister(_p4._0);
-              default: return {ctor: "_Tuple2",_0: _U.update(model,{navbar: A2($Nav.update,_p4,model.navbar)}),_1: $Effects.none};}
-         case "RegisterAction": var _p5 = A2($Register.update,_p2._0,model.register);
-           var newModel = _p5._0;
-           var newEffects = _p5._1;
-           return {ctor: "_Tuple2",_0: _U.update(model,{register: newModel}),_1: A2($Effects.map,RegisterAction,newEffects)};
-         case "SummaryAction": var _p6 = A2($Summary$Summary.update,_p2._0,model.summary);
-           var newModel = _p6._0;
-           var newEffects = _p6._1;
-           return {ctor: "_Tuple2",_0: _U.update(model,{summary: newModel}),_1: A2($Effects.map,SummaryAction,newEffects)};
-         default: return {ctor: "_Tuple2",_0: _U.update(model,{help: $Basics.not(model.help)}),_1: $Effects.none};}
-   });
    var NavAction = function (a) {    return {ctor: "NavAction",_0: a};};
    var view = F2(function (address,model) {
       return A2($Html.div,
-      _U.list([$Html$Attributes.$class(A2($Basics._op["++"],"App ",$Basics.toString(model.navbar.page)))]),
+      _U.list([$Html$Attributes.$class(A2($Basics._op["++"],"App ",$Router.toString(model.page)))]),
       _U.list([A2($Nav.view,A2($Signal.forwardTo,address,NavAction),model.navbar)
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("container")]),
               _U.list([A2(helpModal,address,model)
-                      ,_U.eq(model.navbar.page,$Nav.Summary) ? A2($Summary$Summary.view,
+                      ,_U.eq(model.page,$Router.Summary) ? A2($Summary$Summary.view,
                       A2($Signal.forwardTo,address,SummaryAction),
                       model.summary) : A2($Register.view,A2($Signal.forwardTo,address,RegisterAction),model.register)
                       ,A2(footerDiv,address,model.msg)]))]));
    });
-   var getMeta = $Effects.task(A2($Task.map,
-   function (_p7) {
-      return NavAction($Nav.CountData(_p7));
-   },
-   $Task.toResult(A2($Http.get,A2($Json$Decode.map,$Basics.toString,A2($Json$Decode._op[":="],"count",$Json$Decode.$int)),"/api/register/meta"))));
+   var RouterAction = function (a) {    return {ctor: "RouterAction",_0: a};};
+   var update = F2(function (action,model) {
+      var switchPage = F2(function (page,otherEffects) {
+         var newModel = _U.update(model,{page: page});
+         var _p0 = page;
+         if (_p0.ctor === "Summary") {
+               return {ctor: "_Tuple2"
+                      ,_0: newModel
+                      ,_1: $Effects.batch(_U.list([A2($Effects.map,
+                                                  SummaryAction,
+                                                  $Basics.snd(A2($Summary$Summary.update,$Summary$Summary.Activate,model.summary)))
+                                                  ,otherEffects]))};
+            } else {
+               var _p1 = A2($Register.update,$Register.Activate(_p0._0),model.register);
+               var newRegModel = _p1._0;
+               var newEffects = _p1._1;
+               return {ctor: "_Tuple2"
+                      ,_0: _U.update(newModel,{register: newRegModel})
+                      ,_1: $Effects.batch(_U.list([A2($Effects.map,RegisterAction,newEffects),otherEffects]))};
+            }
+      });
+      var _p2 = action;
+      switch (_p2.ctor)
+      {case "UrlParam": var _p3 = $Router.update($Router.UrlParams(_p2._0));
+           var page = _p3._0;
+           var routerEffects = _p3._1;
+           return A2(switchPage,page,A2($Effects.map,RouterAction,routerEffects));
+         case "NavAction": var _p4 = _p2._0;
+           if (_p4.ctor === "GoPage") {
+                 var _p6 = _p4._0;
+                 var _p5 = $Router.update($Router.NavAction(_U.eq(_p6,
+                 $Router.Register($Maybe.Nothing)) ? $Router.Register($Maybe.Just(model.register.entries.displayed)) : _p6));
+                 var page = _p5._0;
+                 var routerEffects = _p5._1;
+                 return A2(switchPage,page,A2($Effects.map,RouterAction,routerEffects));
+              } else {
+                 return {ctor: "_Tuple2",_0: _U.update(model,{navbar: A2($Nav.update,$Nav.CountData(_p4._0),model.navbar)}),_1: $Effects.none};
+              }
+         case "RegisterAction": var _p9 = _p2._0;
+           var _p7 = A2($Register.update,_p9,model.register);
+           var newModel = _p7._0;
+           var newEffects = _p7._1;
+           var routerEffects = function () {
+              var _p8 = _p9;
+              if (_p8.ctor === "EntriesAction") {
+                    return $Basics.snd($Router.update($Router.NavAction($Router.Register($Maybe.Just(newModel.entries.displayed)))));
+                 } else {
+                    return $Effects.none;
+                 }
+           }();
+           return {ctor: "_Tuple2"
+                  ,_0: _U.update(model,{register: newModel})
+                  ,_1: $Effects.batch(_U.list([A2($Effects.map,RegisterAction,newEffects),A2($Effects.map,RouterAction,routerEffects)]))};
+         case "SummaryAction": var _p10 = A2($Summary$Summary.update,_p2._0,model.summary);
+           var newModel = _p10._0;
+           var newEffects = _p10._1;
+           return {ctor: "_Tuple2",_0: _U.update(model,{summary: newModel}),_1: A2($Effects.map,SummaryAction,newEffects)};
+         case "RouterAction": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+         case "Help": return {ctor: "_Tuple2",_0: _U.update(model,{help: $Basics.not(model.help)}),_1: $Effects.none};
+         default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
+   });
    var Width = function (a) {    return {ctor: "Width",_0: a};};
    var UrlParam = function (a) {    return {ctor: "UrlParam",_0: a};};
-   var init = {ctor: "_Tuple2"
-              ,_0: {navbar: A2($Nav.init,$Nav.Register,""),register: $Basics.fst($Register.init),summary: $Summary$Summary.init,help: false,msg: ""}
-              ,_1: getMeta};
-   var Model = F5(function (a,b,c,d,e) {    return {navbar: a,register: b,summary: c,help: d,msg: e};});
+   var initModel = F3(function (n,r,s) {    return {navbar: n,page: $Router.Register($Maybe.Nothing),register: r,summary: s,help: false,msg: ""};});
+   var init = function () {
+      var nav = $Nav.init;
+      var reg = $Register.init;
+      return {ctor: "_Tuple2"
+             ,_0: A3(initModel,$Basics.fst(nav),$Basics.fst(reg),$Summary$Summary.init)
+             ,_1: $Effects.batch(_U.list([A2($Effects.map,NavAction,$Basics.snd(nav)),A2($Effects.map,RegisterAction,$Basics.snd(reg))]))};
+   }();
+   var Model = F6(function (a,b,c,d,e,f) {    return {navbar: a,page: b,register: c,summary: d,help: e,msg: f};});
    return _elm.App.values = {_op: _op
                             ,init: init
                             ,update: update
                             ,view: view
                             ,UrlParam: UrlParam
                             ,Width: Width
+                            ,RouterAction: RouterAction
                             ,NavAction: NavAction
                             ,SummaryAction: SummaryAction
                             ,RegisterAction: RegisterAction

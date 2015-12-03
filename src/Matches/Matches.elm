@@ -16,15 +16,16 @@ import Matches.MatchesDecoder as MatchesDecoder exposing (Id, matchesDecoder)
 type alias Match = MatchesDecoder.Model
 type alias NewStuff = MatchesDecoder.NewStuff
 
-type ResultsType
+type DisplayView
     = Filtered
     | Recents
+
+defaultMessage = "Use the filters above to find some registrees"
 
 type alias Model =
     { matches : List Match
     , newstuff: NewStuff
-    , searching : Bool
-    , resultsType : ResultsType
+    , display : DisplayView
     , message : String
     }
 
@@ -32,14 +33,13 @@ init : Model
 init =
     { matches = []
     , newstuff = MatchesDecoder.initNew [] []
-    , searching = False
-    , resultsType = Filtered
-    , message = "Use the filters above to find some registrees" }
+    , display = Filtered
+    , message = defaultMessage }
 
 -- UPDATE
 
 type Action
-    = SetRegister
+    = SetFilters
     | GetMatchFor Filters.Model
     | MatchesData (Result Http.Error (List Match))
     | GetRecents
@@ -49,15 +49,18 @@ type Action
 update : Action -> Model -> (Model, Effects Action)
 update action model =
     case action of
-        SetRegister ->
-            ( { model | resultsType = Filtered }
+        SetFilters ->
+            ( { model
+                | display = Filtered
+                , message = defaultMessage
+              }
             , Effects.none
             )
         GetMatchFor searchModel ->
             ( { model
                 | matches = []
                 , message = "Searching...."
-                , resultsType = Filtered
+                , display = Filtered
                 }
             , getMatches searchModel
             )
@@ -72,15 +75,15 @@ update action model =
             , Effects.none
             )
         GetRecents ->
-            ( { model
-                | message = "Getting data..."
-                , resultsType = Filtered
-              }
-            , getRecents )     -- if no data already in model then ....
+            let newModel = { model | display = Recents }
+            in
+                if List.length model.newstuff.entries == 0
+                    then ( { newModel | message = "Getting data..." }, getRecents )
+                    else ( { newModel | message = "" }, Effects.none )
+
         RecentsData (Result.Ok recs) ->
-            ( { model |
-                resultsType = Recents
-              , message = ""
+            ( { model
+              | message = ""
               , newstuff = recs
               }
             , Effects.none
@@ -102,7 +105,7 @@ errorHandler err =
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-    case model.resultsType of
+    case model.display of
         Filtered -> viewFilterResults address model
         Recents -> viewRecents address model
 
@@ -117,8 +120,8 @@ viewFilterResults address model =
 viewRecents : Signal.Address Action -> Model -> Html
 viewRecents address model =
     div [ id "matches", class "col-xs-12 col-sm-4" ]
-        -- , p [] [ text model.message ]
-        [ div [ class "recent entries" ]
+        [ p [] [ text model.message ]
+        , div [ class "recent entries" ]
             [ h2 [] [ text <| (toString <| List.length model.newstuff.entries) ++ " Recent new entries" ]
             , div [ class "mainContainer" ] <| List.map (viewMatch address) model.newstuff.entries
             ]

@@ -32,13 +32,8 @@
         .recent {
             height: calc(50% - 15px);
         }
-        // .mContainer {
-        //     min-height: 0;
-        //     max-height: calc(100% - 24px);
-        //     // height: calc(100% - 20px);
-        // }
-        .entries {
-            // border-top: 1px solid #eee;
+        .mainContainer {
+            min-height: 0;
         }
     }
 }
