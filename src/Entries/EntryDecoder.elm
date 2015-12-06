@@ -1,4 +1,4 @@
-module Entries.EntryDecoder (Id, Model, init, initEmpty, entryDecoder) where
+module Entries.EntryDecoder (Id, Model, initEmpty, entryDecoder) where
 
 import Json.Decode exposing (..)
 
@@ -15,24 +15,24 @@ type alias Model =
     , goals: String
     }
 
-init : String -> String -> String -> String -> String -> Float -> String -> String -> Model
-init i o h e c n m g =
-    { id = i
-    , orgName = o
-    , hqCountry = h
-    , euPerson = e
-    , costEst = c
-    , noFTEs = n
-    , memberships = m
-    , goals = g
-    }
+-- init : String -> String -> String -> String -> String -> Float -> String -> String -> Model
+-- init i o h e c n m g =
+--     { id = i
+--     , orgName = o
+--     , hqCountry = h
+--     , euPerson = e
+--     , costEst = c
+--     , noFTEs = n
+--     , memberships = m
+--     , goals = g
+--     }
 
-initEmpty = init "" "" "" "" "" 0 "" ""
+initEmpty = Model "" "" "" "" "" 0 "" ""
 
 entryDecoder : Decoder Model
 entryDecoder =
     object8
-        init
+        Model
         ( "_id" := string )
         ( "orgName" := string )
         ( "hqCountry" := string )

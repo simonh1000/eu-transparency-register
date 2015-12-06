@@ -30,32 +30,28 @@ type alias Summary =
     , countries : List Country
     }
 
-initInterest i c =
-    { interest = i
-    , count = c
-    }
-initSection i c b =
-    { section = i
-    , count = c
-    , budget = b
-    }
-initCountry i c e =
-    { country = i
-    , count = c
-    , eppass = e
-    }
+-- initInterest i c =
+--     { interest = i
+--     , count = c
+--     }
+-- initSection i c b =
+--     { section = i
+--     , count = c
+--     , budget = b
+--     }
+-- initCountry i c e =
+--     { country = i
+--     , count = c
+--     , eppass = e
+--     }
 
 emptySummary : Summary
-emptySummary =
-    { sections = []
-    , interests = []
-    , countries = []
-    }
+emptySummary = Summary [] [] []
 
 interestsDecoder : Decoder (List Interest)
 interestsDecoder =
     object2
-        initInterest
+        Interest
         ("interest" := string)
         ("count" := int)
     |> list
@@ -63,7 +59,7 @@ interestsDecoder =
 sectionsDecoder : Decoder (List Section)
 sectionsDecoder =
     object3
-        initSection
+        Section
         ("_id" := string)
         ("count" := float)
         ("total" := float)
@@ -72,7 +68,7 @@ sectionsDecoder =
 countriesDecoder : Decoder (List Country)
 countriesDecoder =
     object3
-        initCountry
+        Country
         ("_id" := string)
         ("count" := float)
         ("eppass" := float)
