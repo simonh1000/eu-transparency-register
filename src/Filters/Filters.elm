@@ -108,8 +108,8 @@ sectionView address =
         , select
             [ class "form-control"
             , on "change" (Json.map Section targetValue) (Signal.message address)
-            ]
-            <| List.map (option [] << (List.repeat 1) << text) Section.subsections
+            ] <|
+            List.map (option [] << (List.repeat 1) << text) Section.subsections
         ]
 
 countryView : Signal.Address Action -> Html
@@ -119,8 +119,8 @@ countryView address =
         , select
             [ class "form-control"
             , on "change" (Json.map Country targetValue) (Signal.message address)
-            ]
-            <| List.map (\c -> option [] [ text c ]) Section.countries
+            ] <|
+            List.map (\c -> option [] [ text c ]) Section.countries
         ]
 
 fteView : Signal.Address Action -> String -> Html
@@ -157,23 +157,23 @@ budgetView address val =
             ] []
         ]
 
-submitRow : Signal.Address Action -> Model -> Html
-submitRow address model =
-    div [ class "row" ]
-        [ div [ class "col-sm-3" ]
-            [ button
-                [ type' "button"
-                , class "btn btn-default"
-                , onClick address (GetMatch model)
-                ]
-                [ text "Search!" ]
-            ]
-        , div [ class "col-sm-3" ]
-            [ p [] [ text (filters2String model) ] ]
-        ]
-
-filters2String : Model -> String
-filters2String model =
-    ".search: " ++ model.search ++
-    " .section: " ++ model.section ++
-    " .fte: " ++ model.fte
+-- submitRow : Signal.Address Action -> Model -> Html
+-- submitRow address model =
+--     div [ class "row" ]
+--         [ div [ class "col-sm-3" ]
+--             [ button
+--                 [ type' "button"
+--                 , class "btn btn-default"
+--                 , onClick address (GetMatch model)
+--                 ]
+--                 [ text "Search!" ]
+--             ]
+--         , div [ class "col-sm-3" ]
+--             [ p [] [ text (filters2String model) ] ]
+--         ]
+--
+-- filters2String : Model -> String
+-- filters2String model =
+--     ".search: " ++ model.search ++
+--     " .section: " ++ model.section ++
+--     " .fte: " ++ model.fte

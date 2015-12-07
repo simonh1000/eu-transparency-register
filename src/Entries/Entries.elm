@@ -13,6 +13,7 @@ import History
 
 import Entries.EntryDecoder as EntryDecoder exposing (Id, Model, entryDecoder)
 import Entries.Entry as Entry exposing (Action(..))
+import Common exposing (errorHandler)
 
 -- MODEL
 
@@ -33,8 +34,8 @@ init =
 
 -- UPDATE
 
-type Action =
-      GetEntryFor Id
+type Action
+    = GetEntryFor Id
     | EntryReceived (Result Http.Error EntryDecoder.Model)  -- Decoder brings in raw data
     | CloseAll
     | EntriesAction Id Entry.Action
@@ -42,18 +43,15 @@ type Action =
 update : Action -> Model -> (Model, Effects Action)
 update action model =
     let
-        -- once we have the data (whihc might be immediately if in cache),
+        -- once we have the data (which might be immediately if in cache),
         -- add to displayed list and start animation
         insertEntry : String -> (Model, Effects Action)
         insertEntry id =
             let newDisplayed = id :: model.displayed
             in
             ( { model | displayed = newDisplayed }
-            , Effects.batch
-                [ Effects.map (EntriesAction id) (Effects.tick Entry.Tick)    -- Entry animation
-                -- , updateUrl newDisplayed   -- History
-                -- , Effects.none
-                ]
+            , Effects.none
+            -- , Effects.map (EntriesAction id) (Effects.tick Entry.Tick)
             )
     in
     case action of
@@ -82,7 +80,6 @@ update action model =
         CloseAll ->
             ( { model | displayed = [], message = Nothing }
             , Effects.none
-            -- , updateUrl []    -- History
             )
 
         EntriesAction id Close ->
@@ -94,7 +91,6 @@ update action model =
               , cache = Dict.update id (Maybe.map (Entry.init << .data)) model.cache -- reset cache entry
               }
             , Effects.none
-            -- , updateUrl newDisplayed   -- History
             )
 
         -- E X P A N D
@@ -102,15 +98,6 @@ update action model =
             ( { model | cache = Dict.update id (Entry.update entryAction |> Maybe.map) model.cache }
             , Effects.none
             )
-
-        -- URL  U P D A T E S
-        -- NoOp _ -> ( model, Effects.none )
-
-errorHandler : Http.Error -> String
-errorHandler err =
-    case err of
-        Http.UnexpectedPayload s -> "Apologies, cannot display this entry: " ++ s
-        otherwise -> "http error"
 
 -- VIEW
 
@@ -133,8 +120,8 @@ view address model =
         , case model.message of
             Just m -> p [] [ text m ]
             Nothing -> p [] []
-        , div [ class "mainContainer" ]
-            <| List.map viewMapper model.displayed
+        , div [ class "mainContainer" ] <|
+            List.map viewMapper model.displayed
         ]
 
 -- TASKS
@@ -145,16 +132,3 @@ loadEntry id =
         |> Task.toResult
         |> Task.map EntryReceived
         |> Effects.task
-
--- updateUrl : List String -> Effects Action
--- updateUrl displayed =
---     combineIds displayed
---         |> History.replacePath
---         |> Task.toMaybe
---         |> Task.map NoOp
---         |> Effects.task
---
--- -- [x,y,z] --> /x/y/z
--- combineIds : List String -> String
--- combineIds lst =
---     List.foldl (\l acc -> acc ++ l) "/" (List.intersperse "/" lst)

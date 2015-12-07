@@ -14,7 +14,7 @@ import Entries.EntryDecoder as EntryDecoder
 -- M O D E L
 
 type alias Model =
-    { data : EntryDecoder.Model
+    { data : EntryDecoder.Model      -- ?????????????????????????????????????????
     , expand : Bool
     , entry : Bool
     }
@@ -26,12 +26,13 @@ init data =
     , entry = True
     }
 
-initEmpty = init EntryDecoder.initEmpty
+initEmpty =
+    init EntryDecoder.initEmpty
 
 -- U P D A T E
 
-type Action =
-      Tick Time
+type Action
+    = Tick Time
     | Expand
     | Close       -- caught by Entries
 
@@ -56,8 +57,9 @@ view address model =
                 ] [ text "X" ]
             , viewMeta address model.data
             , button
-            -- Need to add data-toggle="collapse"
-                [ class "btn btn-default btn-xs expandEntry", onClick address Expand ]
+                [ class "btn btn-default btn-xs expandEntry"
+                , onClick address Expand
+                ]
                 [ text "v"]
             , viewMore model
             ]

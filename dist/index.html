@@ -14,12 +14,11 @@
   <body>
     <script>
       var reg = Elm.fullscreen( Elm.EURegister,
-           { locationSearch: window.location.pathname
-           } );
+                  {locationSearch: window.location.pathname});
       
       setTimeout(function() {
           reg.ports.locationSearch.send(window.location.pathname)
-      }, 100);
+      }, 50);
       
     </script>
     <script>
@@ -28,6 +27,7 @@
       m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
       })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
       
+      // test for local deployment?
       ga('create', 'UA-69454628-1', 'auto');
       ga('send', 'pageview');
     </script>

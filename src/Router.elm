@@ -74,4 +74,5 @@ updateUrl displayed =
 -- [x,y,z] --> /x/y/z
 combineIds : List String -> String
 combineIds lst =
-    foldl (\l acc -> acc ++ l) "/" (intersperse "/" lst)
+    foldl (++) "/" (intersperse "/" lst)
+    -- foldl (\l acc -> acc ++ l) "/" (intersperse "/" lst)

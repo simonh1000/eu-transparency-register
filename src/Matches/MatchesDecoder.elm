@@ -1,4 +1,4 @@
-module Matches.MatchesDecoder (Id, NewStuff, Model, initNew, matchesDecoder, recentsDecoder) where
+module Matches.MatchesDecoder (Id, NewStuff, Model, matchesDecoder, recentsDecoder) where
 
 import Json.Decode exposing ( Decoder, (:=), object2, list, string )
 

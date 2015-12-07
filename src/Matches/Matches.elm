@@ -7,6 +7,7 @@ import Html.Events exposing (onClick, on, targetValue)
 import Http exposing (get)
 import Effects exposing (Effects)
 import Task exposing (..)
+import Common exposing (errorHandler)
 
 import Filters.Filters as Filters
 import Matches.MatchesDecoder as MatchesDecoder exposing (Id, matchesDecoder)
@@ -31,10 +32,11 @@ type alias Model =
 
 init : Model
 init =
-    { matches = []
-    , newstuff = MatchesDecoder.initNew [] []
-    , display = Filtered
-    , message = defaultMessage }
+    Model
+        []
+        (MatchesDecoder.NewStuff [] [])
+        Filtered
+        defaultMessage
 
 -- UPDATE
 
@@ -65,8 +67,8 @@ update action model =
             , getMatches searchModel
             )
         MatchesData (Result.Ok ms) ->
-            ( { model |
-                matches = ms
+            ( { model
+              | matches = ms
               , message = if List.length ms == 0 then "No results found" else "" }
             , Effects.none
             )
@@ -94,12 +96,6 @@ update action model =
             )
         -- caught by parent in practise
         GetEntry _ -> ( model, Effects.none )
-
-errorHandler : Http.Error -> String
-errorHandler err =
-    case err of
-        Http.UnexpectedPayload s -> s
-        otherwise -> "http error"
 
 -- VIEW
 

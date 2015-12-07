@@ -9,7 +9,7 @@ content =
 
 # Notes
 
-This project uses information from the [European Union Transparency Register](http://ec.europa.eu/transparencyregister/public/homePage.do), which is made freely available to third parties under the EU's open data policy. The data is updated frequently with the latest source from the Commission but cannot guarantee to contain all the latest changes.
+This project uses information from the [European Union Transparency Register](http://ec.europa.eu/transparencyregister/public/homePage.do), made publicly available under the EU's open data policy. The data is updated frequently with the latest source from the Commission but cannot guarantee to contain all the latest changes.
 
 I have sought to focus on key pieces of information in the Register and to provide a better ability to compare registrants.
 

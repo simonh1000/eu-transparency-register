@@ -12381,8 +12381,8 @@ Elm.Filters.Section.make = function (_elm) {
                            ,"Romania"
                            ,"Slovakia"
                            ,"Slovenia"
-                           ,"Sweden"
                            ,"Spain"
+                           ,"Sweden"
                            ,"United Kingdom"
                            ,"Albania"
                            ,"Australia"
@@ -12396,7 +12396,6 @@ Elm.Filters.Section.make = function (_elm) {
                            ,"Bermuda"
                            ,"Brazil"
                            ,"Benin"
-                           ,"Egypt"
                            ,"Canada"
                            ,"Cambodia"
                            ,"Chile"
@@ -12404,52 +12403,53 @@ Elm.Filters.Section.make = function (_elm) {
                            ,"Congo, Democratic Republic Of"
                            ,"Cote D\'ivoire"
                            ,"Dominican Republic"
-                           ,"Malaysia"
-                           ,"Japan"
-                           ,"Korea, Republic Of"
-                           ,"Tunisia"
-                           ,"Norway"
+                           ,"Egypt"
+                           ,"Ghana"
+                           ,"Gibraltar"
                            ,"Hong Kong"
+                           ,"Iceland"
                            ,"India"
-                           ,"United States"
-                           ,"Macedonia, Former Yugoslav Republic Of"
                            ,"Israel"
+                           ,"Iraq"
+                           ,"Isle Of Man"
+                           ,"Indonesia"
+                           ,"Japan"
+                           ,"Jordan"
+                           ,"Korea, Republic Of"
+                           ,"Kenya"
+                           ,"Kyrgyzstan"
+                           ,"Lebanon"
+                           ,"Morocco"
+                           ,"Malaysia"
+                           ,"Macedonia, Former Yugoslav Republic Of"
+                           ,"Norway"
+                           ,"Liechtenstein"
                            ,"Moldova, Republic Of"
                            ,"Monaco"
                            ,"Mexico"
-                           ,"Iraq"
                            ,"Paraguay"
-                           ,"Iceland"
                            ,"Russia, Federation Of"
-                           ,"Ukraine"
-                           ,"Jordan"
                            ,"Nigeria"
                            ,"Pakistan"
                            ,"Philippines"
                            ,"Netherlands Antilles"
                            ,"Senegal"
+                           ,"Saint Marino"
                            ,"Syria, Arab Republic"
                            ,"Serbia"
                            ,"Switzerland"
                            ,"Singapore"
                            ,"South Africa"
                            ,"Turkey"
-                           ,"Liechtenstein"
-                           ,"Saint Marino"
+                           ,"Tunisia"
                            ,"United Arab Emirates"
-                           ,"Morocco"
-                           ,"Lebanon"
                            ,"Qatar"
-                           ,"Gibraltar"
-                           ,"Kyrgyzstan"
                            ,"New Zealand"
                            ,"Trinidad And Tobago"
-                           ,"Isle Of Man"
-                           ,"Indonesia"
-                           ,"Kenya"
-                           ,"Ghana"
                            ,"Taiwan"
                            ,"Uganda"
+                           ,"Ukraine"
+                           ,"United States"
                            ,"Venezuela"]);
    var subsections = _U.list(["All"
                              ,"Professional consultancies"
@@ -12489,11 +12489,6 @@ Elm.Filters.Filters.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var filters2String = function (model) {
-      return A2($Basics._op["++"],
-      ".search: ",
-      A2($Basics._op["++"],model.search,A2($Basics._op["++"]," .section: ",A2($Basics._op["++"],model.section,A2($Basics._op["++"]," .fte: ",model.fte)))));
-   };
    var update = F2(function (action,model) {
       var _p0 = action;
       switch (_p0.ctor)
@@ -12505,16 +12500,6 @@ Elm.Filters.Filters.make = function (_elm) {
          default: return model;}
    });
    var GetMatch = function (a) {    return {ctor: "GetMatch",_0: a};};
-   var submitRow = F2(function (address,model) {
-      return A2($Html.div,
-      _U.list([$Html$Attributes.$class("row")]),
-      _U.list([A2($Html.div,
-              _U.list([$Html$Attributes.$class("col-sm-3")]),
-              _U.list([A2($Html.button,
-              _U.list([$Html$Attributes.type$("button"),$Html$Attributes.$class("btn btn-default"),A2($Html$Events.onClick,address,GetMatch(model))]),
-              _U.list([$Html.text("Search!")]))]))
-              ,A2($Html.div,_U.list([$Html$Attributes.$class("col-sm-3")]),_U.list([A2($Html.p,_U.list([]),_U.list([$Html.text(filters2String(model))]))]))]));
-   });
    var Budget = function (a) {    return {ctor: "Budget",_0: a};};
    var budgetView = F2(function (address,val) {
       return A2($Html.div,
@@ -12620,6 +12605,28 @@ Elm.Filters.Filters.make = function (_elm) {
                                         ,Budget: Budget
                                         ,GetMatch: GetMatch};
 };
+Elm.Common = Elm.Common || {};
+Elm.Common.make = function (_elm) {
+   "use strict";
+   _elm.Common = _elm.Common || {};
+   if (_elm.Common.values) return _elm.Common.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
+   $Http = Elm.Http.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var onLinkClick = F2(function (address,act) {
+      return A4($Html$Events.onWithOptions,"click",{stopPropagation: true,preventDefault: true},$Json$Decode.succeed(act),$Signal.message(address));
+   });
+   var errorHandler = function (err) {    var _p0 = err;if (_p0.ctor === "UnexpectedPayload") {    return _p0._0;} else {    return "http error";}};
+   return _elm.Common.values = {_op: _op,errorHandler: errorHandler,onLinkClick: onLinkClick};
+};
 Elm.Matches = Elm.Matches || {};
 Elm.Matches.MatchesDecoder = Elm.Matches.MatchesDecoder || {};
 Elm.Matches.MatchesDecoder.make = function (_elm) {
@@ -12636,25 +12643,18 @@ Elm.Matches.MatchesDecoder.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var initNew = F2(function (e,u) {    return {entries: e,updates: u};});
    var NewStuff = F2(function (a,b) {    return {entries: a,updates: b};});
-   var init = F2(function (i,o) {    return {id: i,orgName: o};});
+   var Model = F2(function (a,b) {    return {id: a,orgName: b};});
    var matchDecoder = A3($Json$Decode.object2,
-   init,
+   Model,
    A2($Json$Decode._op[":="],"_id",$Json$Decode.string),
    A2($Json$Decode._op[":="],"orgName",$Json$Decode.string));
    var matchesDecoder = $Json$Decode.list(matchDecoder);
    var recentsDecoder = A3($Json$Decode.object2,
-   initNew,
+   NewStuff,
    A2($Json$Decode._op[":="],"entries",matchesDecoder),
    A2($Json$Decode._op[":="],"updates",matchesDecoder));
-   var Model = F2(function (a,b) {    return {id: a,orgName: b};});
-   return _elm.Matches.MatchesDecoder.values = {_op: _op
-                                               ,initNew: initNew
-                                               ,matchesDecoder: matchesDecoder
-                                               ,recentsDecoder: recentsDecoder
-                                               ,NewStuff: NewStuff
-                                               ,Model: Model};
+   return _elm.Matches.MatchesDecoder.values = {_op: _op,matchesDecoder: matchesDecoder,recentsDecoder: recentsDecoder,NewStuff: NewStuff,Model: Model};
 };
 Elm.Matches = Elm.Matches || {};
 Elm.Matches.Matches = Elm.Matches.Matches || {};
@@ -12665,6 +12665,7 @@ Elm.Matches.Matches.make = function (_elm) {
    if (_elm.Matches.Matches.values) return _elm.Matches.Matches.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
+   $Common = Elm.Common.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $Filters$Filters = Elm.Filters.Filters.make(_elm),
@@ -12679,7 +12680,6 @@ Elm.Matches.Matches.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
-   var errorHandler = function (err) {    var _p0 = err;if (_p0.ctor === "UnexpectedPayload") {    return _p0._0;} else {    return "http error";}};
    var GetEntry = function (a) {    return {ctor: "GetEntry",_0: a};};
    var viewMatch = F2(function (address,match) {
       return A2($Html.p,_U.list([A2($Html$Events.onClick,address,GetEntry(match.id))]),_U.list([$Html.text(match.orgName)]));
@@ -12709,8 +12709,8 @@ Elm.Matches.Matches.make = function (_elm) {
                       ,A2($Html.div,_U.list([$Html$Attributes.$class("mainContainer")]),A2($List.map,viewMatch(address),model.newstuff.updates))]))]));
    });
    var view = F2(function (address,model) {
-      var _p1 = model.display;
-      if (_p1.ctor === "Filtered") {
+      var _p0 = model.display;
+      if (_p0.ctor === "Filtered") {
             return A2(viewFilterResults,address,model);
          } else {
             return A2(viewRecents,address,model);
@@ -12736,28 +12736,28 @@ Elm.Matches.Matches.make = function (_elm) {
    var defaultMessage = "Use the filters above to find some registrees";
    var Recents = {ctor: "Recents"};
    var Filtered = {ctor: "Filtered"};
-   var init = {matches: _U.list([]),newstuff: A2($Matches$MatchesDecoder.initNew,_U.list([]),_U.list([])),display: Filtered,message: defaultMessage};
+   var init = A4(Model,_U.list([]),A2($Matches$MatchesDecoder.NewStuff,_U.list([]),_U.list([])),Filtered,defaultMessage);
    var update = F2(function (action,model) {
-      var _p2 = action;
-      switch (_p2.ctor)
+      var _p1 = action;
+      switch (_p1.ctor)
       {case "SetFilters": return {ctor: "_Tuple2",_0: _U.update(model,{display: Filtered,message: defaultMessage}),_1: $Effects.none};
          case "GetMatchFor": return {ctor: "_Tuple2"
                                     ,_0: _U.update(model,{matches: _U.list([]),message: "Searching....",display: Filtered})
-                                    ,_1: getMatches(_p2._0)};
-         case "MatchesData": if (_p2._0.ctor === "Ok") {
-                 var _p3 = _p2._0._0;
-                 return {ctor: "_Tuple2",_0: _U.update(model,{matches: _p3,message: _U.eq($List.length(_p3),0) ? "No results found" : ""}),_1: $Effects.none};
+                                    ,_1: getMatches(_p1._0)};
+         case "MatchesData": if (_p1._0.ctor === "Ok") {
+                 var _p2 = _p1._0._0;
+                 return {ctor: "_Tuple2",_0: _U.update(model,{matches: _p2,message: _U.eq($List.length(_p2),0) ? "No results found" : ""}),_1: $Effects.none};
               } else {
-                 return {ctor: "_Tuple2",_0: _U.update(model,{message: errorHandler(_p2._0._0)}),_1: $Effects.none};
+                 return {ctor: "_Tuple2",_0: _U.update(model,{message: $Common.errorHandler(_p1._0._0)}),_1: $Effects.none};
               }
          case "GetRecents": var newModel = _U.update(model,{display: Recents});
            return _U.eq($List.length(model.newstuff.entries),0) ? {ctor: "_Tuple2"
                                                                   ,_0: _U.update(newModel,{message: "Getting data..."})
                                                                   ,_1: getRecents} : {ctor: "_Tuple2",_0: _U.update(newModel,{message: ""}),_1: $Effects.none};
-         case "RecentsData": if (_p2._0.ctor === "Ok") {
-                 return {ctor: "_Tuple2",_0: _U.update(model,{message: "",newstuff: _p2._0._0}),_1: $Effects.none};
+         case "RecentsData": if (_p1._0.ctor === "Ok") {
+                 return {ctor: "_Tuple2",_0: _U.update(model,{message: "",newstuff: _p1._0._0}),_1: $Effects.none};
               } else {
-                 return {ctor: "_Tuple2",_0: _U.update(model,{message: errorHandler(_p2._0._0)}),_1: $Effects.none};
+                 return {ctor: "_Tuple2",_0: _U.update(model,{message: $Common.errorHandler(_p1._0._0)}),_1: $Effects.none};
               }
          default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
    });
@@ -12792,10 +12792,10 @@ Elm.Entries.EntryDecoder.make = function (_elm) {
    var costs = $Json$Decode.oneOf(_U.list([A2($Json$Decode.map,$Basics.toString,A2($Json$Decode._op[":="],"costsAbsolute",$Json$Decode.$int))
                                           ,A2($Json$Decode._op[":="],"costEst",$Json$Decode.string)]));
    var maybeMemberships = $Json$Decode.oneOf(_U.list([A2($Json$Decode._op[":="],"memberships",$Json$Decode.string),$Json$Decode.succeed("None")]));
-   var init = F8(function (i,o,h,e,c,n,m,g) {    return {id: i,orgName: o,hqCountry: h,euPerson: e,costEst: c,noFTEs: n,memberships: m,goals: g};});
-   var initEmpty = A8(init,"","","","","",0,"","");
+   var Model = F8(function (a,b,c,d,e,f,g,h) {    return {id: a,orgName: b,hqCountry: c,euPerson: d,costEst: e,noFTEs: f,memberships: g,goals: h};});
+   var initEmpty = A8(Model,"","","","","",0,"","");
    var entryDecoder = A9($Json$Decode.object8,
-   init,
+   Model,
    A2($Json$Decode._op[":="],"_id",$Json$Decode.string),
    A2($Json$Decode._op[":="],"orgName",$Json$Decode.string),
    A2($Json$Decode._op[":="],"hqCountry",$Json$Decode.string),
@@ -12804,8 +12804,7 @@ Elm.Entries.EntryDecoder.make = function (_elm) {
    A2($Json$Decode._op[":="],"noFTEs",$Json$Decode.$float),
    maybeMemberships,
    A2($Json$Decode._op[":="],"goals",$Json$Decode.string));
-   var Model = F8(function (a,b,c,d,e,f,g,h) {    return {id: a,orgName: b,hqCountry: c,euPerson: d,costEst: e,noFTEs: f,memberships: g,goals: h};});
-   return _elm.Entries.EntryDecoder.values = {_op: _op,init: init,initEmpty: initEmpty,entryDecoder: entryDecoder,Model: Model};
+   return _elm.Entries.EntryDecoder.values = {_op: _op,initEmpty: initEmpty,entryDecoder: entryDecoder,Model: Model};
 };
 Elm.Entries = Elm.Entries || {};
 Elm.Entries.Entry = Elm.Entries.Entry || {};
@@ -12896,6 +12895,7 @@ Elm.Entries.Entries.make = function (_elm) {
    if (_elm.Entries.Entries.values) return _elm.Entries.Entries.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
+   $Common = Elm.Common.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Dict = Elm.Dict.make(_elm),
    $Effects = Elm.Effects.make(_elm),
@@ -12911,14 +12911,6 @@ Elm.Entries.Entries.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
-   var errorHandler = function (err) {
-      var _p0 = err;
-      if (_p0.ctor === "UnexpectedPayload") {
-            return A2($Basics._op["++"],"Apologies, cannot display this entry: ",_p0._0);
-         } else {
-            return "http error";
-         }
-   };
    var EntriesAction = F2(function (a,b) {    return {ctor: "EntriesAction",_0: a,_1: b};});
    var CloseAll = {ctor: "CloseAll"};
    var view = F2(function (address,model) {
@@ -12935,9 +12927,9 @@ Elm.Entries.Entries.make = function (_elm) {
                       _U.list([A2($Html$Events.onClick,address,CloseAll),$Html$Attributes.$class("btn btn-default btn-xs closeAll")]),
                       _U.list([$Html.text("Close All")]))]))
               ,function () {
-                 var _p1 = model.message;
-                 if (_p1.ctor === "Just") {
-                       return A2($Html.p,_U.list([]),_U.list([$Html.text(_p1._0)]));
+                 var _p0 = model.message;
+                 if (_p0.ctor === "Just") {
+                       return A2($Html.p,_U.list([]),_U.list([$Html.text(_p0._0)]));
                     } else {
                        return A2($Html.p,_U.list([]),_U.list([]));
                     }
@@ -12953,40 +12945,38 @@ Elm.Entries.Entries.make = function (_elm) {
    var update = F2(function (action,model) {
       var insertEntry = function (id) {
          var newDisplayed = A2($List._op["::"],id,model.displayed);
-         return {ctor: "_Tuple2"
-                ,_0: _U.update(model,{displayed: newDisplayed})
-                ,_1: $Effects.batch(_U.list([A2($Effects.map,EntriesAction(id),$Effects.tick($Entries$Entry.Tick))]))};
+         return {ctor: "_Tuple2",_0: _U.update(model,{displayed: newDisplayed}),_1: $Effects.none};
       };
-      var _p2 = action;
-      switch (_p2.ctor)
-      {case "GetEntryFor": var _p3 = _p2._0;
-           return A2($List.member,_p3,model.displayed) ? {ctor: "_Tuple2",_0: model,_1: $Effects.none} : A2($Dict.member,
-           _p3,
-           model.cache) ? insertEntry(_p3) : {ctor: "_Tuple2",_0: model,_1: loadEntry(_p3)};
-         case "EntryReceived": if (_p2._0.ctor === "Ok") {
-                 var _p5 = _p2._0._0;
-                 var _p4 = insertEntry(_p5.id);
-                 var newModel = _p4._0;
-                 var newEffects = _p4._1;
-                 return {ctor: "_Tuple2",_0: _U.update(newModel,{cache: A3($Dict.insert,_p5.id,$Entries$Entry.init(_p5),newModel.cache)}),_1: newEffects};
+      var _p1 = action;
+      switch (_p1.ctor)
+      {case "GetEntryFor": var _p2 = _p1._0;
+           return A2($List.member,_p2,model.displayed) ? {ctor: "_Tuple2",_0: model,_1: $Effects.none} : A2($Dict.member,
+           _p2,
+           model.cache) ? insertEntry(_p2) : {ctor: "_Tuple2",_0: model,_1: loadEntry(_p2)};
+         case "EntryReceived": if (_p1._0.ctor === "Ok") {
+                 var _p4 = _p1._0._0;
+                 var _p3 = insertEntry(_p4.id);
+                 var newModel = _p3._0;
+                 var newEffects = _p3._1;
+                 return {ctor: "_Tuple2",_0: _U.update(newModel,{cache: A3($Dict.insert,_p4.id,$Entries$Entry.init(_p4),newModel.cache)}),_1: newEffects};
               } else {
-                 return {ctor: "_Tuple2",_0: _U.update(model,{message: $Maybe.Just(errorHandler(_p2._0._0))}),_1: $Effects.none};
+                 return {ctor: "_Tuple2",_0: _U.update(model,{message: $Maybe.Just($Common.errorHandler(_p1._0._0))}),_1: $Effects.none};
               }
          case "CloseAll": return {ctor: "_Tuple2",_0: _U.update(model,{displayed: _U.list([]),message: $Maybe.Nothing}),_1: $Effects.none};
-         default: if (_p2._1.ctor === "Close") {
-                 var _p7 = _p2._0;
-                 var newDisplayed = A2($List.filter,function (d) {    return !_U.eq(d,_p7);},model.displayed);
+         default: if (_p1._1.ctor === "Close") {
+                 var _p6 = _p1._0;
+                 var newDisplayed = A2($List.filter,function (d) {    return !_U.eq(d,_p6);},model.displayed);
                  return {ctor: "_Tuple2"
                         ,_0: _U.update(model,
                         {displayed: newDisplayed
                         ,cache: A3($Dict.update,
-                        _p7,
-                        $Maybe.map(function (_p6) {    return $Entries$Entry.init(function (_) {    return _.data;}(_p6));}),
+                        _p6,
+                        $Maybe.map(function (_p5) {    return $Entries$Entry.init(function (_) {    return _.data;}(_p5));}),
                         model.cache)})
                         ,_1: $Effects.none};
               } else {
                  return {ctor: "_Tuple2"
-                        ,_0: _U.update(model,{cache: A3($Dict.update,_p2._0,$Maybe.map($Entries$Entry.update(_p2._1)),model.cache)})
+                        ,_0: _U.update(model,{cache: A3($Dict.update,_p1._0,$Maybe.map($Entries$Entry.update(_p1._1)),model.cache)})
                         ,_1: $Effects.none};
               }}
    });
@@ -13020,9 +13010,7 @@ Elm.Router.make = function (_elm) {
    $String = Elm.String.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
-   var combineIds = function (lst) {
-      return A3($List.foldl,F2(function (l,acc) {    return A2($Basics._op["++"],acc,l);}),"/",A2($List.intersperse,"/",lst));
-   };
+   var combineIds = function (lst) {    return A3($List.foldl,F2(function (x,y) {    return A2($Basics._op["++"],x,y);}),"/",A2($List.intersperse,"/",lst));};
    var NoOp = function (a) {    return {ctor: "NoOp",_0: a};};
    var updateUrl = function (displayed) {    return $Effects.task(A2($Task.map,NoOp,$Task.toMaybe($History.replacePath(displayed))));};
    var NavAction = function (a) {    return {ctor: "NavAction",_0: a};};
@@ -13173,28 +13161,6 @@ Elm.Register.make = function (_elm) {
    var Model = F4(function (a,b,c,d) {    return {filters: a,matches: b,entries: c,message: d};});
    return _elm.Register.values = {_op: _op,init: init,update: update,view: view,Model: Model,Activate: Activate,EntriesAction: EntriesAction};
 };
-Elm.Common = Elm.Common || {};
-Elm.Common.make = function (_elm) {
-   "use strict";
-   _elm.Common = _elm.Common || {};
-   if (_elm.Common.values) return _elm.Common.values;
-   var _U = Elm.Native.Utils.make(_elm),
-   $Basics = Elm.Basics.make(_elm),
-   $Debug = Elm.Debug.make(_elm),
-   $Html$Events = Elm.Html.Events.make(_elm),
-   $Http = Elm.Http.make(_elm),
-   $Json$Decode = Elm.Json.Decode.make(_elm),
-   $List = Elm.List.make(_elm),
-   $Maybe = Elm.Maybe.make(_elm),
-   $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm);
-   var _op = {};
-   var onLinkClick = F2(function (address,act) {
-      return A4($Html$Events.onWithOptions,"click",{stopPropagation: true,preventDefault: true},$Json$Decode.succeed(act),$Signal.message(address));
-   });
-   var errorHandler = function (err) {    var _p0 = err;if (_p0.ctor === "UnexpectedPayload") {    return _p0._0;} else {    return "http error";}};
-   return _elm.Common.values = {_op: _op,errorHandler: errorHandler,onLinkClick: onLinkClick};
-};
 Elm.Nav = Elm.Nav || {};
 Elm.Nav.make = function (_elm) {
    "use strict";
@@ -13296,7 +13262,8 @@ Elm.Summary.SummaryDecoder.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var emptySummary = {sections: _U.list([]),interests: _U.list([]),countries: _U.list([])};
+   var Summary = F3(function (a,b,c) {    return {sections: a,interests: b,countries: c};});
+   var emptySummary = A3(Summary,_U.list([]),_U.list([]),_U.list([]));
    var combine = function (lst) {
       var insert = F2(function (info,sum) {
          var _p0 = info;
@@ -13307,27 +13274,23 @@ Elm.Summary.SummaryDecoder.make = function (_elm) {
       });
       return A3($List.foldl,insert,emptySummary,lst);
    };
-   var initCountry = F3(function (i,c,e) {    return {country: i,count: c,eppass: e};});
+   var Country = F3(function (a,b,c) {    return {country: a,count: b,eppass: c};});
    var countriesDecoder = $Json$Decode.list(A4($Json$Decode.object3,
-   initCountry,
+   Country,
    A2($Json$Decode._op[":="],"_id",$Json$Decode.string),
    A2($Json$Decode._op[":="],"count",$Json$Decode.$float),
    A2($Json$Decode._op[":="],"eppass",$Json$Decode.$float)));
-   var initSection = F3(function (i,c,b) {    return {section: i,count: c,budget: b};});
+   var Section = F3(function (a,b,c) {    return {section: a,count: b,budget: c};});
    var sectionsDecoder = $Json$Decode.list(A4($Json$Decode.object3,
-   initSection,
+   Section,
    A2($Json$Decode._op[":="],"_id",$Json$Decode.string),
    A2($Json$Decode._op[":="],"count",$Json$Decode.$float),
    A2($Json$Decode._op[":="],"total",$Json$Decode.$float)));
-   var initInterest = F2(function (i,c) {    return {interest: i,count: c};});
+   var Interest = F2(function (a,b) {    return {interest: a,count: b};});
    var interestsDecoder = $Json$Decode.list(A3($Json$Decode.object2,
-   initInterest,
+   Interest,
    A2($Json$Decode._op[":="],"interest",$Json$Decode.string),
    A2($Json$Decode._op[":="],"count",$Json$Decode.$int)));
-   var Summary = F3(function (a,b,c) {    return {sections: a,interests: b,countries: c};});
-   var Country = F3(function (a,b,c) {    return {country: a,count: b,eppass: c};});
-   var Section = F3(function (a,b,c) {    return {section: a,count: b,budget: c};});
-   var Interest = F2(function (a,b) {    return {interest: a,count: b};});
    var Countries = function (a) {    return {ctor: "Countries",_0: a};};
    var Sections = function (a) {    return {ctor: "Sections",_0: a};};
    var Interests = function (a) {    return {ctor: "Interests",_0: a};};
@@ -13351,9 +13314,6 @@ Elm.Summary.SummaryDecoder.make = function (_elm) {
                                                ,Section: Section
                                                ,Country: Country
                                                ,Summary: Summary
-                                               ,initInterest: initInterest
-                                               ,initSection: initSection
-                                               ,initCountry: initCountry
                                                ,emptySummary: emptySummary
                                                ,interestsDecoder: interestsDecoder
                                                ,sectionsDecoder: sectionsDecoder
@@ -13559,7 +13519,7 @@ Elm.Help.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var content = $Markdown.toHtml("\n\n# Notes\n\nThis project uses information from the [European Union Transparency Register](http://ec.europa.eu/transparencyregister/public/homePage.do), which is made freely available to third parties under the EU\'s open data policy. The data is updated frequently with the latest source from the Commission but cannot guarantee to contain all the latest changes.\n\nI have sought to focus on key pieces of information in the Register and to provide a better ability to compare registrants.\n\nIn order to provide the budget comparisons, I use the costs data provided by registrants or, if that is not provided, the mid-point of the budget range selected.\n\nPlease provide feedback via the [blog](https://digitalusers.wordpress.com/2015/10/29/making-the-eu-transparency-register-more-functional/) announcing this service.\n\n## Privacy\n\nThis site uses the Google Analytics cookie.\n\n## Open source\n\nThe source code is available under an open source licence on [Github](https://github.com/simonh1000/eu-transparency-register).\n\n");
+   var content = $Markdown.toHtml("\n\n# Notes\n\nThis project uses information from the [European Union Transparency Register](http://ec.europa.eu/transparencyregister/public/homePage.do), made publicly available under the EU\'s open data policy. The data is updated frequently with the latest source from the Commission but cannot guarantee to contain all the latest changes.\n\nI have sought to focus on key pieces of information in the Register and to provide a better ability to compare registrants.\n\nIn order to provide the budget comparisons, I use the costs data provided by registrants or, if that is not provided, the mid-point of the budget range selected.\n\nPlease provide feedback via the [blog](https://digitalusers.wordpress.com/2015/10/29/making-the-eu-transparency-register-more-functional/) announcing this service.\n\n## Privacy\n\nThis site uses the Google Analytics cookie.\n\n## Open source\n\nThe source code is available under an open source licence on [Github](https://github.com/simonh1000/eu-transparency-register).\n\n");
    return _elm.Help.values = {_op: _op,content: content};
 };
 Elm.App = Elm.App || {};
