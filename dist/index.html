@@ -28,8 +28,10 @@
       })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
       
       // test for local deployment?
-      ga('create', 'UA-69454628-1', 'auto');
-      ga('send', 'pageview');
+      if (window.location.host.search('localhost') == -1) {
+          ga('create', 'UA-69454628-1', 'auto');
+          ga('send', 'pageview');
+      }
     </script>
   </body>
 </html>

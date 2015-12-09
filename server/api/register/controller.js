@@ -70,7 +70,10 @@ exports.id = (req, res) => {
 	);
 
 	register.findOne(id)
-		.then( data => res.send(data) );
+		.then( data => {
+			// setTimeout( () => res.send(data), 2000);
+			res.send(data)
+		});
 };
 
 exports.summary = (req, res) => {

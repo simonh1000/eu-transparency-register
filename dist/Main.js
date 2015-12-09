@@ -12771,7 +12771,9 @@ Elm.Matches.Matches.make = function (_elm) {
                                         ,MatchesData: MatchesData
                                         ,GetRecents: GetRecents
                                         ,RecentsData: RecentsData
-                                        ,GetEntry: GetEntry};
+                                        ,GetEntry: GetEntry
+                                        ,Filtered: Filtered
+                                        ,Recents: Recents};
 };
 Elm.Entries = Elm.Entries || {};
 Elm.Entries.EntryDecoder = Elm.Entries.EntryDecoder || {};
@@ -12911,12 +12913,12 @@ Elm.Entries.Entries.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
-   var EntriesAction = F2(function (a,b) {    return {ctor: "EntriesAction",_0: a,_1: b};});
+   var EntryAction = F2(function (a,b) {    return {ctor: "EntryAction",_0: a,_1: b};});
    var CloseAll = {ctor: "CloseAll"};
    var view = F2(function (address,model) {
       var viewMapper = function (id) {
          var entry = A2($Maybe.withDefault,$Entries$Entry.initEmpty,A2($Dict.get,id,model.cache));
-         return A2($Entries$Entry.view,A2($Signal.forwardTo,address,EntriesAction(id)),entry);
+         return A2($Entries$Entry.view,A2($Signal.forwardTo,address,EntryAction(id)),entry);
       };
       return A2($Html.div,
       _U.list([$Html$Attributes.id("entries"),$Html$Attributes.$class("col-xs-12 col-sm-8")]),
@@ -12945,7 +12947,7 @@ Elm.Entries.Entries.make = function (_elm) {
    var update = F2(function (action,model) {
       var insertEntry = function (id) {
          var newDisplayed = A2($List._op["::"],id,model.displayed);
-         return {ctor: "_Tuple2",_0: _U.update(model,{displayed: newDisplayed}),_1: $Effects.none};
+         return {ctor: "_Tuple2",_0: _U.update(model,{displayed: newDisplayed}),_1: A2($Effects.map,EntryAction(id),$Effects.tick($Entries$Entry.Tick))};
       };
       var _p1 = action;
       switch (_p1.ctor)
@@ -12991,7 +12993,7 @@ Elm.Entries.Entries.make = function (_elm) {
                                         ,GetEntryFor: GetEntryFor
                                         ,EntryReceived: EntryReceived
                                         ,CloseAll: CloseAll
-                                        ,EntriesAction: EntriesAction};
+                                        ,EntryAction: EntryAction};
 };
 Elm.Router = Elm.Router || {};
 Elm.Router.make = function (_elm) {
@@ -13010,7 +13012,9 @@ Elm.Router.make = function (_elm) {
    $String = Elm.String.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
-   var combineIds = function (lst) {    return A3($List.foldl,F2(function (x,y) {    return A2($Basics._op["++"],x,y);}),"/",A2($List.intersperse,"/",lst));};
+   var combineIds = function (lst) {
+      return A3($List.foldl,F2(function (i,acc) {    return A2($Basics._op["++"],acc,i);}),"/",A2($List.intersperse,"/",lst));
+   };
    var NoOp = function (a) {    return {ctor: "NoOp",_0: a};};
    var updateUrl = function (displayed) {    return $Effects.task(A2($Task.map,NoOp,$Task.toMaybe($History.replacePath(displayed))));};
    var NavAction = function (a) {    return {ctor: "NavAction",_0: a};};
@@ -13064,6 +13068,29 @@ Elm.Router.make = function (_elm) {
                                ,NavAction: NavAction
                                ,NoOp: NoOp};
 };
+Elm.Help = Elm.Help || {};
+Elm.Help.make = function (_elm) {
+   "use strict";
+   _elm.Help = _elm.Help || {};
+   if (_elm.Help.values) return _elm.Help.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Markdown = Elm.Markdown.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var content = $Markdown.toHtml("\n**TLDR** Use the filters above to explore the Register.\n\n# The European Union (EU) Transparency Register\n\nThe [Commission\'s lobby register](http://ec.europa.eu/transparencyregister/public/homePage.do) is a great move towards transparency, but it has two key functional deficiencies addressed here:\n\n - **Comparing entries**: What resources is one lobbyist use using compared to another?\n\n - **Sharing links to entries**: Want to discuss with a colleague, or share on social media? You need direct, deep links.\n\nSo, try these examples:\n\n- My [recent employers](/537380918401-76/761346015292-83/03181945560-59/002278013515-26/260243819561-20)\n- The [EU Social partners](/06698681039-26/3978240953-79)\n- A collection of [Brussel\'s biggest consultants](/9155503593-86/56047191389-84/7223777790-86/81995781088-41)\n- A handful of [NGOs](/11063928073-34/9832909575-41/1414929419-24/16311905144-06/71149477682-53)\n\nI deliberately focus on only some of the Register\'s freely available data in order to provide a better comparability. (For budget comparisons, I use the specific cost data provided by registrees or the mid-point of the budget range selected.) Contact me via my [blog](https://digitalusers.wordpress.com/2015/10/29/making-the-eu-transparency-register-more-functional/).\n\n**Privacy:** This site uses the Google Analytics cookie.\n\n**Open source** The source code is available at [Github](https://github.com/simonh1000/eu-transparency-register).\n\n");
+   var view = A2($Html.div,_U.list([$Html$Attributes.id("intro")]),_U.list([content]));
+   var update = F2(function (action,model) {    var _p0 = action;return $Basics.not(model);});
+   var Help = {ctor: "Help"};
+   var init = true;
+   return _elm.Help.values = {_op: _op,init: init,update: update,content: content,view: view,Help: Help};
+};
 Elm.Register = Elm.Register || {};
 Elm.Register.make = function (_elm) {
    "use strict";
@@ -13075,6 +13102,7 @@ Elm.Register.make = function (_elm) {
    $Effects = Elm.Effects.make(_elm),
    $Entries$Entries = Elm.Entries.Entries.make(_elm),
    $Filters$Filters = Elm.Filters.Filters.make(_elm),
+   $Help = Elm.Help.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $List = Elm.List.make(_elm),
@@ -13084,6 +13112,7 @@ Elm.Register.make = function (_elm) {
    $Router = Elm.Router.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
+   var Intro = function (a) {    return {ctor: "Intro",_0: a};};
    var EntriesAction = function (a) {    return {ctor: "EntriesAction",_0: a};};
    var MatchAction = function (a) {    return {ctor: "MatchAction",_0: a};};
    var update = F2(function (action,model) {
@@ -13136,10 +13165,21 @@ Elm.Register.make = function (_elm) {
                  var newMatchEffects = _p9._1;
                  return {ctor: "_Tuple2",_0: _U.update(model,{matches: newMatchesModel}),_1: A2($Effects.map,MatchAction,newMatchEffects)};
               }
-         default: var _p10 = A2($Entries$Entries.update,_p0._0,model.entries);
+         case "EntriesAction": var _p10 = A2($Entries$Entries.update,_p0._0,model.entries);
            var newEntriesModel = _p10._0;
            var newEntriesEffects = _p10._1;
-           return {ctor: "_Tuple2",_0: _U.update(model,{entries: newEntriesModel}),_1: A2($Effects.map,EntriesAction,newEntriesEffects)};}
+           return {ctor: "_Tuple2",_0: _U.update(model,{entries: newEntriesModel}),_1: A2($Effects.map,EntriesAction,newEntriesEffects)};
+         default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
+   });
+   var mainElement = F2(function (address,model) {
+      return _U.cmp($List.length(model.matches.matches),0) > 0 && _U.eq(model.matches.display,
+      $Matches$Matches.Filtered) || (_U.cmp($List.length(model.matches.newstuff.entries),0) > 0 && _U.eq(model.matches.display,
+      $Matches$Matches.Recents) || _U.cmp($List.length(model.entries.displayed),0) > 0) ? A2($Html.div,
+      _U.list([$Html$Attributes.$class("main row")]),
+      _U.list([A2($Matches$Matches.view,A2($Signal.forwardTo,address,MatchAction),model.matches)
+              ,A2($Entries$Entries.view,A2($Signal.forwardTo,address,EntriesAction),model.entries)])) : A2($Html.div,
+      _U.list([$Html$Attributes.$class("main row intro")]),
+      _U.list([$Help.content]));
    });
    var FilterAction = function (a) {    return {ctor: "FilterAction",_0: a};};
    var view = F2(function (address,model) {
@@ -13149,10 +13189,7 @@ Elm.Register.make = function (_elm) {
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("row")]),
               _U.list([A2($Filters$Filters.view,A2($Signal.forwardTo,address,FilterAction),model.filters)]))
-              ,A2($Html.div,
-              _U.list([$Html$Attributes.$class("main row")]),
-              _U.list([A2($Matches$Matches.view,A2($Signal.forwardTo,address,MatchAction),model.matches)
-                      ,A2($Entries$Entries.view,A2($Signal.forwardTo,address,EntriesAction),model.entries)]))]));
+              ,A2(mainElement,address,model)]));
    });
    var Activate = function (a) {    return {ctor: "Activate",_0: a};};
    var init = {ctor: "_Tuple2"
@@ -13216,8 +13253,8 @@ Elm.Nav.make = function (_elm) {
                               ,A2($Html.span,_U.list([$Html$Attributes.$class("icon-bar")]),_U.list([]))]))
                       ,A2($Html.a,
                       _U.list([$Html$Attributes.$class("navbar-brand")
-                              ,$Html$Attributes.href("#")
-                              ,A2($Common.onLinkClick,address,GoPage($Router.Register($Maybe.Nothing)))]),
+                              ,$Html$Attributes.href("/")
+                              ,A2($Common.onLinkClick,address,GoPage($Router.Register($Maybe.Just(_U.list([])))))]),
                       _U.list([$Html.text("EU Lobby Register ")
                               ,A2($Html.span,
                               _U.list([$Html$Attributes.$class("hidden-xs")]),
@@ -13229,21 +13266,21 @@ Elm.Nav.make = function (_elm) {
               _U.list([A2($Html.li,
                       _U.list([]),
                       _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.href("#"),A2($Common.onLinkClick,address,GoPage($Router.Register($Maybe.Nothing)))]),
+                      _U.list([$Html$Attributes.href("/"),A2($Common.onLinkClick,address,GoPage($Router.Register($Maybe.Nothing)))]),
                       _U.list([$Html.text("Register")]))]))
                       ,A2($Html.li,
                       _U.list([]),
                       _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.href("#"),A2($Common.onLinkClick,address,GoPage($Router.Register($Maybe.Just(_U.list(["recent"])))))]),
+                      _U.list([$Html$Attributes.href("/recent"),A2($Common.onLinkClick,address,GoPage($Router.Register($Maybe.Just(_U.list(["recent"])))))]),
                       _U.list([$Html.text("Recent changes")]))]))
                       ,A2($Html.li,
                       _U.list([]),
                       _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.href("#"),A2($Common.onLinkClick,address,GoPage($Router.Summary))]),
+                      _U.list([$Html$Attributes.href("/summary"),A2($Common.onLinkClick,address,GoPage($Router.Summary))]),
                       _U.list([$Html.text($Basics.toString($Router.Summary))]))]))]))]))]))]));
    });
-   var init = {ctor: "_Tuple2",_0: {regCount: 0,errorMessage: $Maybe.Nothing},_1: getMeta};
    var Model = F2(function (a,b) {    return {regCount: a,errorMessage: b};});
+   var init = {ctor: "_Tuple2",_0: A2(Model,0,$Maybe.Nothing),_1: getMeta};
    return _elm.Nav.values = {_op: _op,init: init,update: update,view: view,Model: Model,GoPage: GoPage,CountData: CountData};
 };
 Elm.Summary = Elm.Summary || {};
@@ -13504,24 +13541,6 @@ Elm.Summary.Summary.make = function (_elm) {
                                         ,SummaryData: SummaryData
                                         ,Animate: Animate};
 };
-Elm.Help = Elm.Help || {};
-Elm.Help.make = function (_elm) {
-   "use strict";
-   _elm.Help = _elm.Help || {};
-   if (_elm.Help.values) return _elm.Help.values;
-   var _U = Elm.Native.Utils.make(_elm),
-   $Basics = Elm.Basics.make(_elm),
-   $Debug = Elm.Debug.make(_elm),
-   $Html = Elm.Html.make(_elm),
-   $List = Elm.List.make(_elm),
-   $Markdown = Elm.Markdown.make(_elm),
-   $Maybe = Elm.Maybe.make(_elm),
-   $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm);
-   var _op = {};
-   var content = $Markdown.toHtml("\n\n# Notes\n\nThis project uses information from the [European Union Transparency Register](http://ec.europa.eu/transparencyregister/public/homePage.do), made publicly available under the EU\'s open data policy. The data is updated frequently with the latest source from the Commission but cannot guarantee to contain all the latest changes.\n\nI have sought to focus on key pieces of information in the Register and to provide a better ability to compare registrants.\n\nIn order to provide the budget comparisons, I use the costs data provided by registrants or, if that is not provided, the mid-point of the budget range selected.\n\nPlease provide feedback via the [blog](https://digitalusers.wordpress.com/2015/10/29/making-the-eu-transparency-register-more-functional/) announcing this service.\n\n## Privacy\n\nThis site uses the Google Analytics cookie.\n\n## Open source\n\nThe source code is available under an open source licence on [Github](https://github.com/simonh1000/eu-transparency-register).\n\n");
-   return _elm.Help.values = {_op: _op,content: content};
-};
 Elm.App = Elm.App || {};
 Elm.App.make = function (_elm) {
    "use strict";
@@ -13529,13 +13548,11 @@ Elm.App.make = function (_elm) {
    if (_elm.App.values) return _elm.App.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
-   $Common = Elm.Common.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $Help = Elm.Help.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
-   $Html$Events = Elm.Html.Events.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Nav = Elm.Nav.make(_elm),
@@ -13545,25 +13562,12 @@ Elm.App.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $Summary$Summary = Elm.Summary.Summary.make(_elm);
    var _op = {};
-   var Help = {ctor: "Help"};
    var footerDiv = F2(function (address,msg) {
       return A2($Html.footer,
       _U.list([$Html$Attributes.$class("row")]),
       _U.list([A2($Html.div,
       _U.list([$Html$Attributes.$class("col-xs-12")]),
-      _U.list([A2($Html.span,_U.list([]),_U.list([$Html.text("Simon Hampton, 2015")]))
-              ,A2($Html.a,
-              _U.list([A2($Common.onLinkClick,address,Help),$Html$Attributes.$class("hidden-xs")]),
-              _U.list([$Html.text("Notes, privacy, source code or report a problem")]))
-              ,A2($Html.span,_U.list([]),_U.list([$Html.text(msg)]))]))]));
-   });
-   var helpModal = F2(function (address,model) {
-      return model.help ? A2($Html.div,
-      _U.list([$Html$Attributes.$class("help-modal")]),
-      _U.list([$Help.content
-              ,A2($Html.button,
-              _U.list([$Html$Attributes.$class("btn btn-default"),A2($Html$Events.onClick,address,Help)]),
-              _U.list([$Html.text("Close")]))])) : A2($Html.div,_U.list([]),_U.list([]));
+      _U.list([A2($Html.span,_U.list([]),_U.list([$Html.text("Simon Hampton, 2015")])),A2($Html.span,_U.list([]),_U.list([$Html.text(msg)]))]))]));
    });
    var RegisterAction = function (a) {    return {ctor: "RegisterAction",_0: a};};
    var SummaryAction = function (a) {    return {ctor: "SummaryAction",_0: a};};
@@ -13574,8 +13578,7 @@ Elm.App.make = function (_elm) {
       _U.list([A2($Nav.view,A2($Signal.forwardTo,address,NavAction),model.navbar)
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("container")]),
-              _U.list([A2(helpModal,address,model)
-                      ,_U.eq(model.page,$Router.Summary) ? A2($Summary$Summary.view,
+              _U.list([_U.eq(model.page,$Router.Summary) ? A2($Summary$Summary.view,
                       A2($Signal.forwardTo,address,SummaryAction),
                       model.summary) : A2($Register.view,A2($Signal.forwardTo,address,RegisterAction),model.register)
                       ,A2(footerDiv,address,model.msg)]))]));
@@ -13638,12 +13641,12 @@ Elm.App.make = function (_elm) {
            var newEffects = _p10._1;
            return {ctor: "_Tuple2",_0: _U.update(model,{summary: newModel}),_1: A2($Effects.map,SummaryAction,newEffects)};
          case "RouterAction": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-         case "Help": return {ctor: "_Tuple2",_0: _U.update(model,{help: $Basics.not(model.help)}),_1: $Effects.none};
          default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
    });
    var Width = function (a) {    return {ctor: "Width",_0: a};};
    var UrlParam = function (a) {    return {ctor: "UrlParam",_0: a};};
-   var initModel = F3(function (n,r,s) {    return {navbar: n,page: $Router.Register($Maybe.Nothing),register: r,summary: s,help: false,msg: ""};});
+   var Model = F6(function (a,b,c,d,e,f) {    return {navbar: a,page: b,register: c,summary: d,help: e,msg: f};});
+   var initModel = F3(function (n,r,s) {    return A6(Model,n,$Router.Register($Maybe.Nothing),r,s,$Help.init,"");});
    var init = function () {
       var nav = $Nav.init;
       var reg = $Register.init;
@@ -13651,7 +13654,6 @@ Elm.App.make = function (_elm) {
              ,_0: A3(initModel,$Basics.fst(nav),$Basics.fst(reg),$Summary$Summary.init)
              ,_1: $Effects.batch(_U.list([A2($Effects.map,NavAction,$Basics.snd(nav)),A2($Effects.map,RegisterAction,$Basics.snd(reg))]))};
    }();
-   var Model = F6(function (a,b,c,d,e,f) {    return {navbar: a,page: b,register: c,summary: d,help: e,msg: f};});
    return _elm.App.values = {_op: _op
                             ,init: init
                             ,update: update
@@ -13661,8 +13663,7 @@ Elm.App.make = function (_elm) {
                             ,RouterAction: RouterAction
                             ,NavAction: NavAction
                             ,SummaryAction: SummaryAction
-                            ,RegisterAction: RegisterAction
-                            ,Help: Help};
+                            ,RegisterAction: RegisterAction};
 };
 Elm.EURegister = Elm.EURegister || {};
 Elm.EURegister.make = function (_elm) {

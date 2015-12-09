@@ -1,4 +1,4 @@
-module Matches.Matches (Model, Action(..), init, update, view) where
+module Matches.Matches (Model, Action(..), DisplayView(..), init, update, view) where
 
 import Html exposing (..)
 import Html.Attributes exposing (class, id)

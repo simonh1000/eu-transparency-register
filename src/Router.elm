@@ -11,7 +11,7 @@ import Task
 type alias Ids = Maybe (List String)      -- empty or with results
 
 type Page
-    = Register Ids
+    = Register Ids   -- how to capture 'reset'
     | Summary
 
 toString : Page -> String
@@ -73,6 +73,4 @@ updateUrl displayed =
 
 -- [x,y,z] --> /x/y/z
 combineIds : List String -> String
-combineIds lst =
-    foldl (++) "/" (intersperse "/" lst)
-    -- foldl (\l acc -> acc ++ l) "/" (intersperse "/" lst)
+combineIds lst = foldl (\i acc -> acc ++ i) "/" (intersperse "/" lst)

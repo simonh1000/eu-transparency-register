@@ -16,7 +16,8 @@ app =
     , view = view
     , inputs =
         [ Signal.map UrlParam locationSearch
-        , Signal.map Width Window.width ]
+        , Signal.map Width Window.width
+        ]
     }
 
 main =

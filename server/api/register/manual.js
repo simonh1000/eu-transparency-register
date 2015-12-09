@@ -25,8 +25,8 @@ ingester.downloadXls(fname)
 // 2) update DB
 .then( newJson => {
 	let promises =
-		// [local]
-		[local, remote]
+		[local]
+		// [local, remote]
 		.map( uri => updateOneDb(uri, newJson) );
 
 	return Promise.all(promises);

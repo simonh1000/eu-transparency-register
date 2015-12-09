@@ -13,4 +13,4 @@ gulp
 ## ToDo
 
  - Switch to typescript
- - add countries to filters
+ - Make 'Brand' into proper reset button

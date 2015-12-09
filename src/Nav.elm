@@ -19,9 +19,8 @@ type alias Model =
     , errorMessage : Maybe String
     }
 
--- init p c = { page = p, regCount = c }
 init =
-    ( { regCount = 0, errorMessage = Nothing }
+    ( Model 0 Nothing
     , getMeta
     )
 
@@ -60,7 +59,7 @@ view address model =
                     , span [ class "icon-bar" ] []
                     , span [ class "icon-bar" ] []
                     ]
-                , a [ class "navbar-brand", href "#", onLinkClick address (GoPage (Register Nothing)) ]
+                , a [ class "navbar-brand", href "/", onLinkClick address (GoPage (Register (Just []))) ]
                     [ text "EU Lobby Register "
                     , span
                         [ class "hidden-xs" ]
@@ -70,12 +69,12 @@ view address model =
             , div [ class "collapse navbar-collapse", id "navbar" ]
                 [ ul [ class "nav navbar-nav navbar-right" ]
                     [ li []
-                        [ a [ href "#", onLinkClick address (GoPage (Register Nothing)) ] [ text "Register" ] ]
+                        [ a [ href "/", onLinkClick address (GoPage (Register Nothing)) ] [ text "Register" ] ]
                     , li []
-                        [ a [ href "#", onLinkClick address (GoPage <| Register (Just ["recent"])) ] [ text "Recent changes" ] ]
+                        [ a [ href "/recent", onLinkClick address (GoPage <| Register (Just ["recent"])) ] [ text "Recent changes" ] ]
                     , li []
                         [ a
-                            [ href "#", onLinkClick address (GoPage Summary)
+                            [ href "/summary", onLinkClick address (GoPage Summary)
                             -- , class <| if model.page == Summary then "active" else ""
                             ]
                             [ text (toString Summary) ]

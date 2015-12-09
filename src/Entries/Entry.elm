@@ -111,22 +111,3 @@ collapse expand =
     if expand
     then class "row collapse in"
     else class "row collapse"
-
--- animationStyles : AnimationState -> Attribute
--- animationStyles state =
---     style
---         [ ( "height", animationValue entryheight state )
---         , ( "marginBottom", animationValue 10 state )
---         ]
-
--- animationValue : Int -> AnimationState -> String
--- animationValue tgtHeight state =
---     case state of
---         Nothing -> (toString tgtHeight) ++ "px"
---         -- Nothing -> "auto"
---         Just { elapsedTime } ->
---             (toFloat tgtHeight) * elapsedTime / duration
---                 |> round
---                 |> toString
---                 |> \s -> s ++ "px"
---

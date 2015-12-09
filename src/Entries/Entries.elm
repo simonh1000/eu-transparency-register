@@ -38,7 +38,7 @@ type Action
     = GetEntryFor Id
     | EntryReceived (Result Http.Error EntryDecoder.Model)  -- Decoder brings in raw data
     | CloseAll
-    | EntriesAction Id Entry.Action
+    | EntryAction Id Entry.Action
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
@@ -50,8 +50,8 @@ update action model =
             let newDisplayed = id :: model.displayed
             in
             ( { model | displayed = newDisplayed }
-            , Effects.none
-            -- , Effects.map (EntriesAction id) (Effects.tick Entry.Tick)
+            -- , Effects.none
+            , Effects.map (EntryAction id) (Effects.tick Entry.Tick)
             )
     in
     case action of
@@ -67,7 +67,7 @@ update action model =
             in
             ( { newModel
                 | cache = insert entry.id (Entry.init entry) newModel.cache
-                -- , message = entry.id
+                -- , message = Just entry.id
                }
             , newEffects
             )
@@ -82,7 +82,7 @@ update action model =
             , Effects.none
             )
 
-        EntriesAction id Close ->
+        EntryAction id Close ->
             let
                 newDisplayed = List.filter (\d -> d /= id) model.displayed
             in
@@ -94,8 +94,10 @@ update action model =
             )
 
         -- E X P A N D
-        EntriesAction id entryAction ->    -- i.e. Expand
-            ( { model | cache = Dict.update id (Entry.update entryAction |> Maybe.map) model.cache }
+        EntryAction id entryAction ->    -- Expand or Animation Tick
+            ( { model
+                -- ?? updates either entry or expand in cache ??
+                | cache = Dict.update id (Maybe.map <| Entry.update entryAction) model.cache }
             , Effects.none
             )
 
@@ -107,7 +109,7 @@ view address model =
         viewMapper : Id -> Html
         viewMapper id =
             let entry = Maybe.withDefault Entry.initEmpty (get id model.cache)
-            in Entry.view (Signal.forwardTo address (EntriesAction id)) entry
+            in Entry.view (Signal.forwardTo address (EntryAction id)) entry
     in
     div [ id "entries", class "col-xs-12 col-sm-8" ]
         [ header []

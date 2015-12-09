@@ -11,7 +11,7 @@ import Register exposing (Action(..))
 import Nav exposing (Action(..))
 import Router exposing (Page(..), toString)
 import Summary.Summary as Summary
-import Help
+import Help exposing (Action(Help))
 import Common exposing (onLinkClick)
 
 -- MODEL
@@ -21,11 +21,12 @@ type alias Model =
     , page : Router.Page
     , register : Register.Model
     , summary : Summary.Model
-    , help : Bool
+    , help : Help.Model
     , msg : String
     }
 initModel n r s =
-    { navbar = n, page = Register Nothing, register = r, summary = s, help = False, msg = "" }
+    Model n (Register Nothing) r s Help.init ""
+    -- { navbar = n, page = Register Nothing, register = r, summary = s, help = False, msg = "" }
 
 init : (Model, Effects Action)
 init =
@@ -48,7 +49,15 @@ type Action
     | NavAction Nav.Action
     | SummaryAction Summary.Action
     | RegisterAction Register.Action
-    | Help
+
+{-
+On load
+    UrlParams passed to Router, giving back page (and [IDs])
+    then to switchPage, which passes to Register.update (tagged Activate)
+        - Each ID passed to Entries.update (GetMatchFor)
+            - loadEntry
+
+-}
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
@@ -92,6 +101,7 @@ update action model =
                             if navPage == Register Nothing     -- Set Url with any displayed entries
                                 then Register (Just model.register.entries.displayed)
                                 else navPage                        -- Navbar: recents
+                                -- we update router, but not the Entries.displayed!!
                     in switchPage page (Effects.map RouterAction routerEffects)
 
                 CountData x ->
@@ -126,10 +136,15 @@ update action model =
         RouterAction _ ->     -- NoOp _ in practise
             (model, Effects.none)
 
-        Help ->
-            ( { model | help = not model.help }
-            , Effects.none
-            )
+        -- Intro act ->
+        --     ( { model | help = Help.update act model.help }
+        --     , Effects.none
+        --     )
+
+        -- Help ->
+        --     ( { model | help = not model.help }
+        --     , Effects.none
+        --     )
         Width w ->
             ( model
             -- ( { model | msg = toString w }
@@ -142,9 +157,10 @@ view : Signal.Address Action -> Model -> Html
 view address model =
     div [ class <| "App " ++ Router.toString model.page ]
         [ Nav.view (Signal.forwardTo address NavAction) model.navbar
+        -- , Help.view (Signal.forwardTo address Intro) model.help
         , div [ class "container" ]
-            [ helpModal address model
-            , if model.page == Summary
+            -- [ helpModal address model
+            [ if model.page == Summary
                 then Summary.view (Signal.forwardTo address SummaryAction) model.summary
                 else Register.view (Signal.forwardTo address RegisterAction) model.register
             , footerDiv address model.msg
@@ -157,28 +173,29 @@ footerDiv address msg =
         [ div [ class "col-xs-12" ]
             [ span
                 [ ] [ text "Simon Hampton, 2015" ]
-            , a
-                [ onLinkClick address Help
-                , class "hidden-xs"
-                ]
-            -- , button
-            --     [ class "btn btn-default btn-xs"
-            --     , onClick address Help
+            -- , a
+            --     -- [ onLinkClick address (Intro Help)
+            --     -- , class "hidden-xs"
+            --     [ class "hidden-xs"
             --     ]
-                [ text "Notes, privacy, source code or report a problem" ]
+            -- -- , button
+            -- --     [ class "btn btn-default btn-xs"
+            -- --     , onClick address Help
+            -- --     ]
+            --     [ text "Notes, privacy, source code or report a problem" ]
             , span [] [ text msg ]
             ]
         ]
 
-helpModal : Signal.Address Action -> Model -> Html
-helpModal address model =
-    if model.help
-        then div [ class "help-modal" ]
-            [ Help.content
-            , button
-                [ class "btn btn-default"
-                ,  onClick address Help
-                ]
-                [ text "Close" ]
-            ]
-        else div [] []
+-- helpModal : Signal.Address Action -> Model -> Html
+-- helpModal address model =
+--     if model.help
+--         then div [ class "help-modal" ]
+--             [ Help.content
+--             , button
+--                 [ class "btn btn-default"
+--                 ,  onClick address Help
+--                 ]
+--                 [ text "Close" ]
+--             ]
+--         else div [] []
