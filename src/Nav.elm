@@ -29,6 +29,7 @@ init =
 type Action
     = GoPage Page
     | CountData (Result Http.Error Int)
+    | Reset
 
 update : Action -> Model -> Model
 update action model =
@@ -40,6 +41,8 @@ update action model =
             { model | regCount = c }
         CountData (Result.Err err)->
             { model | errorMessage = Just <| Common.errorHandler err }
+        Reset ->
+            { model | errorMessage = Nothing }
 
 view : Signal.Address Action -> Model -> Html
 view address model =
@@ -59,7 +62,7 @@ view address model =
                     , span [ class "icon-bar" ] []
                     , span [ class "icon-bar" ] []
                     ]
-                , a [ class "navbar-brand", href "/", onLinkClick address (GoPage (Register (Just []))) ]
+                , a [ class "navbar-brand", href "/", onLinkClick address Reset ]
                     [ text "EU Lobby Register "
                     , span
                         [ class "hidden-xs" ]

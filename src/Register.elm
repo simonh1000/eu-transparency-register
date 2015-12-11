@@ -1,4 +1,4 @@
-module Register (Model, Action(Activate, EntriesAction), init, update, view) where
+module Register (Model, Action(Activate, EntriesAction, Reset), init, update, view) where
 
 import Html exposing (..)
 import Html.Attributes exposing (class, id)
@@ -43,6 +43,7 @@ type Action
     | MatchAction Matches.Action
     | EntriesAction Entries.Action
     | Intro Help.Action
+    | Reset
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
@@ -110,6 +111,14 @@ update action model =
                 , Effects.map EntriesAction newEntriesEffects
                 )
         Intro _ -> (model, Effects.none)
+        Reset ->
+            ( { model
+              | matches = fst <| Matches.update Matches.Reset model.matches
+              , entries = fst <| Entries.update Entries.Reset model.entries
+              }
+            , Effects.none
+            )
+
 
 -- VIEW
 
@@ -125,19 +134,22 @@ view address model =
 
 mainElement address model =
     if
-           ((length model.matches.matches > 0) && (model.matches.display == Matches.Filtered))
-        || ((length model.matches.newstuff.entries > 0) && (model.matches.display == Matches.Recents))
-        ||  (length model.entries.displayed > 0)
+       (model.matches.display == Matches.Filtered)
+       && model.matches.message == ""
+       && (length model.matches.matches == 0)
+       && (length model.entries.displayed == 0)
+       && not model.matches.loading
+       && not model.entries.loading
     then
+        div
+            [ class "main row intro" ]
+            [ Help.content ]
+    else
         div
             [ class "main row" ]
             [ Matches.view (Signal.forwardTo address MatchAction) model.matches
             , Entries.view (Signal.forwardTo address EntriesAction) model.entries
             ]
-    else
-        div
-            [ class "main row intro" ]
-            [ Help.content ]
 
 --     if model.page == Summary
 --         then Summary.view (Signal.forwardTo address SummaryAction) model.summary

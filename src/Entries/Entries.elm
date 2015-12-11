@@ -23,21 +23,19 @@ type alias Model =
     { displayed : List Id
     , cache : Cache       -- also contains info about whether an item is expanded
     , message : Maybe String
+    , loading : Bool
     }
 
 init : Model
 init =
-    { displayed = []
-    , cache = Dict.empty
-    , message = Nothing
-    }
+    Model [] Dict.empty Nothing False
 
 -- UPDATE
 
 type Action
     = GetEntryFor Id
     | EntryReceived (Result Http.Error EntryDecoder.Model)  -- Decoder brings in raw data
-    | CloseAll
+    | Reset
     | EntryAction Id Entry.Action
 
 update : Action -> Model -> (Model, Effects Action)
@@ -61,23 +59,28 @@ update action model =
             else if Dict.member id model.cache then            -- cached
                 insertEntry id
             else
-                ( model, loadEntry id )
+                ( { model | loading = True }
+                , loadEntry id
+                )
         EntryReceived (Result.Ok entry) ->
             let (newModel, newEffects) = insertEntry entry.id
             in
             ( { newModel
                 | cache = insert entry.id (Entry.init entry) newModel.cache
-                -- , message = Just entry.id
+                , loading = False
                }
             , newEffects
             )
         EntryReceived (Result.Err msg) ->
-            ( { model | message = Just (errorHandler msg) }
+            ( { model
+              | message = Just (errorHandler msg)
+              , loading = False
+              }
             , Effects.none
             )
 
         -- C L O S E
-        CloseAll ->
+        Reset ->
             ( { model | displayed = [], message = Nothing }
             , Effects.none
             )
@@ -115,13 +118,14 @@ view address model =
         [ header []
             [ h2 [] [ text "Summary of Transparency Register entries" ]
             , button
-                [ onClick address CloseAll
+                [ onClick address Reset
                 , class "btn btn-default btn-xs closeAll" ]
                 [ text "Close All" ]
             ]
         , case model.message of
             Just m -> p [] [ text m ]
             Nothing -> p [] []
+        , p [] [ text <| if model.loading then "Loading..." else "" ]
         , div [ class "mainContainer" ] <|
             List.map viewMapper model.displayed
         ]

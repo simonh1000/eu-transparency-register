@@ -24,19 +24,16 @@ type DisplayView
 defaultMessage = "Use the filters above to find some registrees"
 
 type alias Model =
-    { matches : List Match
+    { display : DisplayView
+    , matches : List Match
     , newstuff: NewStuff
-    , display : DisplayView
+    , loading : Bool
     , message : String
     }
 
 init : Model
 init =
-    Model
-        []
-        (MatchesDecoder.NewStuff [] [])
-        Filtered
-        defaultMessage
+    Model Filtered [] (MatchesDecoder.NewStuff [] []) False ""
 
 -- UPDATE
 
@@ -47,21 +44,19 @@ type Action
     | GetRecents
     | RecentsData (Result Http.Error NewStuff)
     | GetEntry Id                   -- caught by App
+    | Reset
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
     case action of
         SetFilters ->
-            ( { model
-                | display = Filtered
-                , message = defaultMessage
-              }
+            ( { model | display = Filtered }
             , Effects.none
             )
         GetMatchFor searchModel ->
             ( { model
                 | matches = []
-                , message = "Searching...."
+                , loading = True
                 , display = Filtered
                 }
             , getMatches searchModel
@@ -69,7 +64,9 @@ update action model =
         MatchesData (Result.Ok ms) ->
             ( { model
               | matches = ms
-              , message = if List.length ms == 0 then "No results found" else "" }
+              , loading = False
+              , message = if List.length ms == 0 then "No results match your query" else ""
+              }
             , Effects.none
             )
         MatchesData (Result.Err err) ->
@@ -77,15 +74,16 @@ update action model =
             , Effects.none
             )
         GetRecents ->
-            let newModel = { model | display = Recents }
+            let newModel =
+                { model | display = Recents }
             in
                 if List.length model.newstuff.entries == 0
-                    then ( { newModel | message = "Getting data..." }, getRecents )
-                    else ( { newModel | message = "" }, Effects.none )
+                    then ( { newModel | loading = True }, getRecents )
+                    else ( { newModel | loading = False }, Effects.none )
 
         RecentsData (Result.Ok recs) ->
             ( { model
-              | message = ""
+              | loading = False
               , newstuff = recs
               }
             , Effects.none
@@ -96,6 +94,10 @@ update action model =
             )
         -- caught by parent in practise
         GetEntry _ -> ( model, Effects.none )
+        Reset ->
+            ( { model | matches = [], display = Filtered, message = "" }
+            , Effects.none
+            )
 
 -- VIEW
 
@@ -107,25 +109,33 @@ view address model =
 
 viewFilterResults : Signal.Address Action -> Model -> Html
 viewFilterResults address model =
-    div [ id "matches", class "col-xs-12 col-sm-4" ]
-        [ h2 [] [ text "Search results" ]
-        , p [] [ text model.message ]
-        , div [ class "mainContainer" ] <| List.map (viewMatch address) model.matches
-        ]
+    div [ id "matches", class "col-xs-12 col-sm-4" ] <|
+        if model.message /= ""
+        then [ h2 [] [ text model.message ] ]
+        else if model.loading
+            then
+                [ h2 [] [ text "Loading..." ] ]
+            else
+                [ h2 [] [ text <| (toString <| List.length model.matches) ++ " Search results" ]
+                , div [ class "mainContainer" ] <| List.map (viewMatch address) model.matches
+                ]
 
 viewRecents : Signal.Address Action -> Model -> Html
 viewRecents address model =
-    div [ id "matches", class "col-xs-12 col-sm-4" ]
-        [ p [] [ text model.message ]
-        , div [ class "recent entries" ]
-            [ h2 [] [ text <| (toString <| List.length model.newstuff.entries) ++ " Recent new entries" ]
-            , div [ class "mainContainer" ] <| List.map (viewMatch address) model.newstuff.entries
+    div [ id "matches", class "col-xs-12 col-sm-4" ] <|
+        if model.loading
+        then
+            [ h2 [] [ text "Loading..." ] ]
+        else
+            [ div [ class "recent entries" ]
+                [ h2 [] [ text <| (toString <| List.length model.newstuff.entries) ++ " Recent new entries" ]
+                , div [ class "mainContainer" ] <| List.map (viewMatch address) model.newstuff.entries
+                ]
+            , div [ class "recent entries" ]
+                [ h2 [] [ text <| (toString <| List.length model.newstuff.updates) ++ " Recent updates" ]
+                , div [ class "mainContainer" ] <| List.map (viewMatch address) model.newstuff.updates
+                ]
             ]
-        , div [ class "recent entries" ]
-            [ h2 [] [ text <| (toString <| List.length model.newstuff.updates) ++ " Recent updates" ]
-            , div [ class "mainContainer" ] <| List.map (viewMatch address) model.newstuff.updates
-            ]
-        ]
 
 viewMatch : Signal.Address Action -> Match -> Html
 viewMatch address match =

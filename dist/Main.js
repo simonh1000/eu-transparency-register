@@ -12680,6 +12680,7 @@ Elm.Matches.Matches.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
+   var Reset = {ctor: "Reset"};
    var GetEntry = function (a) {    return {ctor: "GetEntry",_0: a};};
    var viewMatch = F2(function (address,match) {
       return A2($Html.p,_U.list([A2($Html$Events.onClick,address,GetEntry(match.id))]),_U.list([$Html.text(match.orgName)]));
@@ -12687,26 +12688,44 @@ Elm.Matches.Matches.make = function (_elm) {
    var viewFilterResults = F2(function (address,model) {
       return A2($Html.div,
       _U.list([$Html$Attributes.id("matches"),$Html$Attributes.$class("col-xs-12 col-sm-4")]),
-      _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text("Search results")]))
-              ,A2($Html.p,_U.list([]),_U.list([$Html.text(model.message)]))
-              ,A2($Html.div,_U.list([$Html$Attributes.$class("mainContainer")]),A2($List.map,viewMatch(address),model.matches))]));
+      !_U.eq(model.message,"") ? _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text(model.message)]))]) : model.loading ? _U.list([A2($Html.h2,
+      _U.list([]),
+      _U.list([$Html.text("Loading...")]))]) : _U.list([A2($Html.h2,
+                                                       _U.list([]),
+                                                       _U.list([$Html.text(A2($Basics._op["++"],
+                                                       $Basics.toString($List.length(model.matches)),
+                                                       " Search results"))]))
+                                                       ,A2($Html.div,
+                                                       _U.list([$Html$Attributes.$class("mainContainer")]),
+                                                       A2($List.map,viewMatch(address),model.matches))]));
    });
    var viewRecents = F2(function (address,model) {
       return A2($Html.div,
       _U.list([$Html$Attributes.id("matches"),$Html$Attributes.$class("col-xs-12 col-sm-4")]),
-      _U.list([A2($Html.p,_U.list([]),_U.list([$Html.text(model.message)]))
-              ,A2($Html.div,
-              _U.list([$Html$Attributes.$class("recent entries")]),
-              _U.list([A2($Html.h2,
-                      _U.list([]),
-                      _U.list([$Html.text(A2($Basics._op["++"],$Basics.toString($List.length(model.newstuff.entries))," Recent new entries"))]))
-                      ,A2($Html.div,_U.list([$Html$Attributes.$class("mainContainer")]),A2($List.map,viewMatch(address),model.newstuff.entries))]))
-              ,A2($Html.div,
-              _U.list([$Html$Attributes.$class("recent entries")]),
-              _U.list([A2($Html.h2,
-                      _U.list([]),
-                      _U.list([$Html.text(A2($Basics._op["++"],$Basics.toString($List.length(model.newstuff.updates))," Recent updates"))]))
-                      ,A2($Html.div,_U.list([$Html$Attributes.$class("mainContainer")]),A2($List.map,viewMatch(address),model.newstuff.updates))]))]));
+      model.loading ? _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text("Loading...")]))]) : _U.list([A2($Html.div,
+                                                                                                        _U.list([$Html$Attributes.$class("recent entries")]),
+                                                                                                        _U.list([A2($Html.h2,
+                                                                                                                _U.list([]),
+                                                                                                                _U.list([$Html.text(A2($Basics._op["++"],
+                                                                                                                $Basics.toString($List.length(model.newstuff.entries)),
+                                                                                                                " Recent new entries"))]))
+                                                                                                                ,A2($Html.div,
+                                                                                                                _U.list([$Html$Attributes.$class("mainContainer")]),
+                                                                                                                A2($List.map,
+                                                                                                                viewMatch(address),
+                                                                                                                model.newstuff.entries))]))
+                                                                                                        ,A2($Html.div,
+                                                                                                        _U.list([$Html$Attributes.$class("recent entries")]),
+                                                                                                        _U.list([A2($Html.h2,
+                                                                                                                _U.list([]),
+                                                                                                                _U.list([$Html.text(A2($Basics._op["++"],
+                                                                                                                $Basics.toString($List.length(model.newstuff.updates)),
+                                                                                                                " Recent updates"))]))
+                                                                                                                ,A2($Html.div,
+                                                                                                                _U.list([$Html$Attributes.$class("mainContainer")]),
+                                                                                                                A2($List.map,
+                                                                                                                viewMatch(address),
+                                                                                                                model.newstuff.updates))]))]));
    });
    var view = F2(function (address,model) {
       var _p0 = model.display;
@@ -12732,34 +12751,36 @@ Elm.Matches.Matches.make = function (_elm) {
    };
    var GetMatchFor = function (a) {    return {ctor: "GetMatchFor",_0: a};};
    var SetFilters = {ctor: "SetFilters"};
-   var Model = F4(function (a,b,c,d) {    return {matches: a,newstuff: b,display: c,message: d};});
+   var Model = F5(function (a,b,c,d,e) {    return {display: a,matches: b,newstuff: c,loading: d,message: e};});
    var defaultMessage = "Use the filters above to find some registrees";
    var Recents = {ctor: "Recents"};
    var Filtered = {ctor: "Filtered"};
-   var init = A4(Model,_U.list([]),A2($Matches$MatchesDecoder.NewStuff,_U.list([]),_U.list([])),Filtered,defaultMessage);
+   var init = A5(Model,Filtered,_U.list([]),A2($Matches$MatchesDecoder.NewStuff,_U.list([]),_U.list([])),false,"");
    var update = F2(function (action,model) {
       var _p1 = action;
       switch (_p1.ctor)
-      {case "SetFilters": return {ctor: "_Tuple2",_0: _U.update(model,{display: Filtered,message: defaultMessage}),_1: $Effects.none};
-         case "GetMatchFor": return {ctor: "_Tuple2"
-                                    ,_0: _U.update(model,{matches: _U.list([]),message: "Searching....",display: Filtered})
-                                    ,_1: getMatches(_p1._0)};
+      {case "SetFilters": return {ctor: "_Tuple2",_0: _U.update(model,{display: Filtered}),_1: $Effects.none};
+         case "GetMatchFor": return {ctor: "_Tuple2",_0: _U.update(model,{matches: _U.list([]),loading: true,display: Filtered}),_1: getMatches(_p1._0)};
          case "MatchesData": if (_p1._0.ctor === "Ok") {
                  var _p2 = _p1._0._0;
-                 return {ctor: "_Tuple2",_0: _U.update(model,{matches: _p2,message: _U.eq($List.length(_p2),0) ? "No results found" : ""}),_1: $Effects.none};
+                 return {ctor: "_Tuple2"
+                        ,_0: _U.update(model,{matches: _p2,loading: false,message: _U.eq($List.length(_p2),0) ? "No results match your query" : ""})
+                        ,_1: $Effects.none};
               } else {
                  return {ctor: "_Tuple2",_0: _U.update(model,{message: $Common.errorHandler(_p1._0._0)}),_1: $Effects.none};
               }
          case "GetRecents": var newModel = _U.update(model,{display: Recents});
-           return _U.eq($List.length(model.newstuff.entries),0) ? {ctor: "_Tuple2"
-                                                                  ,_0: _U.update(newModel,{message: "Getting data..."})
-                                                                  ,_1: getRecents} : {ctor: "_Tuple2",_0: _U.update(newModel,{message: ""}),_1: $Effects.none};
+           return _U.eq($List.length(model.newstuff.entries),0) ? {ctor: "_Tuple2",_0: _U.update(newModel,{loading: true}),_1: getRecents} : {ctor: "_Tuple2"
+                                                                                                                                             ,_0: _U.update(newModel,
+                                                                                                                                             {loading: false})
+                                                                                                                                             ,_1: $Effects.none};
          case "RecentsData": if (_p1._0.ctor === "Ok") {
-                 return {ctor: "_Tuple2",_0: _U.update(model,{message: "",newstuff: _p1._0._0}),_1: $Effects.none};
+                 return {ctor: "_Tuple2",_0: _U.update(model,{loading: false,newstuff: _p1._0._0}),_1: $Effects.none};
               } else {
                  return {ctor: "_Tuple2",_0: _U.update(model,{message: $Common.errorHandler(_p1._0._0)}),_1: $Effects.none};
               }
-         default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
+         case "GetEntry": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+         default: return {ctor: "_Tuple2",_0: _U.update(model,{matches: _U.list([]),display: Filtered,message: ""}),_1: $Effects.none};}
    });
    return _elm.Matches.Matches.values = {_op: _op
                                         ,init: init
@@ -12772,6 +12793,7 @@ Elm.Matches.Matches.make = function (_elm) {
                                         ,GetRecents: GetRecents
                                         ,RecentsData: RecentsData
                                         ,GetEntry: GetEntry
+                                        ,Reset: Reset
                                         ,Filtered: Filtered
                                         ,Recents: Recents};
 };
@@ -12914,7 +12936,7 @@ Elm.Entries.Entries.make = function (_elm) {
    $Task = Elm.Task.make(_elm);
    var _op = {};
    var EntryAction = F2(function (a,b) {    return {ctor: "EntryAction",_0: a,_1: b};});
-   var CloseAll = {ctor: "CloseAll"};
+   var Reset = {ctor: "Reset"};
    var view = F2(function (address,model) {
       var viewMapper = function (id) {
          var entry = A2($Maybe.withDefault,$Entries$Entry.initEmpty,A2($Dict.get,id,model.cache));
@@ -12926,7 +12948,7 @@ Elm.Entries.Entries.make = function (_elm) {
               _U.list([]),
               _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text("Summary of Transparency Register entries")]))
                       ,A2($Html.button,
-                      _U.list([A2($Html$Events.onClick,address,CloseAll),$Html$Attributes.$class("btn btn-default btn-xs closeAll")]),
+                      _U.list([A2($Html$Events.onClick,address,Reset),$Html$Attributes.$class("btn btn-default btn-xs closeAll")]),
                       _U.list([$Html.text("Close All")]))]))
               ,function () {
                  var _p0 = model.message;
@@ -12936,6 +12958,7 @@ Elm.Entries.Entries.make = function (_elm) {
                        return A2($Html.p,_U.list([]),_U.list([]));
                     }
               }()
+              ,A2($Html.p,_U.list([]),_U.list([$Html.text(model.loading ? "Loading..." : "")]))
               ,A2($Html.div,_U.list([$Html$Attributes.$class("mainContainer")]),A2($List.map,viewMapper,model.displayed))]));
    });
    var EntryReceived = function (a) {    return {ctor: "EntryReceived",_0: a};};
@@ -12954,17 +12977,19 @@ Elm.Entries.Entries.make = function (_elm) {
       {case "GetEntryFor": var _p2 = _p1._0;
            return A2($List.member,_p2,model.displayed) ? {ctor: "_Tuple2",_0: model,_1: $Effects.none} : A2($Dict.member,
            _p2,
-           model.cache) ? insertEntry(_p2) : {ctor: "_Tuple2",_0: model,_1: loadEntry(_p2)};
+           model.cache) ? insertEntry(_p2) : {ctor: "_Tuple2",_0: _U.update(model,{loading: true}),_1: loadEntry(_p2)};
          case "EntryReceived": if (_p1._0.ctor === "Ok") {
                  var _p4 = _p1._0._0;
                  var _p3 = insertEntry(_p4.id);
                  var newModel = _p3._0;
                  var newEffects = _p3._1;
-                 return {ctor: "_Tuple2",_0: _U.update(newModel,{cache: A3($Dict.insert,_p4.id,$Entries$Entry.init(_p4),newModel.cache)}),_1: newEffects};
+                 return {ctor: "_Tuple2"
+                        ,_0: _U.update(newModel,{cache: A3($Dict.insert,_p4.id,$Entries$Entry.init(_p4),newModel.cache),loading: false})
+                        ,_1: newEffects};
               } else {
-                 return {ctor: "_Tuple2",_0: _U.update(model,{message: $Maybe.Just($Common.errorHandler(_p1._0._0))}),_1: $Effects.none};
+                 return {ctor: "_Tuple2",_0: _U.update(model,{message: $Maybe.Just($Common.errorHandler(_p1._0._0)),loading: false}),_1: $Effects.none};
               }
-         case "CloseAll": return {ctor: "_Tuple2",_0: _U.update(model,{displayed: _U.list([]),message: $Maybe.Nothing}),_1: $Effects.none};
+         case "Reset": return {ctor: "_Tuple2",_0: _U.update(model,{displayed: _U.list([]),message: $Maybe.Nothing}),_1: $Effects.none};
          default: if (_p1._1.ctor === "Close") {
                  var _p6 = _p1._0;
                  var newDisplayed = A2($List.filter,function (d) {    return !_U.eq(d,_p6);},model.displayed);
@@ -12983,8 +13008,8 @@ Elm.Entries.Entries.make = function (_elm) {
               }}
    });
    var GetEntryFor = function (a) {    return {ctor: "GetEntryFor",_0: a};};
-   var init = {displayed: _U.list([]),cache: $Dict.empty,message: $Maybe.Nothing};
-   var Model = F3(function (a,b,c) {    return {displayed: a,cache: b,message: c};});
+   var Model = F4(function (a,b,c,d) {    return {displayed: a,cache: b,message: c,loading: d};});
+   var init = A4(Model,_U.list([]),$Dict.empty,$Maybe.Nothing,false);
    return _elm.Entries.Entries.values = {_op: _op
                                         ,init: init
                                         ,update: update
@@ -12992,7 +13017,7 @@ Elm.Entries.Entries.make = function (_elm) {
                                         ,Model: Model
                                         ,GetEntryFor: GetEntryFor
                                         ,EntryReceived: EntryReceived
-                                        ,CloseAll: CloseAll
+                                        ,Reset: Reset
                                         ,EntryAction: EntryAction};
 };
 Elm.Router = Elm.Router || {};
@@ -13112,6 +13137,7 @@ Elm.Register.make = function (_elm) {
    $Router = Elm.Router.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
+   var Reset = {ctor: "Reset"};
    var Intro = function (a) {    return {ctor: "Intro",_0: a};};
    var EntriesAction = function (a) {    return {ctor: "EntriesAction",_0: a};};
    var MatchAction = function (a) {    return {ctor: "MatchAction",_0: a};};
@@ -13169,17 +13195,21 @@ Elm.Register.make = function (_elm) {
            var newEntriesModel = _p10._0;
            var newEntriesEffects = _p10._1;
            return {ctor: "_Tuple2",_0: _U.update(model,{entries: newEntriesModel}),_1: A2($Effects.map,EntriesAction,newEntriesEffects)};
-         default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
+         case "Intro": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+         default: return {ctor: "_Tuple2"
+                         ,_0: _U.update(model,
+                         {matches: $Basics.fst(A2($Matches$Matches.update,$Matches$Matches.Reset,model.matches))
+                         ,entries: $Basics.fst(A2($Entries$Entries.update,$Entries$Entries.Reset,model.entries))})
+                         ,_1: $Effects.none};}
    });
    var mainElement = F2(function (address,model) {
-      return _U.cmp($List.length(model.matches.matches),0) > 0 && _U.eq(model.matches.display,
-      $Matches$Matches.Filtered) || (_U.cmp($List.length(model.matches.newstuff.entries),0) > 0 && _U.eq(model.matches.display,
-      $Matches$Matches.Recents) || _U.cmp($List.length(model.entries.displayed),0) > 0) ? A2($Html.div,
+      return _U.eq(model.matches.display,$Matches$Matches.Filtered) && (_U.eq(model.matches.message,"") && (_U.eq($List.length(model.matches.matches),
+      0) && (_U.eq($List.length(model.entries.displayed),0) && ($Basics.not(model.matches.loading) && $Basics.not(model.entries.loading))))) ? A2($Html.div,
+      _U.list([$Html$Attributes.$class("main row intro")]),
+      _U.list([$Help.content])) : A2($Html.div,
       _U.list([$Html$Attributes.$class("main row")]),
       _U.list([A2($Matches$Matches.view,A2($Signal.forwardTo,address,MatchAction),model.matches)
-              ,A2($Entries$Entries.view,A2($Signal.forwardTo,address,EntriesAction),model.entries)])) : A2($Html.div,
-      _U.list([$Html$Attributes.$class("main row intro")]),
-      _U.list([$Help.content]));
+              ,A2($Entries$Entries.view,A2($Signal.forwardTo,address,EntriesAction),model.entries)]));
    });
    var FilterAction = function (a) {    return {ctor: "FilterAction",_0: a};};
    var view = F2(function (address,model) {
@@ -13196,7 +13226,7 @@ Elm.Register.make = function (_elm) {
               ,_0: {filters: $Filters$Filters.init,matches: $Matches$Matches.init,entries: $Entries$Entries.init,message: ""}
               ,_1: $Effects.none};
    var Model = F4(function (a,b,c,d) {    return {filters: a,matches: b,entries: c,message: d};});
-   return _elm.Register.values = {_op: _op,init: init,update: update,view: view,Model: Model,Activate: Activate,EntriesAction: EntriesAction};
+   return _elm.Register.values = {_op: _op,init: init,update: update,view: view,Model: Model,Activate: Activate,EntriesAction: EntriesAction,Reset: Reset};
 };
 Elm.Nav = Elm.Nav || {};
 Elm.Nav.make = function (_elm) {
@@ -13221,16 +13251,16 @@ Elm.Nav.make = function (_elm) {
    var _op = {};
    var update = F2(function (action,model) {
       var _p0 = action;
-      if (_p0.ctor === "GoPage") {
-            return model;
-         } else {
-            if (_p0._0.ctor === "Ok") {
-                  return _U.update(model,{regCount: _p0._0._0});
-               } else {
-                  return _U.update(model,{errorMessage: $Maybe.Just($Common.errorHandler(_p0._0._0))});
-               }
-         }
+      switch (_p0.ctor)
+      {case "GoPage": return model;
+         case "CountData": if (_p0._0.ctor === "Ok") {
+                 return _U.update(model,{regCount: _p0._0._0});
+              } else {
+                 return _U.update(model,{errorMessage: $Maybe.Just($Common.errorHandler(_p0._0._0))});
+              }
+         default: return _U.update(model,{errorMessage: $Maybe.Nothing});}
    });
+   var Reset = {ctor: "Reset"};
    var CountData = function (a) {    return {ctor: "CountData",_0: a};};
    var getMeta = $Effects.task(A2($Task.map,CountData,$Task.toResult(A2($Http.get,A2($Json$Decode._op[":="],"count",$Json$Decode.$int),"/api/register/meta"))));
    var GoPage = function (a) {    return {ctor: "GoPage",_0: a};};
@@ -13252,9 +13282,7 @@ Elm.Nav.make = function (_elm) {
                               ,A2($Html.span,_U.list([$Html$Attributes.$class("icon-bar")]),_U.list([]))
                               ,A2($Html.span,_U.list([$Html$Attributes.$class("icon-bar")]),_U.list([]))]))
                       ,A2($Html.a,
-                      _U.list([$Html$Attributes.$class("navbar-brand")
-                              ,$Html$Attributes.href("/")
-                              ,A2($Common.onLinkClick,address,GoPage($Router.Register($Maybe.Just(_U.list([])))))]),
+                      _U.list([$Html$Attributes.$class("navbar-brand"),$Html$Attributes.href("/"),A2($Common.onLinkClick,address,Reset)]),
                       _U.list([$Html.text("EU Lobby Register ")
                               ,A2($Html.span,
                               _U.list([$Html$Attributes.$class("hidden-xs")]),
@@ -13281,7 +13309,7 @@ Elm.Nav.make = function (_elm) {
    });
    var Model = F2(function (a,b) {    return {regCount: a,errorMessage: b};});
    var init = {ctor: "_Tuple2",_0: A2(Model,0,$Maybe.Nothing),_1: getMeta};
-   return _elm.Nav.values = {_op: _op,init: init,update: update,view: view,Model: Model,GoPage: GoPage,CountData: CountData};
+   return _elm.Nav.values = {_op: _op,init: init,update: update,view: view,Model: Model,GoPage: GoPage,CountData: CountData,Reset: Reset};
 };
 Elm.Summary = Elm.Summary || {};
 Elm.Summary.SummaryDecoder = Elm.Summary.SummaryDecoder || {};
@@ -13611,16 +13639,17 @@ Elm.App.make = function (_elm) {
            var routerEffects = _p3._1;
            return A2(switchPage,page,A2($Effects.map,RouterAction,routerEffects));
          case "NavAction": var _p4 = _p2._0;
-           if (_p4.ctor === "GoPage") {
-                 var _p6 = _p4._0;
-                 var _p5 = $Router.update($Router.NavAction(_U.eq(_p6,
-                 $Router.Register($Maybe.Nothing)) ? $Router.Register($Maybe.Just(model.register.entries.displayed)) : _p6));
-                 var page = _p5._0;
-                 var routerEffects = _p5._1;
-                 return A2(switchPage,page,A2($Effects.map,RouterAction,routerEffects));
-              } else {
-                 return {ctor: "_Tuple2",_0: _U.update(model,{navbar: A2($Nav.update,$Nav.CountData(_p4._0),model.navbar)}),_1: $Effects.none};
-              }
+           switch (_p4.ctor)
+           {case "Reset": return {ctor: "_Tuple2"
+                                 ,_0: _U.update(model,{register: $Basics.fst(A2($Register.update,$Register.Reset,model.register))})
+                                 ,_1: $Effects.none};
+              case "GoPage": var _p6 = _p4._0;
+                var _p5 = $Router.update($Router.NavAction(_U.eq(_p6,
+                $Router.Register($Maybe.Nothing)) ? $Router.Register($Maybe.Just(model.register.entries.displayed)) : _p6));
+                var page = _p5._0;
+                var routerEffects = _p5._1;
+                return A2(switchPage,page,A2($Effects.map,RouterAction,routerEffects));
+              default: return {ctor: "_Tuple2",_0: _U.update(model,{navbar: A2($Nav.update,$Nav.CountData(_p4._0),model.navbar)}),_1: $Effects.none};}
          case "RegisterAction": var _p9 = _p2._0;
            var _p7 = A2($Register.update,_p9,model.register);
            var newModel = _p7._0;

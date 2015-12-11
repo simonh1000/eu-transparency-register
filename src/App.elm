@@ -95,6 +95,11 @@ update action model =
 
         NavAction navAction ->
             case navAction of
+                Nav.Reset ->
+                    ( { model | register = fst <| Register.update Register.Reset model.register
+                      }
+                    , Effects.none
+                    )
                 GoPage navPage ->
                     let (page, routerEffects) =
                         Router.update <| Router.NavAction <|

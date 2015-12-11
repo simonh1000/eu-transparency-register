@@ -22,6 +22,10 @@ var register,
 	changes,
 	analytics;
 
+function delaySend(data, res) {
+	setTimeout(() => res.send(data), 2000);
+}
+
 mongoClient.connect(mongoUrl, (err, db) => {
 	if (err) throw err;
 
@@ -60,33 +64,6 @@ exports.search = (req, res) => {
 	});
 };
 
-exports.id = (req, res) => {
-	let id = {'_id': req.params.id};
-
-	analytics.update(
-		id,
-		{$inc: {'count': 1}},     // , $setOnInsert: {'count': 0}
-		{upsert:true}
-	);
-
-	register.findOne(id)
-		.then( data => {
-			// setTimeout( () => res.send(data), 2000);
-			res.send(data)
-		});
-};
-
-exports.summary = (req, res) => {
-	summary.find()
-	.toArray( (err, data) => {
-		if (err)
-			return res.status(500).end();
-
-		// sort????
-		res.send(data.sort( (e2, e1) => e1.orgName < e2.orgName ));
-	} );
-};
-
 exports.newentries = (req, res) => {
 	// find all records with id < x days ago
 	// concat results
@@ -107,6 +84,33 @@ exports.newentries = (req, res) => {
 			);
 		// console.log(combined.entries);
 		res.send(combined);
+	} );
+};
+
+exports.id = (req, res) => {
+	let id = {'_id': req.params.id};
+
+	analytics.update(
+		id,
+		{$inc: {'count': 1}},     // , $setOnInsert: {'count': 0}
+		{upsert:true}
+	);
+
+	register.findOne(id)
+		.then( data => {
+			// delaySend(data, res);
+			res.send(data)
+		});
+};
+
+exports.summary = (req, res) => {
+	summary.find()
+	.toArray( (err, data) => {
+		if (err)
+			return res.status(500).end();
+
+		// sort????
+		res.send(data.sort( (e2, e1) => e1.orgName < e2.orgName ));
 	} );
 };
 
