@@ -1,12 +1,11 @@
 /*
- * 'register' = all current data _id = EU Id
- * 'history' = previous data _id = EU Id
- * 'changes' = [{_id, orgName}] _id = date
- * 'summary' = .... _id = ['interests', 'sections']
  */
+
+'use strict';
 
 var express = require('express');
 var router = express.Router();
+var mailgun = require('./mailgun')
 
 var coll;
 
@@ -30,9 +29,15 @@ router.get('/', (req, res) => {
 
 router.post('/', (req, res) => {
     console.log("post", req.body);
-    coll.insertOne(req.body)
+    let comment = req.body;
+    coll.insertOne(comment)
     .then(
-        () => res.status(200).send({success:true}),
+        () => {
+            mailgun.sendEmail(comment.email, comment.comment)
+            .catch( err => console.log(err) ); // don't need to wait for Promise
+            
+            res.status(200).send({success:true})
+        },
         e => res.status(500).send(e)
     );
 });

@@ -27,12 +27,14 @@ var production = false;
 /*
  * S E R V E R
  */
+ var config = require('./ignore/settings');
 gulp.task('serve', function(cb){
 	var called = false;
 	return nodemon({
 		"script": 'server/bin/www',     // port 5000 by default
 	    "watch": paths.server,
-		"ext": "js"
+		"ext": "js",
+		"env": config
 	})
 	.on('start', function () {
 		if (!called) {

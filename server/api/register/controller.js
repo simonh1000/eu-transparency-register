@@ -4,7 +4,10 @@
 
 var moment = require('moment');
 var mongoClient = require('mongodb');
-var mongoUrl = process.env.MONGO_URI || "mongodb://localhost:27017/lobby";
+
+if (process.env.MONGO_URI)
+	var mongoUrl = process.env.MONGO_URI;
+else throw "Can't connect to DB";
 
 const CHANGES = 'changes';
 const SUMMARY = 'summary';
@@ -107,7 +110,7 @@ exports.summary = (req, res) => {
 	summary.find()
 	.toArray( (err, data) => {
 		if (err)
-			return res.status(500).end();
+			return res.sendStatus(500);
 
 		// sort????
 		res.send(data.sort( (e2, e1) => e1.orgName < e2.orgName ));
@@ -118,7 +121,7 @@ exports.summary = (req, res) => {
 exports.meta = (req, res) => {
 	register.find()
 	.count( (err, data) => {
-		if (err) res.sendStatus(500);
+		if (err) return res.sendStatus(500);
 		// delaySend(data, res);
 		res.send({count:data});
 	});
