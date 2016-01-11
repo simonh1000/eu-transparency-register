@@ -96,17 +96,20 @@ update action model =
         NavAction navAction ->
             case navAction of
                 Nav.Reset ->
-                    ( { model | register = fst <| Register.update Register.Reset model.register
+                    ( { model
+                      | register = fst <| Register.update Register.Reset model.register
+                      , page = Router.Register Nothing
                       }
-                    , Effects.none
+                    --   update Url to '/'
+                    , Effects.map RouterAction (snd <| Router.update <| Router.NavAction (Register Nothing))
                     )
                 GoPage navPage ->
                     let (page, routerEffects) =
                         Router.update <| Router.NavAction <|
-                            if navPage == Register Nothing     -- Set Url with any displayed entries
-                                then Register (Just model.register.entries.displayed)
-                                else navPage                        -- Navbar: recents
-                                -- we update router, but not the Entries.displayed!!
+                            if navPage == Register Nothing
+                            -- Set Url with any displayed entries
+                            then Register (Just model.register.entries.displayed)
+                            else navPage                        -- Navbar: recents
                     in switchPage page (Effects.map RouterAction routerEffects)
 
                 CountData x ->

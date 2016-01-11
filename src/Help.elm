@@ -27,9 +27,9 @@ content =
 
 The [Commission's lobby register](http://ec.europa.eu/transparencyregister/public/homePage.do) is a great move towards transparency, but it has two key functional deficiencies addressed here:
 
- - **Comparing entries**: What resources is one lobbyist use using compared to another?
+ - **Comparing entries**: What resources is one lobbyist using compared to another?
 
- - **Sharing links to entries**: Want to discuss with a colleague, or share on social media? You need direct, deep links.
+ - **Sharing links to entries**: Want to discuss with a colleague, or share on social media? You need direct (deep) links.
 
 So, try these examples:
 

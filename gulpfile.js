@@ -1,39 +1,37 @@
 var	gulp           = require('gulp'),
 	nodemon        = require('gulp-nodemon'),
 	concat         = require('gulp-concat'),
-	uglify		= require('gulp-minify-css'),
 	jade           = require('gulp-jade'),
 	browserSync    = require('browser-sync').create(),
 	sourcemaps     = require('gulp-sourcemaps'),
 	sass           = require('gulp-sass'),
-	// clean          = require('gulp-clean'),
 	elm            = require('gulp-elm'),
-	// inject         = require('gulp-inject'),
-	runSequence    = require('run-sequence');
+	// production tools
+    runSequence    = require('run-sequence'),
+	gulpif         = require('gulp-if'),
+	minifyCss	   = require('gulp-minify-css'),
+	uglify         = require('gulp-uglify');
 
 var paths = {
-	compileDestination: "dist",
+	dist: "dist",
 	server  : './server',
-	home    : ['src/index.jade'],
-	sass    : ['src/**/*.{sass,scss}'],
+	html    : ['src/index.jade'],
+	scss    : ['src/**/*.{scss, sass}'],
 	elm     : "src/**/*.elm",
-	elmMain : "src/Main.elm",
-	copy    : "src/Summary/d3.js"
+	elmMain     : "src/Main.elm"
 };
+
+var production = false;
 
 /*
  * S E R V E R
  */
-var config = require("./ignore/settings");
-
 gulp.task('serve', function(cb){
 	var called = false;
 	return nodemon({
 		"script": 'server/bin/www',     // port 5000 by default
 	    "watch": paths.server,
-		"ext": "js",
-		// "env": {'NODE_ENV' : "development"}
-		"env": config
+		"ext": "js"
 	})
 	.on('start', function () {
 		if (!called) {
@@ -42,8 +40,8 @@ gulp.task('serve', function(cb){
 		}
   	})
 	.on('restart', function () {
-      console.log('restarted!');
-  });
+      console.log('restarted!')
+    })
 });
 
 /*
@@ -51,35 +49,30 @@ gulp.task('serve', function(cb){
  */
 
 // runs jade on index.jade
-gulp.task('home', function() {
-	return gulp.src(paths.home)
+gulp.task('html', function() {
+	return gulp.src(paths.html)
 	.pipe(jade({pretty: true}))
-	.pipe(gulp.dest(paths.compileDestination));
+	.pipe(gulp.dest(paths.dist));
 });
 
 gulp.task('sass', function() {
-	return gulp.src('src/styles.sass')
+	return gulp.src(paths.scss)
 	.pipe(sass().on('error', sass.logError))
 	.pipe(concat('styles.css'))
-	.pipe(uglify())
-	.pipe(gulp.dest(paths.compileDestination))
+	.pipe( gulpif(production, minifyCss()) )    // minify in production
+	.pipe(gulp.dest(paths.dist))
 	.pipe(browserSync.stream()); 			// injects new styles without page reload!
 });
 
-gulp.task('copyjs', function() {
-	gulp.src(paths.copy)
-	.pipe(gulp.dest(paths.compileDestination));
-});
-
-gulp.task('compilation', ['home', 'sass', 'copyjs']);
+gulp.task('compilation', ['html', 'sass']);
 
 /*
  * E L M
  */
 
-gulp.task('elm-init', elm.init);
+ gulp.task('elm-init', elm.init);
 
-gulp.task('elm-compile', ['elm-init'], function() {
+ gulp.task('elm-compile', ['elm-init'], function() {
 	 // By explicitly handling errors, we prevent Gulp crashing when compile fails
      function onErrorHandler(err) {
          console.log(err.message);
@@ -87,8 +80,9 @@ gulp.task('elm-compile', ['elm-init'], function() {
      return gulp.src(paths.elmMain)             // "./src/Main.elm"
          .pipe(elm())
          .on('error', onErrorHandler)
-         .pipe(gulp.dest(paths.compileDestination));
- });
+		 .pipe( gulpif(production, uglify()) )   // uglify
+         .pipe(gulp.dest(paths.dist));
+ })
 
 /*
  * D E V E L O P M E N T
@@ -99,17 +93,25 @@ gulp.task('elm-compile', ['elm-init'], function() {
  		proxy: 'localhost:5000',
  	});
 
-	gulp.watch(paths.home, ['home']);
-	gulp.watch(paths.sass, ['sass']);
-	gulp.watch(paths.copy, ['copyjs']);
+	gulp.watch(paths.html, ['html']);
+	gulp.watch(paths.scss, ['sass']);
 	gulp.watch(paths.elm, ['elm-compile']);
-	gulp.watch(paths.compileDestination+"/*.{js,html}").on('change', browserSync.reload);
+	gulp.watch(paths.dist+"/*.{js,html}").on('change', browserSync.reload);
  });
 
 /*
  * P R O D U C T I O N
  */
+var del = require('del');
+gulp.task('del', function(cb) {
+	del(['./dist/*'])
+	.then( () => cb() );
+});
 
+gulp.task('build', ['del'], function() {
+	production = true;
+	runSequence('compilation', 'elm-compile');
+});
 /*
  * A P I
  */

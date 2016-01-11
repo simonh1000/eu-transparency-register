@@ -1,6 +1,6 @@
 module Matches.MatchesDecoder (Id, NewStuff, Model, matchesDecoder, recentsDecoder) where
 
-import Json.Decode exposing ( Decoder, (:=), object2, list, string )
+import Json.Decode as Json exposing ( Decoder, (:=), object2, list, string )
 
 type alias Id = String
 
