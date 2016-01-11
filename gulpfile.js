@@ -13,12 +13,13 @@ var	gulp           = require('gulp'),
 	uglify         = require('gulp-uglify');
 
 var paths = {
-	dist: "dist",
-	server  : './server',
-	html    : ['src/index.jade'],
-	scss    : ['src/**/*.{scss, sass}'],
-	elm     : "src/**/*.elm",
-	elmMain     : "src/Main.elm"
+	dist     : "dist",
+	server   : './server',
+	html     : ['src/index.jade'],
+	sassRoot : ['src/styles.sass'],
+	scss     : ['src/styles.sass', 'src/**/*.{scss,sass}'],
+	elm      : "src/**/*.elm",
+	elmMain  : "src/Main.elm"
 };
 
 var production = false;
@@ -56,7 +57,7 @@ gulp.task('html', function() {
 });
 
 gulp.task('sass', function() {
-	return gulp.src(paths.scss)
+	return gulp.src(paths.sassRoot)
 	.pipe(sass().on('error', sass.logError))
 	.pipe(concat('styles.css'))
 	.pipe( gulpif(production, minifyCss()) )    // minify in production

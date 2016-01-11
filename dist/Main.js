@@ -5421,6 +5421,162 @@ Elm.Signal.make = function (_elm) {
                                ,forwardTo: forwardTo
                                ,Mailbox: Mailbox};
 };
+Elm.Native.Time = {};
+
+Elm.Native.Time.make = function(localRuntime)
+{
+	localRuntime.Native = localRuntime.Native || {};
+	localRuntime.Native.Time = localRuntime.Native.Time || {};
+	if (localRuntime.Native.Time.values)
+	{
+		return localRuntime.Native.Time.values;
+	}
+
+	var NS = Elm.Native.Signal.make(localRuntime);
+	var Maybe = Elm.Maybe.make(localRuntime);
+
+
+	// FRAMES PER SECOND
+
+	function fpsWhen(desiredFPS, isOn)
+	{
+		var msPerFrame = 1000 / desiredFPS;
+		var ticker = NS.input('fps-' + desiredFPS, null);
+
+		function notifyTicker()
+		{
+			localRuntime.notify(ticker.id, null);
+		}
+
+		function firstArg(x, y)
+		{
+			return x;
+		}
+
+		// input fires either when isOn changes, or when ticker fires.
+		// Its value is a tuple with the current timestamp, and the state of isOn
+		var input = NS.timestamp(A3(NS.map2, F2(firstArg), NS.dropRepeats(isOn), ticker));
+
+		var initialState = {
+			isOn: false,
+			time: localRuntime.timer.programStart,
+			delta: 0
+		};
+
+		var timeoutId;
+
+		function update(input, state)
+		{
+			var currentTime = input._0;
+			var isOn = input._1;
+			var wasOn = state.isOn;
+			var previousTime = state.time;
+
+			if (isOn)
+			{
+				timeoutId = localRuntime.setTimeout(notifyTicker, msPerFrame);
+			}
+			else if (wasOn)
+			{
+				clearTimeout(timeoutId);
+			}
+
+			return {
+				isOn: isOn,
+				time: currentTime,
+				delta: (isOn && !wasOn) ? 0 : currentTime - previousTime
+			};
+		}
+
+		return A2(
+			NS.map,
+			function(state) { return state.delta; },
+			A3(NS.foldp, F2(update), update(input.value, initialState), input)
+		);
+	}
+
+
+	// EVERY
+
+	function every(t)
+	{
+		var ticker = NS.input('every-' + t, null);
+		function tellTime()
+		{
+			localRuntime.notify(ticker.id, null);
+		}
+		var clock = A2(NS.map, fst, NS.timestamp(ticker));
+		setInterval(tellTime, t);
+		return clock;
+	}
+
+
+	function fst(pair)
+	{
+		return pair._0;
+	}
+
+
+	function read(s)
+	{
+		var t = Date.parse(s);
+		return isNaN(t) ? Maybe.Nothing : Maybe.Just(t);
+	}
+
+	return localRuntime.Native.Time.values = {
+		fpsWhen: F2(fpsWhen),
+		every: every,
+		toDate: function(t) { return new Date(t); },
+		read: read
+	};
+};
+
+Elm.Time = Elm.Time || {};
+Elm.Time.make = function (_elm) {
+   "use strict";
+   _elm.Time = _elm.Time || {};
+   if (_elm.Time.values) return _elm.Time.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Native$Signal = Elm.Native.Signal.make(_elm),
+   $Native$Time = Elm.Native.Time.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var delay = $Native$Signal.delay;
+   var since = F2(function (time,signal) {
+      var stop = A2($Signal.map,$Basics.always(-1),A2(delay,time,signal));
+      var start = A2($Signal.map,$Basics.always(1),signal);
+      var delaydiff = A3($Signal.foldp,F2(function (x,y) {    return x + y;}),0,A2($Signal.merge,start,stop));
+      return A2($Signal.map,F2(function (x,y) {    return !_U.eq(x,y);})(0),delaydiff);
+   });
+   var timestamp = $Native$Signal.timestamp;
+   var every = $Native$Time.every;
+   var fpsWhen = $Native$Time.fpsWhen;
+   var fps = function (targetFrames) {    return A2(fpsWhen,targetFrames,$Signal.constant(true));};
+   var inMilliseconds = function (t) {    return t;};
+   var millisecond = 1;
+   var second = 1000 * millisecond;
+   var minute = 60 * second;
+   var hour = 60 * minute;
+   var inHours = function (t) {    return t / hour;};
+   var inMinutes = function (t) {    return t / minute;};
+   var inSeconds = function (t) {    return t / second;};
+   return _elm.Time.values = {_op: _op
+                             ,millisecond: millisecond
+                             ,second: second
+                             ,minute: minute
+                             ,hour: hour
+                             ,inMilliseconds: inMilliseconds
+                             ,inSeconds: inSeconds
+                             ,inMinutes: inMinutes
+                             ,inHours: inHours
+                             ,fps: fps
+                             ,fpsWhen: fpsWhen
+                             ,every: every
+                             ,timestamp: timestamp
+                             ,delay: delay
+                             ,since: since};
+};
 Elm.Native = Elm.Native || {};
 Elm.Native.History = {};
 Elm.Native.History.make = function(localRuntime){
@@ -6652,161 +6808,115 @@ Elm.Char.make = function (_elm) {
                              ,toCode: toCode
                              ,fromCode: fromCode};
 };
-Elm.Native.Time = {};
-
-Elm.Native.Time.make = function(localRuntime)
-{
+Elm.Native.Date = {};
+Elm.Native.Date.make = function(localRuntime) {
 	localRuntime.Native = localRuntime.Native || {};
-	localRuntime.Native.Time = localRuntime.Native.Time || {};
-	if (localRuntime.Native.Time.values)
+	localRuntime.Native.Date = localRuntime.Native.Date || {};
+	if (localRuntime.Native.Date.values)
 	{
-		return localRuntime.Native.Time.values;
+		return localRuntime.Native.Date.values;
 	}
 
-	var NS = Elm.Native.Signal.make(localRuntime);
-	var Maybe = Elm.Maybe.make(localRuntime);
+	var Result = Elm.Result.make(localRuntime);
 
-
-	// FRAMES PER SECOND
-
-	function fpsWhen(desiredFPS, isOn)
+	function readDate(str)
 	{
-		var msPerFrame = 1000 / desiredFPS;
-		var ticker = NS.input('fps-' + desiredFPS, null);
-
-		function notifyTicker()
-		{
-			localRuntime.notify(ticker.id, null);
-		}
-
-		function firstArg(x, y)
-		{
-			return x;
-		}
-
-		// input fires either when isOn changes, or when ticker fires.
-		// Its value is a tuple with the current timestamp, and the state of isOn
-		var input = NS.timestamp(A3(NS.map2, F2(firstArg), NS.dropRepeats(isOn), ticker));
-
-		var initialState = {
-			isOn: false,
-			time: localRuntime.timer.programStart,
-			delta: 0
-		};
-
-		var timeoutId;
-
-		function update(input, state)
-		{
-			var currentTime = input._0;
-			var isOn = input._1;
-			var wasOn = state.isOn;
-			var previousTime = state.time;
-
-			if (isOn)
-			{
-				timeoutId = localRuntime.setTimeout(notifyTicker, msPerFrame);
-			}
-			else if (wasOn)
-			{
-				clearTimeout(timeoutId);
-			}
-
-			return {
-				isOn: isOn,
-				time: currentTime,
-				delta: (isOn && !wasOn) ? 0 : currentTime - previousTime
-			};
-		}
-
-		return A2(
-			NS.map,
-			function(state) { return state.delta; },
-			A3(NS.foldp, F2(update), update(input.value, initialState), input)
-		);
+		var date = new Date(str);
+		return isNaN(date.getTime())
+			? Result.Err('unable to parse \'' + str + '\' as a date')
+			: Result.Ok(date);
 	}
 
-
-	// EVERY
-
-	function every(t)
-	{
-		var ticker = NS.input('every-' + t, null);
-		function tellTime()
-		{
-			localRuntime.notify(ticker.id, null);
-		}
-		var clock = A2(NS.map, fst, NS.timestamp(ticker));
-		setInterval(tellTime, t);
-		return clock;
-	}
+	var dayTable = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+	var monthTable =
+		['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+		 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 
-	function fst(pair)
-	{
-		return pair._0;
-	}
-
-
-	function read(s)
-	{
-		var t = Date.parse(s);
-		return isNaN(t) ? Maybe.Nothing : Maybe.Just(t);
-	}
-
-	return localRuntime.Native.Time.values = {
-		fpsWhen: F2(fpsWhen),
-		every: every,
-		toDate: function(t) { return new Date(t); },
-		read: read
+	return localRuntime.Native.Date.values = {
+		read: readDate,
+		year: function(d) { return d.getFullYear(); },
+		month: function(d) { return { ctor: monthTable[d.getMonth()] }; },
+		day: function(d) { return d.getDate(); },
+		hour: function(d) { return d.getHours(); },
+		minute: function(d) { return d.getMinutes(); },
+		second: function(d) { return d.getSeconds(); },
+		millisecond: function(d) { return d.getMilliseconds(); },
+		toTime: function(d) { return d.getTime(); },
+		fromTime: function(t) { return new Date(t); },
+		dayOfWeek: function(d) { return { ctor: dayTable[d.getDay()] }; }
 	};
 };
 
-Elm.Time = Elm.Time || {};
-Elm.Time.make = function (_elm) {
+Elm.Date = Elm.Date || {};
+Elm.Date.make = function (_elm) {
    "use strict";
-   _elm.Time = _elm.Time || {};
-   if (_elm.Time.values) return _elm.Time.values;
-   var _U = Elm.Native.Utils.make(_elm),
-   $Basics = Elm.Basics.make(_elm),
-   $Native$Signal = Elm.Native.Signal.make(_elm),
-   $Native$Time = Elm.Native.Time.make(_elm),
-   $Signal = Elm.Signal.make(_elm);
+   _elm.Date = _elm.Date || {};
+   if (_elm.Date.values) return _elm.Date.values;
+   var _U = Elm.Native.Utils.make(_elm),$Native$Date = Elm.Native.Date.make(_elm),$Result = Elm.Result.make(_elm),$Time = Elm.Time.make(_elm);
    var _op = {};
-   var delay = $Native$Signal.delay;
-   var since = F2(function (time,signal) {
-      var stop = A2($Signal.map,$Basics.always(-1),A2(delay,time,signal));
-      var start = A2($Signal.map,$Basics.always(1),signal);
-      var delaydiff = A3($Signal.foldp,F2(function (x,y) {    return x + y;}),0,A2($Signal.merge,start,stop));
-      return A2($Signal.map,F2(function (x,y) {    return !_U.eq(x,y);})(0),delaydiff);
-   });
-   var timestamp = $Native$Signal.timestamp;
-   var every = $Native$Time.every;
-   var fpsWhen = $Native$Time.fpsWhen;
-   var fps = function (targetFrames) {    return A2(fpsWhen,targetFrames,$Signal.constant(true));};
-   var inMilliseconds = function (t) {    return t;};
-   var millisecond = 1;
-   var second = 1000 * millisecond;
-   var minute = 60 * second;
-   var hour = 60 * minute;
-   var inHours = function (t) {    return t / hour;};
-   var inMinutes = function (t) {    return t / minute;};
-   var inSeconds = function (t) {    return t / second;};
-   return _elm.Time.values = {_op: _op
-                             ,millisecond: millisecond
-                             ,second: second
-                             ,minute: minute
+   var millisecond = $Native$Date.millisecond;
+   var second = $Native$Date.second;
+   var minute = $Native$Date.minute;
+   var hour = $Native$Date.hour;
+   var dayOfWeek = $Native$Date.dayOfWeek;
+   var day = $Native$Date.day;
+   var month = $Native$Date.month;
+   var year = $Native$Date.year;
+   var fromTime = $Native$Date.fromTime;
+   var toTime = $Native$Date.toTime;
+   var fromString = $Native$Date.read;
+   var Dec = {ctor: "Dec"};
+   var Nov = {ctor: "Nov"};
+   var Oct = {ctor: "Oct"};
+   var Sep = {ctor: "Sep"};
+   var Aug = {ctor: "Aug"};
+   var Jul = {ctor: "Jul"};
+   var Jun = {ctor: "Jun"};
+   var May = {ctor: "May"};
+   var Apr = {ctor: "Apr"};
+   var Mar = {ctor: "Mar"};
+   var Feb = {ctor: "Feb"};
+   var Jan = {ctor: "Jan"};
+   var Sun = {ctor: "Sun"};
+   var Sat = {ctor: "Sat"};
+   var Fri = {ctor: "Fri"};
+   var Thu = {ctor: "Thu"};
+   var Wed = {ctor: "Wed"};
+   var Tue = {ctor: "Tue"};
+   var Mon = {ctor: "Mon"};
+   var Date = {ctor: "Date"};
+   return _elm.Date.values = {_op: _op
+                             ,fromString: fromString
+                             ,toTime: toTime
+                             ,fromTime: fromTime
+                             ,year: year
+                             ,month: month
+                             ,day: day
+                             ,dayOfWeek: dayOfWeek
                              ,hour: hour
-                             ,inMilliseconds: inMilliseconds
-                             ,inSeconds: inSeconds
-                             ,inMinutes: inMinutes
-                             ,inHours: inHours
-                             ,fps: fps
-                             ,fpsWhen: fpsWhen
-                             ,every: every
-                             ,timestamp: timestamp
-                             ,delay: delay
-                             ,since: since};
+                             ,minute: minute
+                             ,second: second
+                             ,millisecond: millisecond
+                             ,Jan: Jan
+                             ,Feb: Feb
+                             ,Mar: Mar
+                             ,Apr: Apr
+                             ,May: May
+                             ,Jun: Jun
+                             ,Jul: Jul
+                             ,Aug: Aug
+                             ,Sep: Sep
+                             ,Oct: Oct
+                             ,Nov: Nov
+                             ,Dec: Dec
+                             ,Mon: Mon
+                             ,Tue: Tue
+                             ,Wed: Wed
+                             ,Thu: Thu
+                             ,Fri: Fri
+                             ,Sat: Sat
+                             ,Sun: Sun};
 };
 Elm.Native.String = {};
 
@@ -12041,6 +12151,60 @@ Elm.StartApp.make = function (_elm) {
    var Config = F4(function (a,b,c,d) {    return {init: a,update: b,view: c,inputs: d};});
    return _elm.StartApp.values = {_op: _op,start: start,Config: Config,App: App};
 };
+Elm.Native.TaskTutorial = {};
+Elm.Native.TaskTutorial.make = function(localRuntime) {
+
+	localRuntime.Native = localRuntime.Native || {};
+	localRuntime.Native.TaskTutorial = localRuntime.Native.TaskTutorial || {};
+	if (localRuntime.Native.TaskTutorial.values)
+	{
+		return localRuntime.Native.TaskTutorial.values;
+	}
+
+	var Task = Elm.Native.Task.make(localRuntime);
+	var Utils = Elm.Native.Utils.make(localRuntime);
+
+
+	function log(string)
+	{
+		return Task.asyncFunction(function(callback) {
+			console.log(string);
+			return callback(Task.succeed(Utils.Tuple0));
+		});
+	}
+
+
+	var getCurrentTime = Task.asyncFunction(function(callback) {
+		return callback(Task.succeed(Date.now()));
+	});
+
+
+	return localRuntime.Native.TaskTutorial.values = {
+		log: log,
+		getCurrentTime: getCurrentTime
+	};
+};
+
+Elm.TaskTutorial = Elm.TaskTutorial || {};
+Elm.TaskTutorial.make = function (_elm) {
+   "use strict";
+   _elm.TaskTutorial = _elm.TaskTutorial || {};
+   if (_elm.TaskTutorial.values) return _elm.TaskTutorial.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Native$TaskTutorial = Elm.Native.TaskTutorial.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Task = Elm.Task.make(_elm),
+   $Time = Elm.Time.make(_elm);
+   var _op = {};
+   var getCurrentTime = $Native$TaskTutorial.getCurrentTime;
+   var print = function (value) {    return $Native$TaskTutorial.log($Basics.toString(value));};
+   return _elm.TaskTutorial.values = {_op: _op,print: print,getCurrentTime: getCurrentTime};
+};
 Elm.Chart = Elm.Chart || {};
 Elm.Chart.make = function (_elm) {
    "use strict";
@@ -13569,6 +13733,237 @@ Elm.Summary.Summary.make = function (_elm) {
                                         ,SummaryData: SummaryData
                                         ,Animate: Animate};
 };
+Elm.Comments = Elm.Comments || {};
+Elm.Comments.Comment = Elm.Comments.Comment || {};
+Elm.Comments.Comment.make = function (_elm) {
+   "use strict";
+   _elm.Comments = _elm.Comments || {};
+   _elm.Comments.Comment = _elm.Comments.Comment || {};
+   if (_elm.Comments.Comment.values) return _elm.Comments.Comment.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var view = function (model) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("comment")]),
+      _U.list([A2($Html.p,
+      _U.list([]),
+      _U.list([$Html.text(model.comment)
+              ,A2($Html.span,_U.list([]),_U.list([$Html.text(A2($Basics._op["++"]," (",A2($Basics._op["++"],model.date,")")))]))]))]));
+   };
+   var Model = F2(function (a,b) {    return {comment: a,date: b};});
+   var commentDecoder = A3($Json$Decode.object2,
+   Model,
+   A2($Json$Decode._op[":="],"comment",$Json$Decode.string),
+   A2($Json$Decode._op[":="],"date",$Json$Decode.string));
+   var commentsDecoder = $Json$Decode.list(commentDecoder);
+   return _elm.Comments.Comment.values = {_op: _op,view: view,commentsDecoder: commentsDecoder,Model: Model};
+};
+Elm.Comments = Elm.Comments || {};
+Elm.Comments.NewComment = Elm.Comments.NewComment || {};
+Elm.Comments.NewComment.make = function (_elm) {
+   "use strict";
+   _elm.Comments = _elm.Comments || {};
+   _elm.Comments.NewComment = _elm.Comments.NewComment || {};
+   if (_elm.Comments.NewComment.values) return _elm.Comments.NewComment.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Date = Elm.Date.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Effects = Elm.Effects.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
+   $Http = Elm.Http.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Task = Elm.Task.make(_elm),
+   $TaskTutorial = Elm.TaskTutorial.make(_elm),
+   $Time = Elm.Time.make(_elm);
+   var _op = {};
+   var post$ = F3(function (dec,url,body) {
+      return A2($Http.fromJson,
+      dec,
+      A2($Http.send,$Http.defaultSettings,{verb: "POST",headers: _U.list([{ctor: "_Tuple2",_0: "Content-type",_1: "application/json"}]),url: url,body: body}));
+   });
+   var prettyDate = function (date) {
+      var _p0 = date;
+      if (_p0.ctor === "Nothing") {
+            return "";
+         } else {
+            var _p1 = _p0._0;
+            return A2($Basics._op["++"],
+            $Basics.toString($Date.year(_p1)),
+            A2($Basics._op["++"],"-",A2($Basics._op["++"],$Basics.toString($Date.month(_p1)),A2($Basics._op["++"],"-",$Basics.toString($Date.day(_p1))))));
+         }
+   };
+   var onSubmit$ = F2(function (address,action) {
+      return A4($Html$Events.onWithOptions,"submit",{stopPropagation: true,preventDefault: true},$Json$Decode.succeed(action),$Signal.message(address));
+   });
+   var onChange = F2(function (address,action) {
+      return A3($Html$Events.on,"change",A2($Json$Decode.map,action,$Html$Events.targetValue),$Signal.message(address));
+   });
+   var PostResult = function (a) {    return {ctor: "PostResult",_0: a};};
+   var submitPost = function (model) {
+      var jsonString = $Http.string(A2($Basics._op["++"],
+      "{\"comment\":\"",
+      A2($Basics._op["++"],
+      model.comment,
+      A2($Basics._op["++"],
+      "\",\"email\":\"",
+      A2($Basics._op["++"],model.email,A2($Basics._op["++"],"\",\"date\":\"",A2($Basics._op["++"],prettyDate(model.date),"\"}")))))));
+      return $Effects.task(A2($Task.map,
+      PostResult,
+      $Task.toResult(A3(post$,A2($Json$Decode._op[":="],"success",$Json$Decode.bool),"/api/comments",jsonString))));
+   };
+   var update = F2(function (action,model) {
+      var _p2 = action;
+      switch (_p2.ctor)
+      {case "CurrentTime": return {ctor: "_Tuple2",_0: _U.update(model,{date: A2($Maybe.map,$Date.fromTime,_p2._0)}),_1: $Effects.none};
+         case "Input": var _p4 = _p2._1;
+           var _p3 = _p2._0;
+           if (_p3.ctor === "Email") {
+                 return {ctor: "_Tuple2",_0: _U.update(model,{email: _p4}),_1: $Effects.none};
+              } else {
+                 return {ctor: "_Tuple2",_0: _U.update(model,{comment: _p4}),_1: $Effects.none};
+              }
+         case "Submit": return {ctor: "_Tuple2",_0: model,_1: submitPost(model)};
+         default: var _p5 = _p2._0;
+           if (_p5.ctor === "Ok") {
+                 return {ctor: "_Tuple2",_0: _U.update(model,{email: "",comment: ""}),_1: $Effects.none};
+              } else {
+                 return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+              }}
+   });
+   var Submit = {ctor: "Submit"};
+   var CurrentTime = function (a) {    return {ctor: "CurrentTime",_0: a};};
+   var getTime = $Effects.task(A2($Task.map,CurrentTime,$Task.toMaybe($TaskTutorial.getCurrentTime)));
+   var Input = F2(function (a,b) {    return {ctor: "Input",_0: a,_1: b};});
+   var Model = F3(function (a,b,c) {    return {comment: a,email: b,date: c};});
+   var init = {ctor: "_Tuple2",_0: A3(Model,"","",$Maybe.Nothing),_1: getTime};
+   var Comment = {ctor: "Comment"};
+   var Email = {ctor: "Email"};
+   var view = F2(function (address,model) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("commentEntry")]),
+      _U.list([A2($Html.form,
+      _U.list([A2(onSubmit$,address,Submit)]),
+      _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("form-group")]),
+              _U.list([A2($Html.label,_U.list([]),_U.list([$Html.text("What do you think?*")]))
+                      ,A2($Html.input,
+                      _U.list([A2(onChange,address,Input(Comment))
+                              ,$Html$Attributes.$class("form-control")
+                              ,$Html$Attributes.value(model.comment)
+                              ,$Html$Attributes.required(true)
+                              ,$Html$Attributes.placeholder("Comment")]),
+                      _U.list([]))]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.$class("form-inline")]),
+              _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("form-group")]),
+              _U.list([A2($Html.label,_U.list([]),_U.list([$Html.text("email (not made public)")]))
+                      ,A2($Html.input,
+                      _U.list([A2(onChange,address,Input(Email))
+                              ,$Html$Attributes.$class("form-control")
+                              ,$Html$Attributes.value(model.email)
+                              ,$Html$Attributes.placeholder("Optional")]),
+                      _U.list([]))
+                      ,A2($Html.button,
+                      _U.list([$Html$Attributes.type$("submit"),$Html$Attributes.$class("btn btn-default")]),
+                      _U.list([$Html.text("Submit")]))]))]))]))]));
+   });
+   return _elm.Comments.NewComment.values = {_op: _op,init: init,update: update,view: view,prettyDate: prettyDate,Model: Model,PostResult: PostResult};
+};
+Elm.Comments = Elm.Comments || {};
+Elm.Comments.Comments = Elm.Comments.Comments || {};
+Elm.Comments.Comments.make = function (_elm) {
+   "use strict";
+   _elm.Comments = _elm.Comments || {};
+   _elm.Comments.Comments = _elm.Comments.Comments || {};
+   if (_elm.Comments.Comments.values) return _elm.Comments.Comments.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Comments$Comment = Elm.Comments.Comment.make(_elm),
+   $Comments$NewComment = Elm.Comments.NewComment.make(_elm),
+   $Common = Elm.Common.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Effects = Elm.Effects.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Http = Elm.Http.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Task = Elm.Task.make(_elm);
+   var _op = {};
+   var CommentForm = function (a) {    return {ctor: "CommentForm",_0: a};};
+   var view = F2(function (address,model) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.id("commentsBox")]),
+      _U.list([A2($Html.p,_U.list([$Html$Attributes.$class("message")]),_U.list([$Html.text(model.msg)]))
+              ,A2($Comments$NewComment.view,A2($Signal.forwardTo,address,CommentForm),model.formData)
+              ,A2($Html.div,_U.list([$Html$Attributes.$class("comments")]),A2($List.map,$Comments$Comment.view,model.comments))]));
+   });
+   var Comments = function (a) {    return {ctor: "Comments",_0: a};};
+   var getComments = $Effects.task(A2($Task.map,Comments,$Task.toResult(A2($Http.get,$Comments$Comment.commentsDecoder,"/api/comments"))));
+   var update = F2(function (action,model) {
+      var _p0 = action;
+      switch (_p0.ctor)
+      {case "Display": var gc = $Basics.not(model.displayed) && _U.eq($List.length(model.comments),0) ? getComments : $Effects.none;
+           return {ctor: "_Tuple2"
+                  ,_0: _U.update(model,{displayed: $Basics.not(model.displayed)})
+                  ,_1: $Effects.batch(_U.list([A2($Effects.map,CommentForm,$Basics.snd($Comments$NewComment.init)),gc]))};
+         case "Comments": var _p1 = _p0._0;
+           if (_p1.ctor === "Ok") {
+                 return {ctor: "_Tuple2",_0: _U.update(model,{comments: _p1._0}),_1: $Effects.none};
+              } else {
+                 return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+              }
+         default: if (_p0._0.ctor === "PostResult") {
+                 var _p4 = _p0._0._0;
+                 var _p2 = _p4;
+                 if (_p2.ctor === "Ok") {
+                       var _p3 = A2($Comments$NewComment.update,$Comments$NewComment.PostResult(_p4),model.formData);
+                       var newModel = _p3._0;
+                       var newComment = A2($Comments$Comment.Model,model.formData.comment,$Comments$NewComment.prettyDate(model.formData.date));
+                       return {ctor: "_Tuple2"
+                              ,_0: _U.update(model,{comments: A2($List._op["::"],newComment,model.comments),formData: newModel})
+                              ,_1: $Effects.none};
+                    } else {
+                       return {ctor: "_Tuple2",_0: _U.update(model,{msg: $Common.errorHandler(_p2._0)}),_1: $Effects.none};
+                    }
+              } else {
+                 var _p5 = A2($Comments$NewComment.update,_p0._0,model.formData);
+                 var newModel = _p5._0;
+                 var newEffects = _p5._1;
+                 return {ctor: "_Tuple2",_0: _U.update(model,{formData: newModel}),_1: A2($Effects.map,CommentForm,newEffects)};
+              }}
+   });
+   var Display = {ctor: "Display"};
+   var Model = F4(function (a,b,c,d) {    return {displayed: a,comments: b,formData: c,msg: d};});
+   var init = {ctor: "_Tuple2",_0: A4(Model,false,_U.list([]),$Basics.fst($Comments$NewComment.init),""),_1: $Effects.none};
+   return _elm.Comments.Comments.values = {_op: _op
+                                          ,init: init
+                                          ,update: update
+                                          ,view: view
+                                          ,Model: Model
+                                          ,Display: Display
+                                          ,Comments: Comments
+                                          ,CommentForm: CommentForm};
+};
 Elm.App = Elm.App || {};
 Elm.App.make = function (_elm) {
    "use strict";
@@ -13576,11 +13971,13 @@ Elm.App.make = function (_elm) {
    if (_elm.App.values) return _elm.App.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
+   $Comments$Comments = Elm.Comments.Comments.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $Help = Elm.Help.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Nav = Elm.Nav.make(_elm),
@@ -13590,12 +13987,17 @@ Elm.App.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $Summary$Summary = Elm.Summary.Summary.make(_elm);
    var _op = {};
+   var CommentsAction = function (a) {    return {ctor: "CommentsAction",_0: a};};
    var footerDiv = F2(function (address,msg) {
       return A2($Html.footer,
       _U.list([$Html$Attributes.$class("row")]),
       _U.list([A2($Html.div,
       _U.list([$Html$Attributes.$class("col-xs-12")]),
-      _U.list([A2($Html.span,_U.list([]),_U.list([$Html.text("Simon Hampton, 2015")])),A2($Html.span,_U.list([]),_U.list([$Html.text(msg)]))]))]));
+      _U.list([A2($Html.span,_U.list([]),_U.list([$Html.text("Simon Hampton, 2015")]))
+              ,A2($Html.span,_U.list([]),_U.list([$Html.text(msg)]))
+              ,A2($Html.button,
+              _U.list([A2($Html$Events.onClick,address,CommentsAction($Comments$Comments.Display)),$Html$Attributes.$class("btn btn-warning btn-sm")]),
+              _U.list([$Html.text("Reactions / comments")]))]))]));
    });
    var RegisterAction = function (a) {    return {ctor: "RegisterAction",_0: a};};
    var SummaryAction = function (a) {    return {ctor: "SummaryAction",_0: a};};
@@ -13605,8 +14007,11 @@ Elm.App.make = function (_elm) {
       _U.list([$Html$Attributes.$class(A2($Basics._op["++"],"App ",$Router.toString(model.page)))]),
       _U.list([A2($Nav.view,A2($Signal.forwardTo,address,NavAction),model.navbar)
               ,A2($Html.div,
-              _U.list([$Html$Attributes.$class("container")]),
-              _U.list([_U.eq(model.page,$Router.Summary) ? A2($Summary$Summary.view,
+              _U.list([$Html$Attributes.$class("container appContainer")]),
+              _U.list([model.comments.displayed ? A2($Comments$Comments.view,A2($Signal.forwardTo,address,CommentsAction),model.comments) : A2($Html.div,
+                      _U.list([]),
+                      _U.list([]))
+                      ,_U.eq(model.page,$Router.Summary) ? A2($Summary$Summary.view,
                       A2($Signal.forwardTo,address,SummaryAction),
                       model.summary) : A2($Register.view,A2($Signal.forwardTo,address,RegisterAction),model.register)
                       ,A2(footerDiv,address,model.msg)]))]));
@@ -13671,29 +14076,37 @@ Elm.App.make = function (_elm) {
            var newEffects = _p10._1;
            return {ctor: "_Tuple2",_0: _U.update(model,{summary: newModel}),_1: A2($Effects.map,SummaryAction,newEffects)};
          case "RouterAction": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-         default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
+         default: var _p11 = A2($Comments$Comments.update,_p2._0,model.comments);
+           var newModel = _p11._0;
+           var newEffects = _p11._1;
+           return {ctor: "_Tuple2",_0: _U.update(model,{comments: newModel}),_1: A2($Effects.map,CommentsAction,newEffects)};}
    });
-   var Width = function (a) {    return {ctor: "Width",_0: a};};
    var UrlParam = function (a) {    return {ctor: "UrlParam",_0: a};};
-   var Model = F6(function (a,b,c,d,e,f) {    return {navbar: a,page: b,register: c,summary: d,help: e,msg: f};});
-   var initModel = F3(function (n,r,s) {    return A6(Model,n,$Router.Register($Maybe.Nothing),r,s,$Help.init,"");});
+   var Model = F7(function (a,b,c,d,e,f,g) {    return {navbar: a,page: b,register: c,summary: d,help: e,comments: f,msg: g};});
    var init = function () {
-      var nav = $Nav.init;
-      var reg = $Register.init;
+      var _p12 = $Comments$Comments.init;
+      var comM = _p12._0;
+      var comE = _p12._1;
+      var _p13 = $Register.init;
+      var regM = _p13._0;
+      var regE = _p13._1;
+      var _p14 = $Nav.init;
+      var navM = _p14._0;
+      var navE = _p14._1;
       return {ctor: "_Tuple2"
-             ,_0: A3(initModel,$Basics.fst(nav),$Basics.fst(reg),$Summary$Summary.init)
-             ,_1: $Effects.batch(_U.list([A2($Effects.map,NavAction,$Basics.snd(nav)),A2($Effects.map,RegisterAction,$Basics.snd(reg))]))};
+             ,_0: A7(Model,navM,$Router.Register($Maybe.Nothing),regM,$Summary$Summary.init,$Help.init,comM,"")
+             ,_1: $Effects.batch(_U.list([A2($Effects.map,NavAction,navE),A2($Effects.map,RegisterAction,regE),A2($Effects.map,CommentsAction,comE)]))};
    }();
    return _elm.App.values = {_op: _op
                             ,init: init
                             ,update: update
                             ,view: view
                             ,UrlParam: UrlParam
-                            ,Width: Width
                             ,RouterAction: RouterAction
                             ,NavAction: NavAction
                             ,SummaryAction: SummaryAction
-                            ,RegisterAction: RegisterAction};
+                            ,RegisterAction: RegisterAction
+                            ,CommentsAction: CommentsAction};
 };
 Elm.EURegister = Elm.EURegister || {};
 Elm.EURegister.make = function (_elm) {
@@ -13710,18 +14123,14 @@ Elm.EURegister.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
    $StartApp = Elm.StartApp.make(_elm),
-   $Task = Elm.Task.make(_elm),
-   $Window = Elm.Window.make(_elm);
+   $Task = Elm.Task.make(_elm);
    var _op = {};
    var locationSearch = Elm.Native.Port.make(_elm).inboundSignal("locationSearch",
    "String",
    function (v) {
       return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",v);
    });
-   var app = $StartApp.start({init: $App.init
-                             ,update: $App.update
-                             ,view: $App.view
-                             ,inputs: _U.list([A2($Signal.map,$App.UrlParam,locationSearch),A2($Signal.map,$App.Width,$Window.width)])});
+   var app = $StartApp.start({init: $App.init,update: $App.update,view: $App.view,inputs: _U.list([A2($Signal.map,$App.UrlParam,locationSearch)])});
    var main = app.html;
    var tasks = Elm.Native.Task.make(_elm).performSignal("tasks",app.tasks);
    return _elm.EURegister.values = {_op: _op,main: main};

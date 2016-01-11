@@ -1,7 +1,7 @@
 module App (Action(..), init, update, view) where
 
 import Html exposing (..)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
 import String exposing (split, toLower)
 import List exposing (head, tail, filter)
@@ -12,6 +12,7 @@ import Nav exposing (Action(..))
 import Router exposing (Page(..), toString)
 import Summary.Summary as Summary
 import Help exposing (Action(Help))
+import Comments.Comments as Comments
 import Common exposing (onLinkClick)
 
 -- MODEL
@@ -22,21 +23,31 @@ type alias Model =
     , register : Register.Model
     , summary : Summary.Model
     , help : Help.Model
+    , comments : Comments.Model
     , msg : String
     }
-initModel n r s =
-    Model n (Register Nothing) r s Help.init ""
-    -- { navbar = n, page = Register Nothing, register = r, summary = s, help = False, msg = "" }
+-- initModel n r s =
+--     Model n (Register Nothing) r s Help.init Comments.init "" False
 
 init : (Model, Effects Action)
 init =
     let
-        reg = Register.init
-        nav = Nav.init
-    in  ( initModel (fst nav) (fst reg) Summary.init
+        (navM, navE) = Nav.init
+        (regM, regE) = Register.init
+        (comM, comE) = Comments.init
+    in  ( Model
+            navM
+            (Register Nothing)
+            regM
+            Summary.init
+            Help.init
+            comM
+            ""
+        -- initModel (fst nav) (fst reg) Summary.init
         , Effects.batch
-            [ Effects.map NavAction (snd nav)
-            , Effects.map RegisterAction (snd reg)
+            [ Effects.map NavAction navE
+            , Effects.map RegisterAction regE
+            , Effects.map CommentsAction comE
             ]
         )
 
@@ -44,11 +55,12 @@ init =
 
 type Action
     = UrlParam String
-    | Width Int
+    -- | Width Int
     | RouterAction Router.Action
     | NavAction Nav.Action
     | SummaryAction Summary.Action
     | RegisterAction Register.Action
+    | CommentsAction Comments.Action
 
 {-
 On load
@@ -144,20 +156,16 @@ update action model =
         RouterAction _ ->     -- NoOp _ in practise
             (model, Effects.none)
 
-        -- Intro act ->
-        --     ( { model | help = Help.update act model.help }
+        CommentsAction act ->
+            let (newModel, newEffects) = Comments.update act model.comments
+            in  ( { model | comments = newModel }
+                , Effects.map CommentsAction newEffects
+                )
+        -- Width w ->
+        --     ( model
+        --     -- ( { model | msg = toString w }
         --     , Effects.none
         --     )
-
-        -- Help ->
-        --     ( { model | help = not model.help }
-        --     , Effects.none
-        --     )
-        Width w ->
-            ( model
-            -- ( { model | msg = toString w }
-            , Effects.none
-            )
 
 -- VIEW
 
@@ -166,9 +174,12 @@ view address model =
     div [ class <| "App " ++ Router.toString model.page ]
         [ Nav.view (Signal.forwardTo address NavAction) model.navbar
         -- , Help.view (Signal.forwardTo address Intro) model.help
-        , div [ class "container" ]
+        , div [ class "container appContainer" ]
             -- [ helpModal address model
-            [ if model.page == Summary
+            [ if model.comments.displayed
+                then Comments.view (Signal.forwardTo address CommentsAction) model.comments
+                else div [] []
+            , if model.page == Summary
                 then Summary.view (Signal.forwardTo address SummaryAction) model.summary
                 else Register.view (Signal.forwardTo address RegisterAction) model.register
             , footerDiv address model.msg
@@ -181,17 +192,11 @@ footerDiv address msg =
         [ div [ class "col-xs-12" ]
             [ span
                 [ ] [ text "Simon Hampton, 2015" ]
-            -- , a
-            --     -- [ onLinkClick address (Intro Help)
-            --     -- , class "hidden-xs"
-            --     [ class "hidden-xs"
-            --     ]
-            -- -- , button
-            -- --     [ class "btn btn-default btn-xs"
-            -- --     , onClick address Help
-            -- --     ]
-            --     [ text "Notes, privacy, source code or report a problem" ]
             , span [] [ text msg ]
+            , button
+                [ onClick address (CommentsAction Comments.Display)
+                , class "btn btn-warning btn-sm" ]
+                [ text "Reactions / comments" ]
             ]
         ]
 

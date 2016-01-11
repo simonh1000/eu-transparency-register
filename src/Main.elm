@@ -6,7 +6,7 @@ import Effects exposing (Never)
 import Task
 import Window
 
-import App exposing (init, update, view, Action(UrlParam, Width))
+import App exposing (init, update, view, Action(UrlParam))
 import Summary.Summary as Summary
 
 app =
@@ -16,7 +16,7 @@ app =
     , view = view
     , inputs =
         [ Signal.map UrlParam locationSearch
-        , Signal.map Width Window.width
+        -- , Signal.map Width Window.width
         ]
     }
 

@@ -3,6 +3,7 @@
 @import "Matches/matches.scss"
 @import "Filters/filters.scss"
 @import "Entries/entries.scss"
+@import "Comments/comments.sass"
 
 nav, footer
     background-color: #222
@@ -42,12 +43,14 @@ nav
 
 footer
     display: block
-    // height: 80px
     height: 32px
     padding: 5px 15px
+    overflow-y: hidden
     span
         color: white
         padding-right: 30px
+    button
+        float: right
 
 /* SM styling */
 @media (min-width: $screen-sm-min) and (max-width: $screen-sm-max)
