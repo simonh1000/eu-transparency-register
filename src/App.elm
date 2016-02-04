@@ -195,7 +195,7 @@ footerDiv address msg =
             , span [] [ text msg ]
             , button
                 [ onClick address (CommentsAction Comments.Display)
-                , class "btn btn-warning btn-sm" ]
+                , class "btn btn-warning btn-sm hidden-xs" ]
                 [ text "Reactions / comments" ]
             ]
         ]

@@ -69,19 +69,23 @@ function updateOneDb(uri, newJson) {
 
 // REPLACE DATABASE
 // Promise.all([
-// 	mongoConnect(remote),     // remote
+// 	mongoConnect(local),     // remote
 // 	xls.xls2Json(fname)     // reads and parses
 // ])
 // .then( results => {
 // 	let db = results[0];
 // 	let newData = results[1];
-//
+
 // 	ingester.replaceDb(newData, db)
 // 	.then( res => {
 // 		db.close();
 // 		console.log(res)
 // 	})
-// 	.catch( console.error.bind(this) );
+// 	.catch( err => {
+//         if (db)
+//             db.close();
+//         console.error(err)
+//     });
 // })
 
 // DOWNLOAD NEW FILE

@@ -19,7 +19,10 @@ exports.xls2Json = function(fname) {
 		var worksheet = wbook.Sheets[SHEET_NAME];
 
 		// clean data before returning
-		let json = XLSX.utils.sheet_to_json(worksheet, {'header': headers, 'range':1}).map(rawMapper);
+		let json =
+            XLSX.utils
+            .sheet_to_json(worksheet, {'header': headers, 'range':1})
+            .map(rawMapper);
 
 		resolve(json);
 	});

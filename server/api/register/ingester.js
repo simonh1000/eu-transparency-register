@@ -28,20 +28,35 @@ var reqoptions = {
  * Downloads file to drive
  */
 function downloadXls(fname) {
-	return new Promise(function(resolve, reject) {
-		request(reqoptions)
-			.on('response', response => console.log("Downloading...") )
-			.on('end', msg => {
-				console.log(`ingester: Downloading finished. Saved to ${fname}.xls`)
-				resolve(fname);
-			})
-			.on('close', msg => {
-				console.log("Close??", msg);
-			})
-			.pipe(fs.createWriteStream(fname + '.xls'));
-	});
+    // let f = fs.statSync(fname + '.xls');
+
+    if (existsSync(fname + '.xls')) {
+        console.log("file already exists, not downloading again");
+        return Promise.resolve(fname);
+    } else {
+        return new Promise(function(resolve, reject) {
+            request(reqoptions)
+                .on('response', response => console.log("Downloading...") )
+                .on('end', msg => {
+                    console.log(`ingester: Downloading finished. Saved to ${fname}.xls`)
+                    resolve(fname);
+                })
+                .on('close', msg => {
+                    console.log("Close??", msg);
+                })
+                .pipe(fs.createWriteStream(fname + '.xls'));
+        });
+    }
 }
 
+function existsSync(filePath){
+  try{
+    fs.statSync(filePath);
+  }catch(err){
+    if(err.code == 'ENOENT') return false;
+  }
+  return true;
+};
 /* ***********************************************
  * PURE PROCESSING FUNCTIONS
 */
@@ -204,6 +219,8 @@ function replaceDb(newData, db) {
 		.drop()
 		.then( () => db.collection(REGISTER).insertMany(newData) )
 		.then( result => ({'registerSize': result.insertedCount}));
+		// return db.collection(REGISTER).insertMany(newData)
+		// .then( result => ({'registerSize': result.insertedCount}) );
 }
 
 exports.downloadXls = downloadXls;
